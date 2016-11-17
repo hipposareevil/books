@@ -1,0 +1,49 @@
+version: '2'
+
+services:
+
+   books.db:
+    container_name: booksdb
+    image: mysql:latest
+    volumes:
+      - "./mysql/books.sql:/docker-entrypoint-initdb.d/books.sql"
+    restart: always
+    logging:
+      driver: "json-file"
+    networks:
+      - booknet
+    environment:
+     - MYSQL_ROOT_PASSWORD=booksit 
+     - MYSQL_DATABASE=booksdatabase
+     - MYSQL_USER=booksuser 
+     - MYSQL_PASSWORD=books 
+
+
+   author.ws:
+     container_name: author
+     image: wpff.books.author:latest
+     build: ./author
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
+  
+   nginx.frontend:
+     container_name: frontend
+     image: wpff.books.nginx:latest
+     ports:
+       - 8080:80 
+     restart: always
+     logging:
+       driver: "json-file"
+     depends_on:
+      - author.ws
+     networks:
+      - booknet
+
+
+networks:
+   booknet:
