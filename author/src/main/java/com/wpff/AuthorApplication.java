@@ -23,10 +23,14 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthorApplication.class);
 
+  /**
+   * Start application
+   */
   public static void main(final String[] args) throws Exception {
     new AuthorApplication().run(args);
   }
-  
+
+  // Create hibernate bundle
   private final HibernateBundle<AuthorConfiguration> hibernateBundle =
       new HibernateBundle<AuthorConfiguration>(Author.class) {
     @Override
@@ -35,14 +39,14 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
     }
   };
 
-
-
-
   @Override
     public String getName() {
-    return "wizard";
+    return "books";
   }
 
+  /**
+   * Initialize the application with configurations
+   */
   @Override
     public void initialize(final Bootstrap<AuthorConfiguration> bootstrap) {
 
@@ -64,21 +68,17 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
           return configuration.swaggerBundleConfiguration;
         }
       });
-    
-
   }
 
+  /**
+   * Start the jersey endpoint for /author
+   */
   @Override
     public void run(final AuthorConfiguration configuration,
                     final Environment environment) {
-//    environment.jersey().register(new MyRestController(environment.getValidator()));
-
-
     // author rest endpoint
     final AuthorDAO dao = new AuthorDAO(hibernateBundle.getSessionFactory());
     environment.jersey().register(new AuthorResource(dao));
-    
   }
-
 
 }
