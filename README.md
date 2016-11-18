@@ -1,3 +1,17 @@
+Table of Contents
+=================
+
+   * [Books](#books)
+      * [Endpoint(s)](#endpoints)
+   * [Prerequisites](#prerequisites)
+   * [Building](#building)
+      * [Docker images used](#docker-images-used)
+   * [Structure](#structure)
+   * [Managing application](#managing-application)
+      * [Running application](#running-application)
+      * [Stopping application](#stopping-application)
+   * [Accessing the application](#accessing-the-application)
+
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). 
 
@@ -14,7 +28,7 @@ Endpoint | Purpose
 
 * bash
 * Docker (1.12) [install](https://docs.docker.com/engine/installation/)
-* docker-compose [install using containers](https://docs.docker.com/compose/install/#/install-as-a-container)
+* _docker-compose_ optional
 
 
 # Building
@@ -31,9 +45,10 @@ These will be pulled automatically from dockerhub.com.
 
 Docker image | Purpose
 --- | ---
-openjdk:8-jdk-alpine | base image for web services
-maven:3.3.9-jdk-8-alpine  | used to build web services
+openjdk:8-jdk-alpine | Base image for web services
+maven:3.3.9-jdk-8-alpine  | Used to build web services
 nginx:latest | API Gateway
+docker/compose:1.8.1 | Used to start/stop app
 
 # Structure
 
@@ -41,15 +56,25 @@ Docker containers are used to house the Nginx frontend proxy (API Gateway), the 
 
 ![Books Structure](https://github.com/hipposareevil/books/blob/master/structure.png)
 
-# Running application
+# Managing application
 
-The application is started with
-```
-> docker-compose up -d
-```
-# Stopping application
+The application is managed using docker-compose via a docker-compose.yml file. A convenience script is provided that runs docker-compose out of another container.
 
-The application is stopped with
+## Running application
+```
+> ./start.sh
+```
+or
+```
+> docker-compose -up -d
+```
+
+
+## Stopping application
+```
+> ./stop.sh
+```
+or
 ```
 > docker-compose down
 ```
