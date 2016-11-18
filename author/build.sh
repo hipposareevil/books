@@ -22,9 +22,15 @@ docker run --rm \
        maven:3.3.9-jdk-8-alpine \
        mvn -Dmaven.repo.local=/opt/.m2/ package
 
-###
-# create image for 'author'
-docker build "$ourDirectory" -t $imageName
 
-echo ""
-echo "Built $imageName"
+if [ $? -eq 0 ]; then
+    ###
+    # create image for 'author'
+    docker build "$ourDirectory" -t $imageName
+
+    echo ""
+    echo "Built $imageName"
+else
+    echo ""
+    echo "Unable to build project for $imageName"
+fi
