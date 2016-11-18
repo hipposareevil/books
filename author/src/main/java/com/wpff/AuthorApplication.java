@@ -25,6 +25,9 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
 
   /**
    * Start application
+   *
+   * @param args Args for application
+   * @throws Exception 
    */
   public static void main(final String[] args) throws Exception {
     new AuthorApplication().run(args);
