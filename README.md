@@ -1,3 +1,17 @@
+Table of Contents
+=================
+
+   * [Books](#books)
+      * [Endpoint(s)](#endpoints)
+   * [Prerequisites](#prerequisites)
+   * [Building](#building)
+      * [Docker images used](#docker-images-used)
+   * [Structure](#structure)
+   * [Managing application](#managing-application)
+      * [Running application](#running-application)
+      * [Stopping application](#stopping-application)
+   * [Accessing the application](#accessing-the-application)
+
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). 
 
