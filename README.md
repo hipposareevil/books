@@ -83,7 +83,7 @@ or
 
 The app will be running on [localhost:8080](http://localhost:8080). It takes a few seconds for the MySQL database to come up..
 
-Authors are listed via [localhost:8080/authors](http://localhost:8080/authors), while an individual author can be accessed via [localhost:8080/authors/2](http://localhost:8080/authors/2)
+Authors are listed via [localhost:8080/author](http://localhost:8080/author), while an individual author can be accessed via [localhost:8080/author/2](http://localhost:8080/author/2)
 
 
 
