@@ -20,6 +20,7 @@ The following REST endpoints will be exposed wherever this application is run on
 
 Endpoint | Purpose
 --- | ---
+/swagger/ | [Swagger](http://swagger.io) documentation describing the REST apis
 /author | Manage authors in database
 /titles | **tbd** Manage titles/books in database
 /query | **tbd** Microservice to query google|amazon for books and authors
@@ -27,7 +28,7 @@ Endpoint | Purpose
 # Prerequisites
 
 * bash
-* Docker (1.12) [install](https://docs.docker.com/engine/installation/)
+* Docker (1.12) [install here](https://docs.docker.com/engine/installation/)
 * _docker-compose_ optional
 
 
@@ -45,10 +46,12 @@ These will be pulled automatically from dockerhub.com.
 
 Docker image | Purpose
 --- | ---
-openjdk:8-jdk-alpine | Base image for web services
-maven:3.3.9-jdk-8-alpine  | Used to build web services
-nginx:latest | API Gateway
 docker/compose:1.8.1 | Used to start/stop app
+hipposareevil/swagger-combine | To expose swagger documentation
+maven:3.3.9-jdk-8-alpine  | Used to build web services
+mysql:latest | Mysql database
+nginx:latest | API Gateway
+openjdk:8-jdk-alpine | Base image for web services
 
 # Structure
 
@@ -69,7 +72,6 @@ or
 > docker-compose -up -d
 ```
 
-
 ## Stopping application
 ```
 > ./stop.sh
@@ -84,6 +86,8 @@ or
 The app will be running on [localhost:8080](http://localhost:8080). It takes a few seconds for the MySQL database to come up..
 
 Authors are listed via [localhost:8080/author](http://localhost:8080/author), while an individual author can be accessed via [localhost:8080/author/2](http://localhost:8080/author/2)
+
+Swagger description is at [localhost:8080/swagger/](http://localhost:8080/swagger/).
 
 
 
