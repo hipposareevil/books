@@ -2,6 +2,19 @@ version: '2'
 
 services:
 
+   swagger:
+    container_name: swagger
+    image: hipposareevil/swagger-combine
+    restart: always
+    logging:
+      driver: "json-file"
+    expose:
+      - 8080
+    networks:
+      - booknet
+    environment:
+      - COMBINE_URLS=author:8080/swagger.yaml
+
    books.db:
     container_name: booksdb
     image: mysql:latest
@@ -25,8 +38,6 @@ services:
      build: ./author
      expose:
        - 8080
-     ports:
-       - 9999:8080
      restart: always
      logging:
        driver: "json-file"
