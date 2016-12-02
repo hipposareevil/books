@@ -32,3 +32,4 @@ swagger:
   resourcePackage: com.wpff.resources
   title: Author Web Service
   description: List and add authors via /author endpoint
+

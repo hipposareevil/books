@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# Note: taken from https://docs.docker.com/compose/install/
+#
 # Run docker-compose in a container
 #
 # This script will attempt to mirror the host paths by using volumes for the

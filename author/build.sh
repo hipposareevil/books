@@ -12,15 +12,17 @@ ourDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ###
 # build project via maven using a docker container
 # volumes:
-# CWD ==> /usr/src/mymaven   (source)
-# .m2 ==> /opt/.m2           (maven repo cache)
+# ourDirectory ==> /usr/src/mymaven   (source)
+# .m2          ==> /opt/.m2           (maven repo cache)
 docker run --rm \
        -it \
        -v "$ourDirectory":/usr/src/mymaven \
        -v "$ourDirectory"/.m2:/opt/.m2 \
        -w /usr/src/mymaven \
        maven:3.3.9-jdk-8-alpine \
-       mvn -Dmaven.repo.local=/opt/.m2/ package
+       mvn \
+       -Dmaven.repo.local=/opt/.m2/ \
+       package
 
 
 if [ $? -eq 0 ]; then
