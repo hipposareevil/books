@@ -33,31 +33,44 @@ command="$@"
 elapsedTime=0
 # how long to wait on a curl connection
 waitTime=1
-# could we connect
-connected=0
 
+
+# could we connect. 
+# -1 mean valid connection but bad URL
+# 0 means no connection
+# 1 means valid connection and URL
+connected=0
 
 while [[ $elapsedTime -lt $timeout  && $connected -eq 0 ]]
 do
-    resultString=$(curl -X GET --connect-timeout $waitTime -sL $url -o /dev/null)
+    resultString=$(curl  -s -I -w %{http_code} --connect-timeout $waitTime -sL $url_to_check -o /dev/null)
     result=$?
+    # verify connection and result
     if [ $result -eq 0 ]; then
-	# connection is ok.
-	echo "$url is up."
-        connected=1
+        # connected to server. Let's verify the resource exists
+        if [ "$resultString" = "200" ] ; then
+            connected=1
+        else
+            connected=-1
+        fi
     else
-        # not up yet, sleep for a bit
+        # No connection to server, sleep for a bit
         sleep $waitTime
-        echo -n "."
         elapsedTime=$(($elapsedTime + $waitTime))
     fi
 done
 
 if [ $connected -eq 1 ]; then
+    # connect was valid
+    echo "$url_to_check is up."
     exec $command
-else    
-    # unable to connect
-    echo "Unable to connect to '$url' in $timeout seconds"
+elif [ $connected -eq -1 ]; then
+    # able to connect, but bad HTTP code
+    echo "Able to connect to $url_to_check, but got HTTP code $resultString"
+    exit 1
+elif [ $connected -eq 0 ]; then
+    # unable to connect to server
+    echo "Unable to connect to '$url_to_check' in $timeout seconds. Exiting."
     exit 1
 fi
 
