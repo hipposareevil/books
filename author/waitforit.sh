@@ -21,7 +21,7 @@ if [ $# -lt 3 ]; then
     exit 1
 fi
 
-url=$1
+url_to_check=$1
 timeout=$2
 shift
 shift
@@ -43,17 +43,35 @@ connected=0
 
 while [[ $elapsedTime -lt $timeout  && $connected -eq 0 ]]
 do
-    resultString=$(curl  -s -I -w %{http_code} --connect-timeout $waitTime -sL $url_to_check -o /dev/null)
-    result=$?
-    # verify connection and result
-    if [ $result -eq 0 ]; then
-        # connected to server. Let's verify the resource exists
-        if [ "$resultString" = "200" ] ; then
-            connected=1
-        else
-            connected=-1
+
+    # If url_to_check starts with http, then verify the full URL is accessible,
+    # otherwise, just do a GET
+    if [[ $url_to_check == http* ]]; then
+        # URL is HTTP
+        resultString=$(curl  -s -I -w %{http_code} --connect-timeout $waitTime -sL $url_to_check -o /dev/null)
+        result=$?
+
+        # verify connection and result
+        if [ $result -eq 0 ]; then
+            # connected to server. Let's verify the resource exists
+            if [ "$resultString" = "200" ] ; then
+                connected=1
+            else
+                connected=-1
+            fi
         fi
     else
+        # URL is non HTTP, do GET
+        resultString=$(curl -X GET --connect-timeout $waitTime -sL $url_to_check -o /dev/null)
+        result=$?
+
+        # verify connection and result
+        if [ $result -eq 0 ]; then
+            connected=1
+        fi
+    fi
+
+    if [ $connected -eq 0 ]; then
         # No connection to server, sleep for a bit
         sleep $waitTime
         elapsedTime=$(($elapsedTime + $waitTime))
