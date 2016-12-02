@@ -53,7 +53,7 @@ services:
      logging:
        driver: "json-file"
      depends_on:
-      - author.ws
+      - author
      networks:
       - booknet
 
