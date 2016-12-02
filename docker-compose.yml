@@ -15,7 +15,7 @@ services:
     environment:
       - COMBINE_URLS=author:8080/swagger.yaml
 
-   books.db:
+   booksdb:
     container_name: booksdb
     image: mysql:latest
     volumes:
@@ -32,7 +32,7 @@ services:
      - MYSQL_PASSWORD=books 
 
 
-   author.ws:
+   author:
      container_name: author
      image: wpff.books.author:latest
      build: ./author
@@ -44,7 +44,7 @@ services:
      networks:
        - booknet
   
-   nginx.frontend:
+   frontend:
      container_name: frontend
      image: wpff.books.nginx:latest
      ports:
