@@ -4,7 +4,7 @@
 # then build docker image
 
 # image we build
-imageName="wpff.books.author:latest"
+imageName="books.author:latest"
 
 # our real directory (so this can be called from outside directories)
 ourDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

@@ -3,7 +3,7 @@
 # Build nginx image
 
 # image we build
-imageName="wpff.books.nginx:latest"
+imageName="books.nginx:latest"
 
 # our real directory (so this can be called from outside directories)
 ourDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

@@ -34,7 +34,7 @@ services:
 
    author:
      container_name: author
-     image: wpff.books.author:latest
+     image: books.author:latest
      build: ./author
      expose:
        - 8080
@@ -46,7 +46,7 @@ services:
   
    frontend:
      container_name: frontend
-     image: wpff.books.nginx:latest
+     image: books.nginx:latest
      ports:
        - 8080:80 
      restart: always
