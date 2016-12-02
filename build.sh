@@ -22,3 +22,6 @@ do
     fi
     echo "  '$project' completed."
 done
+
+echo ""
+echo "'books' webservice built!" 
