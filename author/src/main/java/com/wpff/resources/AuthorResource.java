@@ -23,13 +23,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.*;
 
 
-@Api("/author")
+/**
+ * Resource for /author url. Manages authors.
+ */
+@Api( value="/author",
+      tags= "Author",
+      description="Manages authors")
 @Path("/author")
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthorResource {
@@ -40,6 +42,12 @@ public class AuthorResource {
     this.authorDAO = authorDAO;
   }
 
+  /**
+   * Return a single author, by id.
+   *
+   * @param authorId ID of author
+   * @return Author 
+   */
   @ApiOperation("Get author by ID")
   @GET
   @Path("/{id}")
@@ -48,10 +56,19 @@ public class AuthorResource {
     return findSafely(authorId.get());
   }
 
+  /**
+   * Get list authors.
+   *
+   * @param authorQuery Name of author, or partial name, that is used to
+   * match against the database.
+   * @return list of matching Author(s). When query is empty, this will be
+   * all author
+   */
   @ApiOperation("Get authors with optional 'name' query param.")
   @GET
   @UnitOfWork
-  public List<Author> getAuthor(@QueryParam("name") String authorQuery) {
+  public List<Author> getAuthor(
+    @ApiParam(value = "Name or partial name of author to retrieve.", required = false)@QueryParam("name") String authorQuery) {
     if (authorQuery != null) {
       return authorDAO.findByName(authorQuery);
     }
@@ -60,7 +77,12 @@ public class AuthorResource {
     }
   }
 
-
+  /**
+   * Create a new author in the DB.
+   *
+   * @param author Author to add
+   * @return newly created Author
+   */
   @ApiOperation(
     value = "Create Author",
     notes = "Create new Author",
@@ -87,6 +109,8 @@ public class AuthorResource {
   
   /**
    * Look for author by incoming id. If returned Author is null, throw 404.
+   *
+   * @param id ID of author to look for
    */
   private Author findSafely(int id) {
     return authorDAO.findById(id).orElseThrow(() -> new NotFoundException("No author by id " + id));

@@ -10,6 +10,9 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import java.util.Objects;
 
+import com.wordnik.swagger.annotations.*;
+
+
 @Entity
 @Table(name = "author")
 @NamedQueries(

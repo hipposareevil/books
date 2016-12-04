@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Build author project via maven
+# Build title project via maven
 # then build docker image
 
 # image we build
-imageName="books.author:latest"
+imageName="books.title:latest"
 
 # our real directory (so this can be called from outside directories)
 ourDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -27,7 +27,7 @@ docker run --rm \
 
 if [ $? -eq 0 ]; then
     ###
-    # create image for 'author'
+    # create image for 'title'
     docker build "$ourDirectory" -t $imageName
 
     echo ""

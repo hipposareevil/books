@@ -27,7 +27,7 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
    * Start application
    *
    * @param args Args for application
-   * @throws Exception 
+   * @throws Exception if error in application
    */
   public static void main(final String[] args) throws Exception {
     new AuthorApplication().run(args);
@@ -44,7 +44,7 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
 
   @Override
     public String getName() {
-    return "books";
+    return "author";
   }
 
   /**

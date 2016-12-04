@@ -13,7 +13,8 @@ services:
     networks:
       - booknet
     environment:
-      - COMBINE_URLS=author:8080/swagger.yaml
+    # combine_urls: comma separated list of URLs to gather yaml entries
+      - COMBINE_URLS=author:8080/swagger.yaml,title:8080/swagger.yaml,frontend:80/swagger.yaml
 
    booksdb:
     container_name: booksdb
@@ -43,7 +44,20 @@ services:
        driver: "json-file"
      networks:
        - booknet
+
+   title:
+     container_name: title
+     image: books.title:latest
+     build: ./title
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
   
+   # frontend gateway-api runs on port 80 internally
    frontend:
      container_name: frontend
      image: books.nginx:latest

@@ -22,7 +22,7 @@ Endpoint | Purpose
 --- | ---
 /swagger/ | [Swagger](http://swagger.io) documentation describing the REST apis
 /author | Manage authors in database
-/titles | **tbd** Manage titles/books in database
+/title | Manage titles/books in database
 /query | **tbd** Microservice to query google|amazon for books and authors
 
 # Prerequisites
@@ -38,6 +38,8 @@ There is 1 top level *build.sh* file that will build each container/micro-servic
 ```
 > ./build.sh
 ```
+
+The build uses a docker container to do the maven compliation. This leaves a *.m2* directory in the root directory, which is shared between all of the maven projects.
 
 
 ## Docker images used
