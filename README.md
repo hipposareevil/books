@@ -18,6 +18,13 @@ Table of Contents
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). 
 
+# tl;dr
+build: *bin/build.sh*
+run: *bin/start.sh*
+url: *[localhost](http://localhost:8080/swagger/)
+stop: *bin/stop.sh*
+
+
 # Endpoint(s)
 Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend database, and each of the microservices. All calls will be routed through the gateway and delegated to one of the microservices.
 
