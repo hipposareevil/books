@@ -2,7 +2,7 @@ Table of Contents
 =================
 
    * [Books](#books)
-   * [td;dr](#tl;dr)
+   * [tl;dr](#tl;dr)
    * [Endpoint(s)](#endpoints)
       * [author](#author)
       * [title](#title)
