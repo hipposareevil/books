@@ -2,11 +2,14 @@ Table of Contents
 =================
 
    * [Books](#books)
-      * [Endpoint(s)](#endpoints)
+   * [Endpoint(s)](#endpoints)
+      * [author](#author)
+      * [title](#title)
+      * [swagger](#swagger)
+      * [query](#query)
    * [Prerequisites](#prerequisites)
    * [Building](#building)
       * [Docker images used](#docker-images-used)
-   * [Structure](#structure)
    * [Managing application](#managing-application)
       * [Running application](#running-application)
       * [Stopping application](#stopping-application)
@@ -15,26 +18,45 @@ Table of Contents
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). 
 
-## Endpoint(s)
+# Endpoint(s)
+Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend database, and each of the microservices. All calls will be routed through the gateway and delegated to one of the microservices.
+
 The following REST endpoints will be exposed wherever this application is run on port 8080.
+
+![Books Structure](https://github.com/hipposareevil/books/blob/master/structure.png)
+
 
 Endpoint | Purpose
 --- | ---
-/swagger/ | [Swagger](http://swagger.io) documentation describing the REST apis
 /author | Manage authors in database
 /title | Manage titles/books in database
+/swagger/ | [swagger](http://swagger.io) documentation describing the REST apis
 /query | **tbd** Microservice to query google|amazon for books and authors
+
+## author
+REST microservice managing authors; list, query, add, *delete*.
+
+## title
+REST microservice managing book titles; list, query, add, *delete*.
+
+## swagger
+Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions. This waits for the various endpoints to come up and then grabs the designated (in docker-compose.yml) yaml files, combines them and then serves up the endpoint via swagger-ui.
+
+## query
+REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application.
+
+
 
 # Prerequisites
 
 * bash
 * Docker (1.12) [install here](https://docs.docker.com/engine/installation/)
-* _docker-compose_ optional
+* docker-compose _optional_
 
 
 # Building
 
-There is 1 top level *build.sh* file that will build each container/micro-service and mysql database.
+There is 1 top level *build.sh* file that will build each container/microservice and mysql database.
 ```
 > ./build.sh
 ```
@@ -55,11 +77,6 @@ mysql:latest | Mysql database
 nginx:latest | API Gateway
 openjdk:8-jdk-alpine | Base image for web services
 
-# Structure
-
-Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend database, and each of the microservices. All calls will be routed through Nginx and delegated to one of the microservices.
-
-![Books Structure](https://github.com/hipposareevil/books/blob/master/structure.png)
 
 # Managing application
 
