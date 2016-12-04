@@ -18,7 +18,7 @@ Table of Contents
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). 
 
-# tl;dr
+## tldr
 * build: *bin/build.sh*
 * run: *bin/start.sh*
 * url: *[http://localhost](http://localhost:8080/swagger/)*
