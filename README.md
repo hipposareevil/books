@@ -2,6 +2,7 @@ Table of Contents
 =================
 
    * [Books](#books)
+   * [td;dr](#tl;dr)
    * [Endpoint(s)](#endpoints)
       * [author](#author)
       * [title](#title)
@@ -18,7 +19,7 @@ Table of Contents
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). 
 
-## tldr
+# tl;dr
 * build: *bin/build.sh*
 * run: *bin/start.sh*
 * url: *[http://localhost](http://localhost:8080/swagger/)*
