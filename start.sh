@@ -14,5 +14,5 @@ fi
 $dc up -d
 
 echo ""
-echo "Running 'books' on localhost:8080. Try http://localhost:8080/author/2"
+echo "Running 'books' on localhost:8080. Try http://localhost:8080/swagger/"
 echo "Note: the app takes a few seconds to warm up while the DB initializes."
