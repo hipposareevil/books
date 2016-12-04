@@ -21,7 +21,7 @@ Set of webservices to support a book repository (like goodreads.com or libraryth
 # Endpoint(s)
 Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend database, and each of the microservices. All calls will be routed through the gateway and delegated to one of the microservices.
 
-![Books Structure](https://github.com/hipposareevil/books/blob/master/structure.png)
+![Books Structure](https://github.com/hipposareevil/books/blob/master/images/structure.png)
 
 The following REST endpoints will be exposed wherever this application is run on port 8080.
 
@@ -54,9 +54,9 @@ Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [s
 
 # Building
 
-There is 1 top level *build.sh* file that will build each container/microservice and mysql database.
+There is 1 top level *bin/build.sh* file that will build each container/microservice and mysql database.
 ```
-> ./build.sh
+> ./bin/build.sh
 ```
 
 The build uses a docker container to do the maven compliation. This leaves a *.m2* directory in the root directory, which is shared between all of the maven projects.
@@ -82,7 +82,7 @@ The application is managed using docker-compose via a docker-compose.yml file. A
 
 ## Running application
 ```
-> ./start.sh
+> ./bin/start.sh
 ```
 or
 ```
@@ -91,7 +91,7 @@ or
 
 ## Stopping application
 ```
-> ./stop.sh
+> ./bin/stop.sh
 ```
 or
 ```
