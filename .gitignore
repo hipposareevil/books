@@ -1,3 +1,7 @@
+.env
 *~
+build
 target
 .m2
+.gradle
+

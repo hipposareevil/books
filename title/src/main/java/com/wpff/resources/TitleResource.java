@@ -69,7 +69,7 @@ public class TitleResource {
    */
   @ApiOperation(value="Get titles with optional 'title' query param.",
                 response=Title.class,
-                notes="misc notes here"
+                notes="Query existing list of books."
                 )
   @GET
   @UnitOfWork

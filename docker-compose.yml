@@ -2,6 +2,20 @@ version: '2'
 
 services:
 
+   query:
+     container_name: query
+     image: books.query:latest
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
+     environment:
+       # GOOGLE_API_KEY must be set in .env file
+       - googleapikey=${GOOGLE_API_KEY}
+
    swagger:
     container_name: swagger
     image: hipposareevil/swagger-combine
@@ -14,7 +28,7 @@ services:
       - booknet
     environment:
     # combine_urls: comma separated list of URLs to gather yaml entries
-      - COMBINE_URLS=author:8080/swagger.yaml,title:8080/swagger.yaml,frontend:80/swagger.yaml
+      - COMBINE_URLS=author:8080/swagger.yaml,title:8080/swagger.yaml,query:8080/v2/api-docs,frontend:80/swagger.yaml
 
    booksdb:
     container_name: booksdb
@@ -36,7 +50,8 @@ services:
    author:
      container_name: author
      image: books.author:latest
-     build: ./author
+     ports:
+       - 9999:8080
      expose:
        - 8080
      restart: always
@@ -48,7 +63,6 @@ services:
    title:
      container_name: title
      image: books.title:latest
-     build: ./title
      expose:
        - 8080
      restart: always

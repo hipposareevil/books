@@ -2,8 +2,7 @@ FROM openjdk:8-jdk-alpine
 
 # setup env
 RUN alias ll='ls -la'
-RUN apk -U add --no-cache bash
-RUN apk -U add --no-cache curl
+RUN apk -U add --no-cache bash curl
 
 # put jar and wait script in /opt/docker
 RUN mkdir -p /opt/docker/

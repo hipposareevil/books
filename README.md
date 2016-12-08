@@ -2,7 +2,7 @@ Table of Contents
 =================
 
    * [Books](#books)
-   * [tl;dr](#tldr)
+   * [tldr](#tldr)
    * [Endpoint(s)](#endpoints)
       * [author](#author)
       * [title](#title)
@@ -11,19 +11,22 @@ Table of Contents
    * [Prerequisites](#prerequisites)
    * [Building](#building)
       * [Docker images used](#docker-images-used)
+      * [Frameworks used](#frameworks-used)
    * [Managing application](#managing-application)
       * [Running application](#running-application)
       * [Stopping application](#stopping-application)
+      * [Cleaning maven &amp; gradle cache](#cleaning-maven--gradle-cache)
    * [Accessing the application](#accessing-the-application)
 
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). 
 
 # tldr
-* build: *bin/build.sh*
-* run: *bin/start.sh*
+* build: *./books.sh build*
+* run: *./books.sh start*
 * url: *[http://localhost:8080/swagger/](http://localhost:8080/swagger/)*
-* stop: *bin/stop.sh*
+* stop: *./books.sh stop*
+* clean: *./books.sh clean*
 
 
 # Endpoint(s)
@@ -35,10 +38,11 @@ The following REST endpoints will be exposed wherever this application is run on
 
 Endpoint | Purpose
 --- | ---
-/author | Manage authors in database
-/title | Manage titles/books in database
-/swagger/ | [swagger](http://swagger.io) documentation describing the REST apis
-/query | **tbd** Microservice to query google|amazon for books and authors
+/author | Manage authors in database.
+/title | Manage titles/books in database.
+/query | Microservice to query google for books and authors.
+/swagger/ | [swagger](http://swagger.io) documentation describing the REST apis.
+
 
 ## author
 REST microservice managing authors; list, query, add, *delete*. Uses [dropwizard](http://www.dropwizard.io/) as the framework.
@@ -46,12 +50,13 @@ REST microservice managing authors; list, query, add, *delete*. Uses [dropwizard
 ## title
 REST microservice managing book titles; list, query, add, *delete*. Uses [dropwizard](http://www.dropwizard.io/) as the framework.
 
+## query
+REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application.
+This service requires a google api key. See [query](https://github.com/hipposareevil/books/blob/master/query/README.md) for more information. 
+When there is no google api key this endpoint will just return empty results.
+
 ## swagger
 Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions. This waits for the various endpoints to come up and then grabs the designated (in docker-compose.yml) yaml files, combines them and then serves up the endpoint via swagger-ui.
-
-## query
-*(TBD)* REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application. 
-
 
 # Prerequisites
 
@@ -62,12 +67,12 @@ Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [s
 
 # Building
 
-There is 1 top level *bin/build.sh* file that will build each container/microservice and mysql database.
+There is a top level script that builds, starts, and stops the application (and the corresponding microservices):
 ```
-> ./bin/build.sh
+> ./books.sh start
 ```
 
-The build uses a docker container to do the maven compliation. This leaves a *.m2* directory in the root directory, which is shared between all of the maven projects.
+Each microservice is built with either maven or gradle and uses a Docker container to do the complication. The containers use *.m2* and *.gradle* directories that cache the corresponding repositories.
 
 
 ## Docker images used
@@ -78,11 +83,16 @@ Docker image | Purpose
 --- | ---
 docker/compose:1.8.1 | Used to start/stop app
 hipposareevil/swagger-combine | To expose swagger documentation
+hipposareevil/alpine-gradle | Used to build web services
 maven:3.3.9-jdk-8-alpine  | Used to build web services
 mysql:latest | Mysql database
 nginx:latest | API Gateway
 openjdk:8-jdk-alpine | Base image for web services
 
+## Frameworks used
+
+* [dropwizard](http://www.dropwizard.io/)
+* [spring boot](https://projects.spring.io/spring-boot/)
 
 # Managing application
 
@@ -90,7 +100,7 @@ The application is managed using docker-compose via a docker-compose.yml file. A
 
 ## Running application
 ```
-> ./bin/start.sh
+> ./books.sh start
 ```
 or
 ```
@@ -99,20 +109,28 @@ or
 
 ## Stopping application
 ```
-> ./bin/stop.sh
+> ./books.sh stop
 ```
 or
 ```
 > docker-compose down
 ```
 
+## Cleaning maven & gradle cache
+```
+> ./books.sh clean
+```
+
+
 # Accessing the application
 
 The app will be running on [localhost:8080](http://localhost:8080). It takes a few seconds for the MySQL database to come up..
 
+Swagger API description is at [localhost:8080/swagger/](http://localhost:8080/swagger/).
+
 Authors are listed via [localhost:8080/author](http://localhost:8080/author), while an individual author can be accessed via [localhost:8080/author/2](http://localhost:8080/author/2)
 
-Swagger description is at [localhost:8080/swagger/](http://localhost:8080/swagger/).
+Book titles are listed via [localhost:8080/title](http://localhost:8080/title), while an individual title can be accessed via [localhost:8080/title/2](http://localhost:8080/title/2)
 
 
 
