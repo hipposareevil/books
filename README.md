@@ -53,7 +53,7 @@ REST microservice managing book titles; list, query, add, *delete*. Uses [dropwi
 ## query
 REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application.
 This service requires a google api key. See [query](https://github.com/hipposareevil/books/blob/master/query/README.md) for more information. 
-When there is no google api key this endpoint will just return empty results.
+When there is no google api key this endpoint will just return empty results.  Uses [spring boot](https://projects.spring.io/spring-boot/) as the framework.
 
 ## swagger
 Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions. This waits for the various endpoints to come up and then grabs the designated (in docker-compose.yml) yaml files, combines them and then serves up the endpoint via swagger-ui.
