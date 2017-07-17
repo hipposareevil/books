@@ -1,3 +1,27 @@
+Table of Contents
+=================
+
+  * [Books](#books)
+   * [tldr](#tldr)
+   * [Endpoint(s)](#endpoints)
+      * [author](#author)
+      * [title](#title)
+      * [query](#query)
+      * [swagger](#swagger)
+   * [Prerequisites](#prerequisites)
+   * [Building](#building)
+      * [Docker images used](#docker-images-used)
+      * [Frameworks used](#frameworks-used)
+   * [Customizing application deployment](#customizing-application-deployment)
+      * [Google API key](#google-api-key)
+      * [Docker image location](#docker-image-location)
+      * [Deployment Host name](#deployment-host-name)
+   * [Managing application](#managing-application)
+      * [Running application](#running-application)
+      * [Stopping application](#stopping-application)
+      * [Cleaning maven &amp; gradle cache](#cleaning-maven--gradle-cache)
+   * [Accessing the application](#accessing-the-application)
+
 
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). 
