@@ -7,6 +7,7 @@ Once you've obtained an API key, set it in a *.env* file next to the root docker
 ```
 GOOGLE_API_KEY=A...yourkeyhere
 ```
+This will set an environment variable *googleapikey* via docker-compose that then Spring injects into the controller.
 
 # Libraries used
 

@@ -28,11 +28,12 @@ public class BookQueryController {
 
 
  /**
-  * /query/title endpoint. Queries google for books
+  * /query/title endpoint.
+  * Queries google for books
   *
   * @param author Name (or partial) of author
   * @param title Book title (or partial)
-  * @return list of matching books
+  * @return list of matching Books
   */
   @ApiOperation(value = "/title", nickname = "query titles", notes="Query google for book titles")
   @ApiImplicitParams({
@@ -51,7 +52,8 @@ public class BookQueryController {
 
 
  /**
-  * /query/author endpoint. Queries google for author names
+  * /query/author endpoint. 
+  * Queries google for author names
   *
   * @param author Name (or partial) of author
   * @return list of matching author

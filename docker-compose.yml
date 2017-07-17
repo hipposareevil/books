@@ -4,7 +4,7 @@ services:
 
    query:
      container_name: query
-     image: books.query:latest
+     image: ${BOOK_REPOSITORY}books.query:latest
      expose:
        - 8080
      restart: always
@@ -15,6 +15,44 @@ services:
      environment:
        # GOOGLE_API_KEY must be set in .env file
        - googleapikey=${GOOGLE_API_KEY}
+
+   author:
+     container_name: author
+     image: ${BOOK_REPOSITORY}books.author:latest
+     ports:
+       - 9999:8080
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
+
+   title:
+     container_name: title
+     image: ${BOOK_REPOSITORY}books.title:latest
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
+  
+   # frontend gateway-api runs on port 80 internally
+   frontend:
+     container_name: frontend
+     image: ${BOOK_REPOSITORY}books.nginx:latest
+     ports:
+       - 8080:80 
+     restart: always
+     logging:
+       driver: "json-file"
+     depends_on:
+      - author
+     networks:
+      - booknet
 
    swagger:
     container_name: swagger
@@ -46,44 +84,6 @@ services:
      - MYSQL_USER=booksuser 
      - MYSQL_PASSWORD=books 
 
-
-   author:
-     container_name: author
-     image: books.author:latest
-     ports:
-       - 9999:8080
-     expose:
-       - 8080
-     restart: always
-     logging:
-       driver: "json-file"
-     networks:
-       - booknet
-
-   title:
-     container_name: title
-     image: books.title:latest
-     expose:
-       - 8080
-     restart: always
-     logging:
-       driver: "json-file"
-     networks:
-       - booknet
-  
-   # frontend gateway-api runs on port 80 internally
-   frontend:
-     container_name: frontend
-     image: books.nginx:latest
-     ports:
-       - 8080:80 
-     restart: always
-     logging:
-       driver: "json-file"
-     depends_on:
-      - author
-     networks:
-      - booknet
 
 
 networks:

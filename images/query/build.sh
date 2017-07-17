@@ -17,19 +17,15 @@ ourDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 docker run --rm \
        -it \
        -v "$ourDirectory":/work \
-       -v "$ourDirectory"/../.gradle:/GRADLE_CACHE \
+       -v "$ourDirectory"/../../.gradle:/GRADLE_CACHE \
        hipposareevil/alpine-gradle \
        build
 
 
 if [ $? -eq 0 ]; then
-    ###
-    # create image for 'query'
-    docker build "$ourDirectory" -t $imageName
-
-    echo ""
-    echo "Built $imageName"
+    $ourDirectory/buildImage.sh
 else
     echo ""
-    echo "Unable to build project for $imageName"
+    echo "Unable to build project for books.query"
+    exit 1
 fi

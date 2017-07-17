@@ -32,7 +32,7 @@ Set of webservices to support a book repository (like goodreads.com or libraryth
 # Endpoint(s)
 Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend database, and each of the microservices. All calls will be routed through the gateway and delegated to one of the microservices.
 
-![Books Structure](https://github.com/hipposareevil/books/blob/master/images/structure.png)
+![Books Structure](https://github.com/hipposareevil/books/blob/master/diagrams/structure.png)
 
 The following REST endpoints will be exposed wherever this application is run on port 8080.
 
