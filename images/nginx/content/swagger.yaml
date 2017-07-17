@@ -1,4 +1,3 @@
 swagger: '2.0'
-info: {description: Webservice to manage books, authors and related tags. , title: Book Web Service}
-host: localhost:8080
-
+info: {description: "Webservice to manage books, authors and related tags.", title: Book Web Service}
+host: {{DEPLOY_HOST_NAME}}{{^DEPLOY_HOST_NAME}}localhost{{/DEPLOY_HOST_NAME}}:8080
