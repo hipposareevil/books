@@ -4,6 +4,6 @@ build
 target
 .m2
 .gradle
-
+dependency-reduced-pom.xml
 /.metadata/
 /.recommenders/
