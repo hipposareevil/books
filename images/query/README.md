@@ -9,6 +9,12 @@ GOOGLE_API_KEY=A...yourkeyhere
 ```
 This will set an environment variable *googleapikey* via docker-compose that then Spring injects into the controller.
 
+# Spring Boot application
+The application listens on port 8080
+
+# Docker 
+The Docker container will expose port 8080 
+
 # Libraries used
 
 * [spring boot](https://projects.spring.io/spring-boot/) for REST framework.

@@ -1,3 +1,4 @@
+# Basic nginx image with specific config and content
 FROM nginx
 COPY conf /etc/nginx
 
