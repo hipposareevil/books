@@ -17,7 +17,7 @@ ourDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 docker run --rm \
        -it \
        -v "$ourDirectory":/usr/src/mymaven \
-       -v "$ourDirectory"/../.m2:/opt/.m2 \
+       -v "$ourDirectory"/../../.m2:/opt/.m2 \
        -w /usr/src/mymaven \
        maven:3.3.9-jdk-8-alpine \
        mvn \
@@ -35,4 +35,5 @@ if [ $? -eq 0 ]; then
 else
     echo ""
     echo "Unable to build project for $imageName"
+    exit 1
 fi

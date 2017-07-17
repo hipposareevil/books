@@ -4,7 +4,7 @@ services:
 
    query:
      container_name: query
-     image: books.query:latest
+     image: ${BOOK_REPOSITORY}books.query:latest
      expose:
        - 8080
      restart: always
@@ -16,6 +16,46 @@ services:
        # GOOGLE_API_KEY must be set in .env file
        - googleapikey=${GOOGLE_API_KEY}
 
+   author:
+     container_name: author
+     image: ${BOOK_REPOSITORY}books.author:latest
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
+
+   title:
+     container_name: title
+     image: ${BOOK_REPOSITORY}books.title:latest
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
+  
+   # frontend gateway-api runs on port 80 internally
+   # It also exposes a swagger.yaml file for the 'swagger' container below.
+   frontend:
+     container_name: frontend
+     image: ${BOOK_REPOSITORY}books.nginx:latest
+     ports:
+       - 8080:80 
+     restart: always
+     logging:
+       driver: "json-file"
+     depends_on:
+      - author
+     networks:
+      - booknet
+
+
+   # Swagger-UI running on port 8080 that is a single UI showing all of the
+   # microservices' swagger information.
    swagger:
     container_name: swagger
     image: hipposareevil/swagger-combine
@@ -27,8 +67,13 @@ services:
     networks:
       - booknet
     environment:
-    # combine_urls: comma separated list of URLs to gather yaml entries
+    # DEPLOY_HOST_NAME: Name of host where this is going to be deployed.
+    # COMBINE_URLS: comma separated list of URLs to gather yaml entries
+    # Later yaml files will override previous yaml entries.
+    # For example, frontend:80/swagger.yaml contains 'info' which will override any existing 'info' entries.
       - COMBINE_URLS=author:8080/swagger.yaml,title:8080/swagger.yaml,query:8080/v2/api-docs,frontend:80/swagger.yaml
+      - DEPLOY_HOST_NAME=${DEPLOY_HOST_NAME}
+
 
    booksdb:
     container_name: booksdb
@@ -46,44 +91,6 @@ services:
      - MYSQL_USER=booksuser 
      - MYSQL_PASSWORD=books 
 
-
-   author:
-     container_name: author
-     image: books.author:latest
-     ports:
-       - 9999:8080
-     expose:
-       - 8080
-     restart: always
-     logging:
-       driver: "json-file"
-     networks:
-       - booknet
-
-   title:
-     container_name: title
-     image: books.title:latest
-     expose:
-       - 8080
-     restart: always
-     logging:
-       driver: "json-file"
-     networks:
-       - booknet
-  
-   # frontend gateway-api runs on port 80 internally
-   frontend:
-     container_name: frontend
-     image: books.nginx:latest
-     ports:
-       - 8080:80 
-     restart: always
-     logging:
-       driver: "json-file"
-     depends_on:
-      - author
-     networks:
-      - booknet
 
 
 networks:

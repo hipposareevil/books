@@ -5,3 +5,5 @@ target
 .m2
 .gradle
 
+/.metadata/
+/.recommenders/
