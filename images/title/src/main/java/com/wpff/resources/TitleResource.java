@@ -6,6 +6,8 @@ import java.util.*;
  
 import com.wpff.core.Title;
 import com.wpff.db.TitleDAO;
+import com.wpff.filter.TokenRequired;
+
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
 
@@ -52,11 +54,18 @@ public class TitleResource {
    * @param titleId ID of title
    * @return Title
    */
-  @ApiOperation("Get title by ID")
+  @ApiOperation(
+    value="Get title by ID.",
+    notes="Get title information. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+                )
   @GET
   @Path("/{id}")
   @UnitOfWork
-  public Title getTitle(@PathParam("id") IntParam titleId) {
+  @TokenRequired
+  public Title getTitle(
+    @ApiParam(value = "ID of title to retrieve.", required = false)
+    @PathParam("id") IntParam titleId
+                        ) {
     return findSafely(titleId.get());
   }
 
@@ -69,14 +78,17 @@ public class TitleResource {
    * @return list of matching Titles. When titleQuery is empty, this will be
    * all book titles
    */
-  @ApiOperation(value="Get titles with optional 'title' query param.",
+  @ApiOperation(value="Get titles via optional 'title' query param.",
                 response=Title.class,
-                notes="Query existing list of books."
+                notes="Returns list of books. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
   @UnitOfWork
+  @TokenRequired
   public List<Title> getTitle(
-    @ApiParam(value = "Title or partial title of book to retrieve.", required = false) @QueryParam("title") String titleQuery) {
+    @ApiParam(value = "Title or partial title of book to retrieve.", required = false)
+    @QueryParam("title") String titleQuery
+                              ) {
     if (titleQuery != null) {
       return titleDAO.findByName(titleQuery);
     }
@@ -93,14 +105,17 @@ public class TitleResource {
    * @return newly created Title
    */
   @ApiOperation(
-    value = "Create Title",
-    notes = "Create new Title",
+    value = "Create new book.",
+    notes = "Creates new book. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
     response = Title.class
                 )
   @POST
   @UnitOfWork(transactional = false)
   @ApiResponse(code = 409, message = "Duplicate value")
-  public Title createTitle(Title title) {
+  public Title createTitle(
+    @ApiParam(value = "Book title information.", required = true)
+    Title title
+                           ) {
     try {
     return titleDAO.create(title);
     }
@@ -116,6 +131,12 @@ public class TitleResource {
   }
 
   
+
+  /************************************************************************/
+  /** Helper methods **/
+  /************************************************************************/
+
+
   /**
    * Look for title by incoming id. If returned Title is null, throw 404.
    *

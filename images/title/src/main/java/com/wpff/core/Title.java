@@ -54,6 +54,16 @@ public class Title {
     this.id = id;
   }
 
+
+  public int getAuthorId() {
+    return author_id;
+  }
+
+  public void setAuthorId(int id) {
+    this.author_id = id;
+  }
+
+
   public String getTitle() {
     return title;
   }
