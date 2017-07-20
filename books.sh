@@ -104,12 +104,11 @@ build() {
             exit 1
         fi
 
-
         echo "  '$project' completed."
     done
 
     echo ""
-    echo "'books' webservice built!" 
+    echo "All webservices built!" 
 }
 
 

@@ -1,5 +1,5 @@
 database:
- # the name of your JDBC driver
+  # Using mysql
   driverClass: com.mysql.jdbc.Driver
 
   # the username
@@ -15,7 +15,7 @@ database:
   maxWaitForConnection: 1s
 
   # the SQL query to run when validating a connection's liveness
-  validationQuery: "/* MyApplication Health Check */ SELECT 1"
+  validationQuery: "SELECT 1"
 
   # the minimum number of connections to keep open
   minSize: 8
@@ -26,10 +26,28 @@ database:
   # whether or not idle connections should be validated
   checkConnectionWhileIdle: false
 
+
+redis:
+  # The redis server's address
+  endpoint: token_db:6379
+  # Auth password for redis server connection.  (default: null)
+  password: null
+  # The minimum number of idle connections to maintain in the pool.  (default: 0)
+  minIdle: 0
+  # The maximum number of idle connections allowed in the pool.  (default: 0)
+  maxIdle: 0
+  # The maximum number of connections allowed in the pool.  (default: 1024)
+  maxTotal: 1924
+  # Enables SSL connection. (default: false)
+  ssl: false
+  # The configured timeout (in milliseconds) for redis connections in the connection pool.  (default: 2000)
+  timeout: 2000
+
+
 # the only required property is resourcePackage, for more config options see below
 # resourcePackage is comma delimited list of packages
 swagger:
   resourcePackage: com.wpff.resources
-  title: Title Web Service
-  description: List and add book titles via /title endpoint
+  title: Authorization Web Service
+  description: Authorize users for the REST web services.
 

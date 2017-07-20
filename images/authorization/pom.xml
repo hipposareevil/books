@@ -10,17 +10,17 @@
     </prerequisites>
 
     <groupId>com.wpff</groupId>
-    <artifactId>author</artifactId>
+    <artifactId>auth</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <name>author</name>
+    <name>auth</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <dropwizard.version>1.1.1</dropwizard.version>
-        <mainClass>com.wpff.AuthorApplication</mainClass>
+        <mainClass>com.wpff.AuthApplication</mainClass>
     </properties>
 
     <dependencyManagement>
@@ -36,10 +36,45 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+          <version>1.9.3</version>
+        </dependency>
+        
+        <!-- For hibernate -->
+        <dependency>
+          <groupId>io.dropwizard</groupId>
+          <artifactId>dropwizard-hibernate</artifactId>
+        </dependency>
+
+        <!-- database -->
+        <dependency>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+          <version>5.1.6</version>
+        </dependency>
+
+
+        <!-- For encrypting/decrypting user passwords -->
+        <dependency>
+          <groupId>org.jasypt</groupId>
+          <artifactId>jasypt</artifactId>
+          <version>1.9.2</version>
+          <scope>compile</scope>
+        </dependency>
+
+
+       <!-- redis for session token data -->
+        <dependency>
+          <groupId>com.bendb.dropwizard</groupId>
+          <artifactId>dropwizard-redis</artifactId>
+          <version>1.0.0-2</version>
         </dependency>
 
         <!-- swagger for REST description -->
@@ -49,24 +84,6 @@
           <version>1.0.0-1</version>
         </dependency>
 
-        <!-- For hibernate -->
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-hibernate</artifactId>
-        </dependency>
-
-        <!-- For db migration -->
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-migrations</artifactId>
-        </dependency>
-
-        <!-- mysql database -->
-        <dependency>
-          <groupId>mysql</groupId>
-          <artifactId>mysql-connector-java</artifactId>
-          <version>5.1.6</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -147,26 +164,23 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.4</version>
-                <configuration>
-                    <reportPlugins>
-                        <plugin>
-                            <artifactId>maven-project-info-reports-plugin</artifactId>
-                            <version>2.4</version>
-                            <configuration>
-                                <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-                                <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-                            </configuration>
-                        </plugin>
-                        <plugin>
-                            <artifactId>maven-javadoc-plugin</artifactId>
-                            <version>2.10.3</version>
-                        </plugin>
-                    </reportPlugins>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.8.1</version>
+                <configuration>
+                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                    <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

@@ -10,7 +10,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import java.util.Objects;
 
-import com.wordnik.swagger.annotations.*;
+// Swagger
+import io.swagger.annotations.*;
 
 
 @Entity
