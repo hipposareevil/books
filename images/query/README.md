@@ -1,8 +1,10 @@
 # Intro
 
-**Query** is microservice for querying the [google books api](https://developers.google.com/books/docs/v1/getting_started). It is necessary to obtain a [google api key](https://support.google.com/cloud/answer/6158862) before using this endpoint.
+**Query** is microservice for querying the [google books api](https://developers.google.com/books/docs/v1/getting_started).
 
-# Set google api key for application
+It is necessary to obtain a [google api key](https://support.google.com/cloud/answer/6158862) before using this endpoint.
+
+# Set Google API key for application
 Once you've obtained an API key, set it in a *.env* file next to the root docker-compose.yml with the format:
 ```
 GOOGLE_API_KEY=A...yourkeyhere

@@ -35,7 +35,7 @@ import io.swagger.annotations.ResponseHeader;
  * Resource for the /title url. Manages book titles.
  */
 @Api( value="/title",
-      tags="Title")
+      tags="title")
 @Path("/title")
 @Produces(MediaType.APPLICATION_JSON)
 public class TitleResource {

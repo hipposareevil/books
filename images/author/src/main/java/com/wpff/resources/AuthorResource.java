@@ -35,7 +35,7 @@ import io.swagger.annotations.ResponseHeader;
  * Resource for /author url. Manages authors.
  */
 @Api( value="/author",
-      tags= "Author",
+      tags= "author",
       description="Manages authors")
 @Path("/author")
 @Produces(MediaType.APPLICATION_JSON)

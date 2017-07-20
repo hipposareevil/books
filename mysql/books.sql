@@ -1,6 +1,28 @@
+DROP TABLE IF EXISTS `user`;
+
+
+CREATE TABLE `user` (
+  `name` varchar(255) NOT NULL,
+  `id`  int(11) NOT NULL AUTO_INCREMENT,
+  `data` varchar(2048) DEFAULT NULL,
+  `password` varchar(2048) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+LOCK TABLES `user` WRITE;
+
+-- Insert initial admin/admin user
+
+INSERT INTO `user` VALUES ('admin', 1, '', 'ZEiRIzMMip7aN7nRSbLZLRaCUzIjIWwc');
+
+UNLOCK TABLES;
+
+
+
 --
 -- Table structure for table `author`
 --
+
 
 DROP TABLE IF EXISTS `author`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

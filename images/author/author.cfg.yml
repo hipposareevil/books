@@ -9,7 +9,7 @@ database:
   password: books
 
   # the JDBC URL
-  url: jdbc:mysql://booksdb:3306/booksdatabase
+  url: jdbc:mysql://books_db:3306/booksdatabase
 
   # the maximum amount of time to wait on an empty pool before throwing an exception
   maxWaitForConnection: 1s
