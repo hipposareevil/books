@@ -25,12 +25,16 @@ import io.swagger.annotations.*;
     }
 )
 public class Author {
+//  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id", unique=true, nullable = false)
   private int id;
 
   @Column(name = "name", unique=true, nullable = false)
   private String name;
+
+  @Column(name = "image_url", unique=false, nullable = false)
+  private String imageUrl;
 
   public Author() {
   }
@@ -55,6 +59,14 @@ public class Author {
     this.name = name;
   }
 
+  public String getImageUrl() {
+    return imageUrl;
+  }
+
+  public void setImageUrl(String url) {
+    this.imageUrl = url;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -67,11 +79,12 @@ public class Author {
     final Author that = (Author) o;
 
     return Objects.equals(this.id, that.id) &&
+        Objects.equals(this.imageUrl, that.imageUrl) &&
         Objects.equals(this.name, that.name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name);
+    return Objects.hash(id, name, imageUrl);
   }
 }

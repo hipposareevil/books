@@ -9,21 +9,44 @@ import io.dropwizard.db.DataSourceFactory;
 
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Map;
 
+// Jedis
+import com.bendb.dropwizard.redis.JedisFactory;
+
+
 
 /**
- * Configuration for book titles
+ * Configuration for the 'title' application.
+ * The values will be injected via the title.cfg.yml file.
  */ 
 public class TitleConfiguration extends Configuration {
 
+  /////////////////////////
+  // SWAGGER
   @JsonProperty("swagger")
   public SwaggerBundleConfiguration swaggerBundleConfiguration;
 
+
+  /////////////////////////
+  //  REDIS
+  @NotNull
+  @JsonProperty
+  private JedisFactory redis;
+  
+  public JedisFactory getJedisFactory() {
+    return redis;
+  }
+  
+  public void setJedisFactory(JedisFactory jedisFactory) {
+    this.redis = jedisFactory;
+  }
+
+  /////////////////////////
+  // DATABASE
   @Valid
   @NotNull
   private DataSourceFactory database = new DataSourceFactory();

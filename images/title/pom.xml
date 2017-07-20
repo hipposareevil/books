@@ -62,6 +62,24 @@
             <artifactId>dropwizard-migrations</artifactId>
         </dependency>
 
+
+        <!-- For encrypting/decrypting user passwords -->
+        <dependency>
+          <groupId>org.jasypt</groupId>
+          <artifactId>jasypt</artifactId>
+          <version>1.9.2</version>
+          <scope>compile</scope>
+        </dependency>
+
+
+       <!-- redis for session token data -->
+        <dependency>
+          <groupId>com.bendb.dropwizard</groupId>
+          <artifactId>dropwizard-redis</artifactId>
+          <version>1.0.0-2</version>
+        </dependency>
+
+
         <!-- database -->
         <dependency>
           <groupId>mysql</groupId>

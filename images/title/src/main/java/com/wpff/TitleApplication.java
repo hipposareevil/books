@@ -1,9 +1,7 @@
 package com.wpff;
 
-import com.wpff.db.TitleDAO;
-import com.wpff.core.Title;
-import com.wpff.resources.TitleResource;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -16,8 +14,19 @@ import io.dropwizard.db.DataSourceFactory;
 
 import io.federecio.dropwizard.swagger.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.ws.rs.container.DynamicFeature;
+
+// Jedis
+import com.bendb.dropwizard.redis.JedisBundle;
+import com.bendb.dropwizard.redis.JedisFactory;
+import redis.clients.jedis.Jedis;
+
+
+// Resources
+import com.wpff.db.TitleDAO;
+import com.wpff.core.Title;
+import com.wpff.resources.TitleResource;
+import com.wpff.filter.TokenRequiredFeature;
 
 /**
  * Application to serve the title web service
@@ -60,6 +69,15 @@ public class TitleApplication extends Application<TitleConfiguration> {
     // Hibernate
     bootstrap.addBundle(hibernateBundle);
 
+    // Jedis for Redis
+    bootstrap.addBundle(new JedisBundle<TitleConfiguration>() {
+        @Override
+        public JedisFactory getJedisFactory(TitleConfiguration configuration) {
+          return configuration.getJedisFactory();
+        }
+      });
+
+
     // configuration
     bootstrap.addBundle(new MigrationsBundle<TitleConfiguration>() {
         @Override
@@ -83,9 +101,18 @@ public class TitleApplication extends Application<TitleConfiguration> {
   @Override
     public void run(final TitleConfiguration configuration,
                     final Environment environment) {
+    // Set up Jedis. Currently JedisFactory doesn't inject into a filter, just Resources.
+    // TODO: look at Guice.
+    Jedis jedis = configuration.getJedisFactory().build(environment).getResource();
+
     // title rest endpoint
     final TitleDAO dao = new TitleDAO(hibernateBundle.getSessionFactory());
     environment.jersey().register(new TitleResource(dao));
+
+    // Add a container request filter for securing webservice endpoints.
+    DynamicFeature tokenRequired =new TokenRequiredFeature(jedis) ;
+    environment.jersey().register(tokenRequired);
+
   }
 
 }

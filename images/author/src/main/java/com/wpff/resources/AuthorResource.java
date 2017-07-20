@@ -6,6 +6,8 @@ import java.util.*;
  
 import com.wpff.core.Author;
 import com.wpff.db.AuthorDAO;
+import com.wpff.filter.TokenRequired;
+
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
 
@@ -53,11 +55,18 @@ public class AuthorResource {
    * @param authorId ID of author
    * @return Author 
    */
-  @ApiOperation("Get author by ID")
+  @ApiOperation(
+    value="Get author by ID.",
+    notes="Get author information. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+                )
   @GET
   @Path("/{id}")
   @UnitOfWork
-  public Author getAuthor(@PathParam("id") IntParam authorId) {
+  @TokenRequired
+  public Author getAuthor(
+    @ApiParam(value = "ID of author to retrieve.", required = false)
+    @PathParam("id") IntParam authorId
+                          ) {
     return findSafely(authorId.get());
   }
 
@@ -69,11 +78,17 @@ public class AuthorResource {
    * @return list of matching Author(s). When query is empty, this will be
    * all author
    */
-  @ApiOperation("Get authors with optional 'name' query param.")
+  @ApiOperation(
+    value="Get authors via optional 'name' query param.",
+    notes="Returns list of authors. When 'name' is specified only matching authors are returned. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."    
+                )
   @GET
   @UnitOfWork
+  @TokenRequired
   public List<Author> getAuthor(
-    @ApiParam(value = "Name or partial name of author to retrieve.", required = false)@QueryParam("name") String authorQuery) {
+    @ApiParam(value = "Name or partial name of author to retrieve.", required = false)
+    @QueryParam("name") String authorQuery
+                                ) {
     if (authorQuery != null) {
       return authorDAO.findByName(authorQuery);
     }
@@ -89,16 +104,22 @@ public class AuthorResource {
    * @return newly created Author
    */
   @ApiOperation(
-    value = "Create Author",
-    notes = "Create new Author",
+    value="Create author.",
+    notes="Create new author in the database. The 'id' field will be ignored. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
     response = Author.class
                 )
   @POST
-  @UnitOfWork(transactional = false)
+  @UnitOfWork
   @ApiResponse(code = 409, message = "Duplicate value")
-  public Author createAuthor(Author author) {
+  public Author createAuthor(
+    @ApiParam(value = "Author information.", required = false)
+    Author author
+                             ) {
     try {
-    return authorDAO.create(author);
+      author.setId(0);
+      System.out.println("Creating new author: " + author);
+      System.out.println("Creating new author: " + author.getName());
+      return authorDAO.create(author);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -111,6 +132,9 @@ public class AuthorResource {
     }
   }
 
+  /************************************************************************/
+  /** Helper methods **/
+  /************************************************************************/
   
   /**
    * Look for author by incoming id. If returned Author is null, throw 404.

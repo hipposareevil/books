@@ -9,18 +9,43 @@ import io.dropwizard.db.DataSourceFactory;
 
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Map;
 
+// Jedis
+import com.bendb.dropwizard.redis.JedisFactory;
+
+
+/**
+ * Configuration for the 'author' application.
+ * The values will be injected via the author.cfg.yml file.
+ */
 
 public class AuthorConfiguration extends Configuration {
 
+  /////////////////////////
+  // SWAGGER
   @JsonProperty("swagger")
   public SwaggerBundleConfiguration swaggerBundleConfiguration;
 
+  /////////////////////////
+  //  REDIS
+  @NotNull
+  @JsonProperty
+  private JedisFactory redis;
+  
+  public JedisFactory getJedisFactory() {
+    return redis;
+  }
+  
+  public void setJedisFactory(JedisFactory jedisFactory) {
+    this.redis = jedisFactory;
+  }
+
+  /////////////////////////
+  // DATABASE
   @Valid
   @NotNull
   private DataSourceFactory database = new DataSourceFactory();
