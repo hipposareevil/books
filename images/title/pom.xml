@@ -19,7 +19,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <dropwizard.version>0.9.1</dropwizard.version>
+        <dropwizard.version>1.1.1</dropwizard.version>
         <mainClass>com.wpff.TitleApplication</mainClass>
     </properties>
 
@@ -36,23 +36,33 @@
     </dependencyManagement>
 
     <dependencies>
-      <dependency>
-        <groupId>io.federecio</groupId>
-        <artifactId>dropwizard-swagger</artifactId>
-        <version>0.7.0</version>
-      </dependency>
+
+        <!-- swagger for REST description -->
+        <dependency>
+          <groupId>com.smoketurner</groupId>
+          <artifactId>dropwizard-swagger</artifactId>
+          <version>1.0.0-1</version>
+        </dependency>
+
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
         </dependency>
+
+
+        <!-- hibernate -->
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-hibernate</artifactId>
         </dependency>
+
+        <!-- DB migration -->
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-migrations</artifactId>
         </dependency>
+
+        <!-- database -->
         <dependency>
           <groupId>mysql</groupId>
           <artifactId>mysql-connector-java</artifactId>
