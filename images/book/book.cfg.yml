@@ -48,6 +48,6 @@ redis:
 # resourcePackage is comma delimited list of packages
 swagger:
   resourcePackage: com.wpff.resources
-  title: Title Web Service
-  description: List and add book titles via /title endpoint
+  title: Book Web Service
+  description: List, add and manage books via /book endpoint
 

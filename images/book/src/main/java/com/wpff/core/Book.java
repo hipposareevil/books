@@ -11,19 +11,19 @@ import javax.persistence.Table;
 import java.util.Objects;
 
 /***
- * Represents a book title in the databsae
+ * Represents a book.
  */
 @Entity
-@Table(name = "title")
+@Table(name = "book")
 @NamedQueries(
     {
         @NamedQuery(
-          name = "com.wpff.core.Title.findAll",
-            query = "SELECT t FROM Title t"
+          name = "com.wpff.core.Book.findAll",
+            query = "SELECT b FROM Book b"
         )
     }
 )
-public class Title {
+public class Book {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
@@ -37,10 +37,10 @@ public class Title {
   @Column(name = "year", nullable=false)
   private int year;
 
-  public Title() {
+  public Book() {
   }
 
-  public Title(String title, int year, int author_id) {
+  public Book(String title, int year, int author_id) {
     this.title = title;
     this.year = year;
     this.author_id = author_id;
@@ -86,11 +86,11 @@ public class Title {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Title)) {
+    if (!(o instanceof Book)) {
       return false;
     }
 
-    final Title that = (Title) o;
+    final Book that = (Book) o;
 
     return Objects.equals(this.id, that.id) &&
         Objects.equals(this.title, that.title);

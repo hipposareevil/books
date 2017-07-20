@@ -47,14 +47,14 @@ import io.swagger.annotations.ResponseHeader;
 
 
 /**
- * Resource at /auth that authenticates and de-authenticates a user.
+ * Resource at /authorize that authenticates/authorizes and de-authenticates a user.
  *
  * Successful authentication will create and store a token associated with
  * the user, which is then used later via the TokenFilter to authenticate
  * Resource calls (like GET /user/bob)
  */
-@Api("/auth")
-@Path("/auth")
+@Api("/authorize")
+@Path("/authorize")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {

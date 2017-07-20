@@ -23,18 +23,18 @@ import redis.clients.jedis.Jedis;
 
 
 // Resources
-import com.wpff.db.TitleDAO;
-import com.wpff.core.Title;
-import com.wpff.resources.TitleResource;
+import com.wpff.db.BookDAO;
+import com.wpff.core.Book;
+import com.wpff.resources.BookResource;
 import com.wpff.filter.TokenRequiredFeature;
 
 /**
- * Application to serve the title web service
+ * Application to serve the book web service
  *
  */
-public class TitleApplication extends Application<TitleConfiguration> {
+public class BookApplication extends Application<BookConfiguration> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TitleApplication.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BookApplication.class);
 
   /**
    * Start application
@@ -43,71 +43,71 @@ public class TitleApplication extends Application<TitleConfiguration> {
    * @throws Exception thrown if error in application
    */
   public static void main(final String[] args) throws Exception {
-    new TitleApplication().run(args);
+    new BookApplication().run(args);
   }
 
   // Create hibernate bundle
-  private final HibernateBundle<TitleConfiguration> hibernateBundle =
-      new HibernateBundle<TitleConfiguration>(Title.class) {
+  private final HibernateBundle<BookConfiguration> hibernateBundle =
+      new HibernateBundle<BookConfiguration>(Book.class) {
     @Override
-    public DataSourceFactory getDataSourceFactory(TitleConfiguration configuration) {
+    public DataSourceFactory getDataSourceFactory(BookConfiguration configuration) {
       return configuration.getDataSourceFactory();
     }
   };
 
   @Override
     public String getName() {
-    return "title";
+    return "book";
   }
 
   /**
    * Initialize the application with configurations
    */
   @Override
-    public void initialize(final Bootstrap<TitleConfiguration> bootstrap) {
+    public void initialize(final Bootstrap<BookConfiguration> bootstrap) {
 
     // Hibernate
     bootstrap.addBundle(hibernateBundle);
 
     // Jedis for Redis
-    bootstrap.addBundle(new JedisBundle<TitleConfiguration>() {
+    bootstrap.addBundle(new JedisBundle<BookConfiguration>() {
         @Override
-        public JedisFactory getJedisFactory(TitleConfiguration configuration) {
+        public JedisFactory getJedisFactory(BookConfiguration configuration) {
           return configuration.getJedisFactory();
         }
       });
 
 
     // configuration
-    bootstrap.addBundle(new MigrationsBundle<TitleConfiguration>() {
+    bootstrap.addBundle(new MigrationsBundle<BookConfiguration>() {
         @Override
-        public DataSourceFactory getDataSourceFactory(TitleConfiguration configuration) {
+        public DataSourceFactory getDataSourceFactory(BookConfiguration configuration) {
           return configuration.getDataSourceFactory();
         }
       });    
 
     // Swagger
-    bootstrap.addBundle(new SwaggerBundle<TitleConfiguration>() {
+    bootstrap.addBundle(new SwaggerBundle<BookConfiguration>() {
         @Override
-        protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(TitleConfiguration configuration) {
+        protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(BookConfiguration configuration) {
           return configuration.swaggerBundleConfiguration;
         }
       });
   }
 
   /**
-   * Start the jersey endpoint for /title
+   * Start the jersey endpoint for /book
    */
   @Override
-    public void run(final TitleConfiguration configuration,
+    public void run(final BookConfiguration configuration,
                     final Environment environment) {
     // Set up Jedis. Currently JedisFactory doesn't inject into a filter, just Resources.
     // TODO: look at Guice.
     Jedis jedis = configuration.getJedisFactory().build(environment).getResource();
 
-    // title rest endpoint
-    final TitleDAO dao = new TitleDAO(hibernateBundle.getSessionFactory());
-    environment.jersey().register(new TitleResource(dao));
+    // book rest endpoint
+    final BookDAO dao = new BookDAO(hibernateBundle.getSessionFactory());
+    environment.jersey().register(new BookResource(dao));
 
     // Add a container request filter for securing webservice endpoints.
     DynamicFeature tokenRequired =new TokenRequiredFeature(jedis) ;

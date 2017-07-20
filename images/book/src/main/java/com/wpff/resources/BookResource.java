@@ -4,8 +4,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
  
-import com.wpff.core.Title;
-import com.wpff.db.TitleDAO;
+import com.wpff.core.Book;
+import com.wpff.db.BookDAO;
 import com.wpff.filter.TokenRequired;
 
 import io.dropwizard.hibernate.UnitOfWork;
@@ -34,90 +34,89 @@ import io.swagger.annotations.ResponseHeader;
 
 
 /**
- * Resource for the /title url. Manages book titles.
+ * Resource for the /book url. Manages books.
  */
-@Api( value="/title",
-      tags="title")
-@Path("/title")
+@Api( value="/book",
+      tags="book")
+@Path("/book")
 @Produces(MediaType.APPLICATION_JSON)
-public class TitleResource {
+public class BookResource {
 
-  private final TitleDAO titleDAO;
+  private final BookDAO bookDAO;
 
-  public TitleResource(TitleDAO titleDAO) {
-    this.titleDAO = titleDAO;
+  public BookResource(BookDAO bookDAO) {
+    this.bookDAO = bookDAO;
   }
 
   /**
-   * Get a single book title, by id.
+   * Get a single book, by id.
    *
-   * @param titleId ID of title
-   * @return Title
+   * @param bookId ID of book
+   * @return Book
    */
   @ApiOperation(
-    value="Get title by ID.",
-    notes="Get title information. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+    value="Get book by ID.",
+    notes="Get book information. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
   @Path("/{id}")
   @UnitOfWork
   @TokenRequired
-  public Title getTitle(
-    @ApiParam(value = "ID of title to retrieve.", required = false)
-    @PathParam("id") IntParam titleId
+  public Book getBook(
+    @ApiParam(value = "ID of book to retrieve.", required = false)
+    @PathParam("id") IntParam bookId
                         ) {
-    return findSafely(titleId.get());
+    return findSafely(bookId.get());
   }
 
 
   /**
-   * Get list of book titles.
+   * Get list of books.
    *
-   * @param titleQuery Name of title, or partial name, that is used to
-   * match against the database.
-   * @return list of matching Titles. When titleQuery is empty, this will be
+   * @param titleQuery Name of book, or partial name, that is used to match against the database.
+   * @return List of matching Books. When titleQuery is empty, this will be
    * all book titles
    */
-  @ApiOperation(value="Get titles via optional 'title' query param.",
-                response=Title.class,
+  @ApiOperation(value="Get books via optional 'title' query param.",
+                response=Book.class,
                 notes="Returns list of books. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
   @UnitOfWork
   @TokenRequired
-  public List<Title> getTitle(
-    @ApiParam(value = "Title or partial title of book to retrieve.", required = false)
+  public List<Book> getBook(
+    @ApiParam(value = "Book or partial title of book to retrieve.", required = false)
     @QueryParam("title") String titleQuery
                               ) {
     if (titleQuery != null) {
-      return titleDAO.findByName(titleQuery);
+      return bookDAO.findByName(titleQuery);
     }
     else {
-      return titleDAO.findAll();
+      return bookDAO.findAll();
     }
   }
 
 
   /**
-   * Create a new (book) title
+   * Create a new book
    *
-   * @param title Book Title
-   * @return newly created Title
+   * @param newBook Book data
+   * @return newly created Book
    */
   @ApiOperation(
     value = "Create new book.",
     notes = "Creates new book. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
-    response = Title.class
+    response = Book.class
                 )
   @POST
   @UnitOfWork(transactional = false)
   @ApiResponse(code = 409, message = "Duplicate value")
-  public Title createTitle(
-    @ApiParam(value = "Book title information.", required = true)
-    Title title
+  public Book createBook(
+    @ApiParam(value = "Book information.", required = true)
+    Book newBook
                            ) {
     try {
-    return titleDAO.create(title);
+    return bookDAO.create(newBook);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -138,12 +137,12 @@ public class TitleResource {
 
 
   /**
-   * Look for title by incoming id. If returned Title is null, throw 404.
+   * Look for book by incoming id. If returned Book is null, throw 404.
    *
    * @param id ID of book to look for
    */
-  private Title findSafely(int id) {
-    return titleDAO.findById(id).orElseThrow(() -> new NotFoundException("No title by id " + id));
+  private Book findSafely(int id) {
+    return bookDAO.findById(id).orElseThrow(() -> new NotFoundException("No book by id " + id));
   }
   
 }

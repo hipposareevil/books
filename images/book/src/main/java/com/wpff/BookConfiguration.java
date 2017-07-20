@@ -20,10 +20,10 @@ import com.bendb.dropwizard.redis.JedisFactory;
 
 
 /**
- * Configuration for the 'title' application.
- * The values will be injected via the title.cfg.yml file.
+ * Configuration for the 'book' application.
+ * The values will be injected via the book.cfg.yml file.
  */ 
-public class TitleConfiguration extends Configuration {
+public class BookConfiguration extends Configuration {
 
   /////////////////////////
   // SWAGGER

@@ -7,9 +7,9 @@ RUN apk -U add --no-cache bash curl
 # put jar and wait script in /opt/docker
 RUN mkdir -p /opt/docker/
 
-COPY target/title-1.0.jar /opt/docker/
-COPY title.cfg.yml /opt/docker/
+COPY target/book-1.0.jar /opt/docker/
+COPY book.cfg.yml /opt/docker/
 COPY waitforit.sh /opt/docker/
 
 # wait for the DB at url books_db:3306 for 240 seconds
-ENTRYPOINT ["/opt/docker/waitforit.sh", "books_db:3306", "240",   "java -jar /opt/docker/title-1.0.jar server /opt/docker/title.cfg.yml"]
+ENTRYPOINT ["/opt/docker/waitforit.sh", "books_db:3306", "240",   "java -jar /opt/docker/book-1.0.jar server /opt/docker/book.cfg.yml"]
