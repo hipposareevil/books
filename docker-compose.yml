@@ -41,6 +41,18 @@ services:
      networks:
        - booknet
 
+   # Manage users
+   user:
+     container_name: user
+     image: ${BOOK_REPOSITORY}books.user:latest
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
+
    # Manage authorizations
    authorize:
      container_name: authorize
@@ -117,7 +129,7 @@ services:
     # COMBINE_URLS: comma separated list of URLs to gather yaml entries
     # Later yaml files will override previous yaml entries.
     # For example, frontend:80/swagger.yaml contains 'info' which will override any existing 'info' entries.
-      - COMBINE_URLS=author:8080/swagger.yaml,authorize:8080/swagger.yaml,book:8080/swagger.yaml,query:8080/v2/api-docs,frontend:80/swagger.yaml
+      - COMBINE_URLS=author:8080/swagger.yaml,user:8080/swagger.yaml,authorize:8080/swagger.yaml,book:8080/swagger.yaml,query:8080/v2/api-docs,frontend:80/swagger.yaml
       - DEPLOY_HOST_NAME=${DEPLOY_HOST_NAME}
 
 

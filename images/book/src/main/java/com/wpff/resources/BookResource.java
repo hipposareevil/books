@@ -19,6 +19,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -36,8 +37,7 @@ import io.swagger.annotations.ResponseHeader;
 /**
  * Resource for the /book url. Manages books.
  */
-@Api( value="/book",
-      tags="book")
+@Api("/book")
 @Path("/book")
 @Produces(MediaType.APPLICATION_JSON)
 public class BookResource {
@@ -64,7 +64,9 @@ public class BookResource {
   @TokenRequired
   public Book getBook(
     @ApiParam(value = "ID of book to retrieve.", required = false)
-    @PathParam("id") IntParam bookId
+    @PathParam("id") IntParam bookId,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
                         ) {
     return findSafely(bookId.get());
   }
@@ -86,8 +88,10 @@ public class BookResource {
   @TokenRequired
   public List<Book> getBook(
     @ApiParam(value = "Book or partial title of book to retrieve.", required = false)
-    @QueryParam("title") String titleQuery
-                              ) {
+    @QueryParam("title") String titleQuery,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+                            ) {
     if (titleQuery != null) {
       return bookDAO.findByName(titleQuery);
     }
@@ -113,7 +117,9 @@ public class BookResource {
   @ApiResponse(code = 409, message = "Duplicate value")
   public Book createBook(
     @ApiParam(value = "Book information.", required = true)
-    Book newBook
+    Book newBook,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
                            ) {
     try {
     return bookDAO.create(newBook);
