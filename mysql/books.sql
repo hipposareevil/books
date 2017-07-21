@@ -50,13 +50,13 @@ UNLOCK TABLES;
  
 
 --
--- Table structure for table `title`
+-- Table structure for table `book`
 --
 
-DROP TABLE IF EXISTS `title`;
+DROP TABLE IF EXISTS `book`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `title` (
+CREATE TABLE `book` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `author_id` int(11) NOT NULL DEFAULT '0',
   `isbn` char(50) DEFAULT NULL,
@@ -74,11 +74,11 @@ CREATE TABLE `title` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `title`
+-- Dumping data for table `book`
 --
 
-LOCK TABLES `title` WRITE;
-/*!40000 ALTER TABLE `title` DISABLE KEYS */;
-INSERT INTO `title` VALUES (1,6,'0380973634','1997.','Neverwhere','1.jpg',1,NULL,3,1,5,NULL),(2,6,'1886778388','2002.','Adventures in the dream trade','2.jpg',1,NULL,3,1,3,NULL),(15,4,'034530196X','1982.','Juxtaposition','15.jpg',1,NULL,3,1,5,NULL),(4,6,'0380973650','2001.','American gods : a novel','4.jpg',1,NULL,3,1,5,NULL),(5,6,'006051518X','2005.','Anansi boys','5.jpg',1,NULL,3,NULL,0,NULL),(14,4,'0962371211','1990.','Hard sell','14.jpg',1,NULL,2,1,3,NULL);
-/*!40000 ALTER TABLE `title` ENABLE KEYS */;
+LOCK TABLES `book` WRITE;
+/*!40000 ALTER TABLE `book` DISABLE KEYS */;
+INSERT INTO `book` VALUES (1,6,'0380973634','1997.','Neverwhere','1.jpg',1,NULL,3,1,5,NULL),(2,6,'1886778388','2002.','Adventures in the dream trade','2.jpg',1,NULL,3,1,3,NULL),(15,4,'034530196X','1982.','Juxtaposition','15.jpg',1,NULL,3,1,5,NULL),(4,6,'0380973650','2001.','American gods : a novel','4.jpg',1,NULL,3,1,5,NULL),(5,6,'006051518X','2005.','Anansi boys','5.jpg',1,NULL,3,NULL,0,NULL),(14,4,'0962371211','1990.','Hard sell','14.jpg',1,NULL,2,1,3,NULL);
+/*!40000 ALTER TABLE `book` ENABLE KEYS */;
 UNLOCK TABLES;

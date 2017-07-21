@@ -1,29 +1,26 @@
 package com.wpff;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-import org.hibernate.validator.constraints.NotEmpty;
-
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 
-import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.validator.constraints.*;
 
+import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.Map;
+
+// Swagger
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
 // Jedis
 import com.bendb.dropwizard.redis.JedisFactory;
 
-
-
 /**
- * Configuration for the 'title' application.
- * The values will be injected via the title.cfg.yml file.
- */ 
-public class TitleConfiguration extends Configuration {
+ * Configuration for the 'user' application.
+ * The values will be injected via the user.cfg.yml file.
+ */
+public class UserConfiguration extends Configuration {
 
   /////////////////////////
   // SWAGGER

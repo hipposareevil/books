@@ -10,17 +10,17 @@
     </prerequisites>
 
     <groupId>com.wpff</groupId>
-    <artifactId>title</artifactId>
+    <artifactId>user</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <name>title</name>
+    <name>user</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <dropwizard.version>1.1.1</dropwizard.version>
-        <mainClass>com.wpff.TitleApplication</mainClass>
+        <mainClass>com.wpff.UserApplication</mainClass>
     </properties>
 
     <dependencyManagement>
@@ -36,30 +36,28 @@
     </dependencyManagement>
 
     <dependencies>
-
-        <!-- swagger for REST description -->
-        <dependency>
-          <groupId>com.smoketurner</groupId>
-          <artifactId>dropwizard-swagger</artifactId>
-          <version>1.0.0-1</version>
-        </dependency>
-
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
         </dependency>
 
-
-        <!-- hibernate -->
         <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-hibernate</artifactId>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+          <version>1.9.3</version>
+        </dependency>
+        
+        <!-- For hibernate -->
+        <dependency>
+          <groupId>io.dropwizard</groupId>
+          <artifactId>dropwizard-hibernate</artifactId>
         </dependency>
 
-        <!-- DB migration -->
+        <!-- database -->
         <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-migrations</artifactId>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+          <version>5.1.6</version>
         </dependency>
 
 
@@ -79,13 +77,13 @@
           <version>1.0.0-2</version>
         </dependency>
 
-
-        <!-- database -->
+        <!-- swagger for REST description -->
         <dependency>
-          <groupId>mysql</groupId>
-          <artifactId>mysql-connector-java</artifactId>
-          <version>5.1.6</version>
+          <groupId>com.smoketurner</groupId>
+          <artifactId>dropwizard-swagger</artifactId>
+          <version>1.0.0-1</version>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -166,26 +164,23 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.4</version>
-                <configuration>
-                    <reportPlugins>
-                        <plugin>
-                            <artifactId>maven-project-info-reports-plugin</artifactId>
-                            <version>2.4</version>
-                            <configuration>
-                                <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-                                <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-                            </configuration>
-                        </plugin>
-                        <plugin>
-                            <artifactId>maven-javadoc-plugin</artifactId>
-                            <version>2.10.3</version>
-                        </plugin>
-                    </reportPlugins>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.8.1</version>
+                <configuration>
+                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                    <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

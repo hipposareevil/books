@@ -13,6 +13,7 @@ import io.dropwizard.jersey.params.IntParam;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.NotFoundException;
@@ -65,7 +66,9 @@ public class AuthorResource {
   @TokenRequired
   public Author getAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = false)
-    @PathParam("id") IntParam authorId
+    @PathParam("id") IntParam authorId,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
                           ) {
     return findSafely(authorId.get());
   }
@@ -87,7 +90,9 @@ public class AuthorResource {
   @TokenRequired
   public List<Author> getAuthor(
     @ApiParam(value = "Name or partial name of author to retrieve.", required = false)
-    @QueryParam("name") String authorQuery
+    @QueryParam("name") String authorQuery,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
                                 ) {
     if (authorQuery != null) {
       return authorDAO.findByName(authorQuery);
