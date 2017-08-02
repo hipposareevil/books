@@ -1,13 +1,17 @@
 Table of Contents
 =================
-
-  * [Books](#books)
+   * [Books](#books)
    * [tldr](#tldr)
-   * [Endpoint(s)](#endpoints)
+   * [Endpoints](#endpoints)
       * [author](#author)
-      * [title](#title)
+      * [book](#book)
       * [query](#query)
+      * [user](#user)
+      * [authorize](#authorize)
       * [swagger](#swagger)
+   * [Databases](#databases)
+      * [MySQL](#mysql)
+      * [Redis](#redis)
    * [Prerequisites](#prerequisites)
    * [Building](#building)
       * [Docker images used](#docker-images-used)
@@ -22,9 +26,8 @@ Table of Contents
       * [Cleaning maven &amp; gradle cache](#cleaning-maven--gradle-cache)
    * [Accessing the application](#accessing-the-application)
 
-
 # Books
-Set of webservices to support a book repository (like goodreads.com or librarything.com). 
+Set of webservices to support a book repository (like goodreads.com or librarything.com).  Includes authorization to protect endpoitns.
 
 # tldr
 * build: *./books.sh build*
@@ -34,8 +37,8 @@ Set of webservices to support a book repository (like goodreads.com or libraryth
 * clean: *./books.sh clean*
 
 
-# Endpoint(s)
-Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend database, and each of the microservices. All calls will be routed through the frontend proxy (API gateway) and delegated to one of the microservices. 
+# Endpoints
+Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend databases, and each of the microservices. All calls will be routed through the frontend proxy (API gateway) and delegated to one of the microservices. 
 
 ![Books Structure](https://github.com/hipposareevil/books/blob/master/diagrams/structure.png)
 
@@ -43,25 +46,42 @@ The following REST endpoints will be exposed wherever this application is run on
 
 Endpoint | Purpose
 --- | ---
+
 /author | Manage authors in database.
-/title | Manage titles/books in database.
-/query | Microservice to query google for books and authors.
+/book | Manage books in database.
+/query | Microservice to query google for book titles and authors.
+/user | Manage users.
+/authorize | Authorize access to endpoints.
 /swagger/ | [swagger](http://swagger.io) documentation describing the REST apis.
 
-
 ## author
-REST microservice managing authors; list, query, add, *delete*. Built with the [dropwizard](http://www.dropwizard.io/) framework.
+REST microservice managing authors; list, query, add, delete. Built with the [dropwizard](http://www.dropwizard.io/) framework.
 
-## title
-REST microservice managing book titles; list, query, add, *delete*. Built with the [dropwizard](http://www.dropwizard.io/) framework.
+## book
+REST microservice managing books; list, query, add, delete. Built with the [dropwizard](http://www.dropwizard.io/) framework.
 
 ## query
 REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application.
 This service requires a google api key. See [query](https://github.com/hipposareevil/books/blob/master/query/README.md) for more information. 
 When there is no google api key, this endpoint will just return empty results.  Built with the [spring boot](https://projects.spring.io/spring-boot/) framework.
 
+## user
+REST microservice managing users. A user is necessary to access the other services (except /query). Once a user exists, an authorization token must be created via the /authorize endpoint.
+
+## authorize
+REST microservice to authenticate a user. Creates a token of the form 'Bearer qwerty-1234-asdf-9876'. Token should be put in the HTTP Headers with key 'AUTHORIZATION'. See the /swagger/ endpoint for more information.
+
 ## swagger
 Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions. This waits for the various endpoints to come up and then grabs the designated (in docker-compose.yml) yaml files, combines them and then serves up the endpoint via swagger-ui.
+
+# Databases
+There are two databases used to manage the books and users.
+
+## MySQL
+[MySQL](https://www.mysql.com/) is used to store books, authors, users and users lists.
+
+## Redis
+[Redis](https://redis.io/) is used to store and manage authorization tokens. The various services utilize redis to authorize a caller for an operation.
 
 # Prerequisites
 
@@ -90,6 +110,7 @@ hipposareevil/swagger-combine | To combine and expose swagger documentation from
 hipposareevil/alpine-gradle | Used to build web services; *query*.
 maven:3.3.9-jdk-8-alpine  | Used to build web services; author, title.
 mysql:latest | MySQL database.
+redis:3.0-alpine | Redis K/V database.
 nginx:latest | Frontend API Gateway.
 openjdk:8-jdk-alpine | Base image for web services. 
 
@@ -104,7 +125,6 @@ Docker compose utilizes an *.env* file where environment variables can be locate
 
 ## Google API key
 The [query microservice](/images/query/) uses the google API service and requires a key. This should be put into the .env file.
-
 
 ## Docker image location
 This defaults to using the local Docker repository, not a private registry. If you want to tag and push images to a private repository (or dockerhub), you can run the docker compose with the environment variable *BOOK_REPOSITORY*.
