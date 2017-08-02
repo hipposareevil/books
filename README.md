@@ -46,7 +46,6 @@ The following REST endpoints will be exposed wherever this application is run on
 
 Endpoint | Purpose
 --- | ---
-
 /author | Manage authors in database.
 /book | Manage books in database.
 /query | Microservice to query google for book titles and authors.
