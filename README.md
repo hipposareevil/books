@@ -38,7 +38,7 @@ Set of webservices to support a book repository (like goodreads.com or libraryth
 
 
 # Endpoints
-Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend databases, and each of the microservices. All calls will be routed through the frontend proxy (API gateway) and delegated to one of the microservices. 
+Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend databases, and each of the microservices. All calls will be routed through gateay and delegated to one of the microservices. 
 
 ![Books Structure](https://github.com/hipposareevil/books/blob/master/diagrams/structure.png)
 
@@ -61,17 +61,23 @@ REST microservice managing books; list, query, add, delete. Built with the [drop
 
 ## query
 REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application.
-This service requires a google api key. See [query](https://github.com/hipposareevil/books/blob/master/query/README.md) for more information. 
+This service requires a google api key. 
+
+See [images/query](https://github.com/hipposareevil/images/books/blob/master/query/README.md) for more information. 
 When there is no google api key, this endpoint will just return empty results.  Built with the [spring boot](https://projects.spring.io/spring-boot/) framework.
 
 ## user
 REST microservice managing users. A user is necessary to access the other services (except /query). Once a user exists, an authorization token must be created via the /authorize endpoint.
 
 ## authorize
-REST microservice to authenticate a user. Creates a token of the form 'Bearer qwerty-1234-asdf-9876'. Token should be put in the HTTP Headers with key 'AUTHORIZATION'. See the /swagger/ endpoint for more information.
+REST microservice to authenticate a user. Creates a token of the form 'Bearer qwerty-1234-asdf-9876'.
+
+Token should be put in the HTTP Headers with key 'AUTHORIZATION'. See the /swagger/ endpoint for more information.
 
 ## swagger
-Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions. This waits for the various endpoints to come up and then grabs the designated (in docker-compose.yml) yaml files, combines them and then serves up the endpoint via swagger-ui.
+Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions.
+
+This waits for the various endpoints to come up and then grabs the designated (in docker-compose.yml) yaml files, combines them and then serves up the endpoint via swagger-ui.
 
 # Databases
 There are two databases used to manage the books and users.
@@ -85,7 +91,7 @@ There are two databases used to manage the books and users.
 # Prerequisites
 
 * bash
-* Docker (1.12) [install here](https://docs.docker.com/engine/installation/)
+* Docker (1.12) ([install here](https://docs.docker.com/engine/installation/))
 * docker-compose _optional_
 
 
@@ -180,7 +186,9 @@ Swagger API description is at [localhost:8080/swagger/](http://localhost:8080/sw
 
 Authors are listed via [localhost:8080/author](http://localhost:8080/author), while an individual author can be accessed via [localhost:8080/author/2](http://localhost:8080/author/2)
 
-Book titles are listed via [localhost:8080/title](http://localhost:8080/title), while an individual title can be accessed via [localhost:8080/title/2](http://localhost:8080/title/2)
+Book titles are listed via [localhost:8080/book](http://localhost:8080/book), while an individual title can be accessed via [localhost:8080/title/2](http://localhost:8080/title/2)
+
+Users are listed via [localhost:8080/user](http://localhost:8080/user).
 
 The query micro-service is at [localhost:8080/query](http://localhost:8080/query). 
 

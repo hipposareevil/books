@@ -41,6 +41,16 @@ public class BookDAO extends AbstractDAO<Book> {
   }
 
   /**
+   * Delete book from database.
+   *
+   * @param book to delete
+   */
+  public void delete(Book book) {
+    currentSession().delete(book);
+  }
+
+
+  /**
    * Find all matching Books in the database. Takes a SQL LIKE syntax,
    * e.g. 'never' would return 'Neverwhere'
    *

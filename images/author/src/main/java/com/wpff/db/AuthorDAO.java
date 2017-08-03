@@ -40,6 +40,18 @@ public class AuthorDAO extends AbstractDAO<Author> {
     return persist(author);
   }
 
+
+  /**
+   * Delete Author from database.
+   *
+   * @param author to delete
+   */
+  public void delete(Author author) {
+    currentSession().delete(author);
+  }
+
+
+
   /**
    * Find all matching Authors in the database. Takes a SQL LIKE syntax,
    * e.g. 'tolk' would return 'J.R.R. Tolkien'

@@ -16,6 +16,7 @@ import javax.validation.Validator;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,6 +26,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
+
 
 // Swagger
 import io.swagger.annotations.Api;
@@ -73,6 +77,48 @@ public class AuthorResource {
     return findSafely(authorId.get());
   }
 
+
+  /**
+   * Deletes a author by ID
+   *
+   * @param authorId ID of author
+   * @param context security context (INJECTED via TokenFilter)
+   * @return Response denoting if the operation was successful (202) or failed (404)
+   */
+  @ApiOperation(
+    value="Delete author by ID.",
+    notes="Delete author from database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+                )
+  @DELETE
+  @Path("/{id}")
+  @UnitOfWork
+  @TokenRequired
+  public Response deleteAuthor(
+    @ApiParam(value = "ID of author to retrieve.", required = true)
+    @PathParam("id") IntParam authorId,
+    @Context SecurityContext context,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+                        ) {
+    try {
+      // Verify context's name is admin.
+      String userNameFromSecurity = context.getUserPrincipal().getName();
+      if (userNameFromSecurity.equals("admin")) {
+        // Is OK to remove book
+        authorDAO.delete(findSafely(authorId.get()));
+      }
+      else {
+        throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
+      }
+    }
+    catch (org.hibernate.HibernateException he) {
+      throw new NotFoundException("No author by id '" + authorId + "'");
+    }
+    return Response.ok().build();
+  }
+
+
+
   /**
    * Get list authors.
    *
@@ -101,6 +147,8 @@ public class AuthorResource {
       return authorDAO.findAll();
     }
   }
+
+
 
   /**
    * Create a new author in the DB.
