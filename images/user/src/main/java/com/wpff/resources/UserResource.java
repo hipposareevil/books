@@ -108,6 +108,7 @@ public class UserResource {
     // Start
     verifyAdminUser(context);
 
+    System.out.println("Getting user by ID>" + userId.get() + "<");
     return findSafely(userId.get());
   }
 
@@ -173,13 +174,11 @@ public class UserResource {
     @HeaderParam(value="Authorization") String authDummy
                          ) {
     // Check if user already exists
-    try {
-      User tempUser = findSafely(user.getName());
-      if (tempUser != null) {
-        throw new WebApplicationException("User '" + user.getName() + "' already exists.", Response.Status.CONFLICT);
-      }
-    }
-    catch(NotFoundException notFound) {
+
+    // findByName looks for exact
+    List<User> existing = userDAO.findByName(user.getName());
+    if (! existing.isEmpty() ) {
+      throw new WebApplicationException("User '" + user.getName() + "' already exists.", Response.Status.CONFLICT);
     }
 
     // No existing user, go ahead and create
@@ -227,9 +226,16 @@ public class UserResource {
 
       // Update properties in user
       try {
+        // Set the encrypted password as 'userBean' has its password already encrypted
+        // via the 'setPassword' method on User.
+        // So this sets the already encrypted version, otherwise it will be
+        // encrypted again and we lose the original password.
         BeanUtils.copyProperty(userInDatabase,
-                               "password",
+                               "encryptedPassword",
                                userBean.getPassword());
+        BeanUtils.copyProperty(userInDatabase,
+                               "name",
+                               userBean.getName());
         BeanUtils.copyProperty(userInDatabase,
                                "data",
                                userBean.getData());
@@ -298,16 +304,10 @@ public class UserResource {
   ****************************************************************/
 
   /**
-   * Look for User by incoming name. If returned User is null, throw Not Found (404).
-   */
-  private User findSafely(String name) {
-    return this.userDAO.findByName(name).orElseThrow(() -> new NotFoundException("No user by name '" + name + "'"));
-  }
-
-  /**
    * Look for User by incoming id. If returned User is null, throw Not Found (404).
    */
   private User findSafely(int id) {
+    System.out.println("find safely by id: " + id + " :");
     return this.userDAO.findById(id).orElseThrow(() -> new NotFoundException("No user by id '" + id + "'"));
   }
 

@@ -29,6 +29,20 @@ public class BookDAO extends AbstractDAO<Book> {
     return Optional.ofNullable(get(id));
   }
 
+  /**
+   * Find all matching Books in the database. Takes a SQL LIKE syntax,
+   * e.g. 'never' would return 'Neverwhere'
+   *
+   * @param titleName Title of book, or partial name of title.
+   * @return List of Books. May be empty
+   */
+  public List<Book> findByName(String titleName) {
+    return currentSession()
+        .createCriteria(Book.class)
+        .add(Restrictions.like("title", "%"+ titleName +"%"))
+        .list();
+  }
+
 
   /**
    * Persists a new Book into the backing DB.
@@ -49,20 +63,6 @@ public class BookDAO extends AbstractDAO<Book> {
     currentSession().delete(book);
   }
 
-
-  /**
-   * Find all matching Books in the database. Takes a SQL LIKE syntax,
-   * e.g. 'never' would return 'Neverwhere'
-   *
-   * @param titleName Title of book, or partial name of title.
-   * @return List of Books. May be empty
-   */
-  public List<Book> findByName(String titleName) {
-    return currentSession()
-        .createCriteria(Book.class)
-        .add(Restrictions.like("title", "%"+ titleName +"%"))
-        .list();
-  }
 
   /**
    * Find all books in the database.

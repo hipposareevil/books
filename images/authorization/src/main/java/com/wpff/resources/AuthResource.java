@@ -134,6 +134,7 @@ public class AuthResource {
     }
     else {
       // bad password
+      System.out.println("AuthResource.authenticate: invalid password for '" + userToAuthenticate + "'");
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
   }

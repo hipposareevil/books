@@ -29,11 +29,18 @@ import io.swagger.annotations.ApiModelProperty;
  * User class
  */
 public class User {
+  /**
+   * Users ID.
+   */ 
+  @Id
+  @Column(name = "id", unique=true, nullable=false)
+  @ApiModelProperty(hidden=true)
+  private int id;
+
 
   /**
    * Name of User
    */
-  @Id
   @Column(name = "name", unique=true, nullable = false)
   private String name;
 
@@ -48,14 +55,6 @@ public class User {
    */ 
   @Column(name = "password", nullable=false)
   private String password;
-
-  /**
-   * Users ID.
-   */ 
-  @Column(name = "id", unique=true, nullable=false)
-  @ApiModelProperty(hidden=true)
-  private int id;
-
 
   /**
    * Default constructor
@@ -117,6 +116,17 @@ public class User {
     String encryptedPassword = passwordEncryptor.encryptPassword(password);    
     this.password = encryptedPassword;
   }
+
+  /**
+   * Sets the encrypted password. Should be used if the already
+   * encrypted password should change.
+   *
+   * @param encryptedPassword Encrypted password to set on User
+   */
+  public void setEncryptedPassword(String encryptedPassword) {
+    this.password = encryptedPassword;
+  }
+
 
   @Override
   public boolean equals(Object o) {

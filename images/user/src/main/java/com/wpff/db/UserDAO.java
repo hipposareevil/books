@@ -5,6 +5,7 @@ import com.wpff.core.User;
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.MatchMode;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,15 +21,17 @@ public class UserDAO extends AbstractDAO<User> {
   }
 
   /**
-   * Look up an User by name
+   * Look user up by name
    *
-   * @param name Name of user
-   * @return Optional User
+   * @param userName Name 
+   * @return List of Users. May be empty
    */
-  public Optional<User> findByName(String name) {
-    return Optional.ofNullable(get(name));
+  public List<User> findByName(String userName) {
+    return currentSession()
+        .createCriteria(User.class)
+        .add(Restrictions.like("name", userName, MatchMode.EXACT))
+        .list();
   }
-
 
   /**
    * Look up an User by id. 
@@ -37,6 +40,7 @@ public class UserDAO extends AbstractDAO<User> {
    * @return Optional User
    */
   public Optional<User> findById(Integer id) {
+    System.out.println("userdao.findbyid:" + id);
     return Optional.ofNullable(get(id));
   }
 
