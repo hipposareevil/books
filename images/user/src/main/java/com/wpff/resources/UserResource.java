@@ -108,7 +108,6 @@ public class UserResource {
     // Start
     verifyAdminUser(context);
 
-    System.out.println("Getting user by ID>" + userId.get() + "<");
     return findSafely(userId.get());
   }
 
@@ -152,7 +151,7 @@ public class UserResource {
    * Create a user in the database. This requires an authorization token to be
    * present in the headers.
    *
-   * @param user User to create in the database
+   * @param userBean User to create in the database
    * @param jedis Jedis instance used to store token data. (INJECTED)
    * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return The newly created user
@@ -168,21 +167,21 @@ public class UserResource {
   @TokenRequired
   public User createUser(
     @ApiParam(value = "User information.", required = true) 
-    User user,
+    User userBean,
     @Context Jedis jedis,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                          ) {
     // Check if user already exists
 
-    // findByName looks for exact
-    List<User> existing = userDAO.findByName(user.getName());
+    // userDAO.findByName looks for exact
+    List<User> existing = userDAO.findByName(userBean.getName());
     if (! existing.isEmpty() ) {
-      throw new WebApplicationException("User '" + user.getName() + "' already exists.", Response.Status.CONFLICT);
+      throw new WebApplicationException("User '" + userBean.getName() + "' already exists.", Response.Status.CONFLICT);
     }
 
     // No existing user, go ahead and create
-    return this.userDAO.create(user);
+    return this.userDAO.create(userBean);
   }  
 
 
@@ -191,10 +190,10 @@ public class UserResource {
   /**
    * Update a specified user from the database.
    * An update is only performed if one of the following is true:
-   * - Username from security (token) is the same as the user being updated
    * - Username from security is 'admin'
+   * - Username from security matches the one returned for the id
    *
-   * @param userId ID of user to delete
+   * @param userId ID of user update delete
    * @param userBean User bean with data that is used to update the User in the database.
    * @param context security context (INJECTED via TokenFilter)
    * @param authDummy Dummy authorization string that is solely used for Swagger description.
@@ -207,7 +206,7 @@ public class UserResource {
   @UnitOfWork
   @TokenRequired
   public Response update(
-    @ApiParam(value = "ID of user to delete.", required = true)     
+    @ApiParam(value = "ID of user to update.", required = true)     
     @PathParam("id") Integer userId,
     User userBean,
     @Context SecurityContext context,
@@ -241,7 +240,7 @@ public class UserResource {
                                userBean.getData());
       }
       catch (Exception bean) {
-        throw new WebApplicationException("Error in updating database for user.", Response.Status.INTERNAL_SERVER_ERROR);
+        throw new WebApplicationException("Error in updating database for user " + userId + ".", Response.Status.INTERNAL_SERVER_ERROR);
       }
 
       // Update database
@@ -287,11 +286,11 @@ public class UserResource {
 
       // Is OK to remove user
       userDAO.delete(findSafely(userId));
+      return Response.ok().build();
     }
     catch (org.hibernate.HibernateException he) {
       throw new NotFoundException("No user by id '" + userId + "'");
     }
-    return Response.ok().build();
   }
 
 
