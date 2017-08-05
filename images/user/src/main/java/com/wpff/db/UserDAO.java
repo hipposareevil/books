@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 
+/**
+ * Data access object for a User
+ */
 public class UserDAO extends AbstractDAO<User> {
 
   public UserDAO(SessionFactory factory) {
@@ -24,6 +27,17 @@ public class UserDAO extends AbstractDAO<User> {
    */
   public Optional<User> findByName(String name) {
     return Optional.ofNullable(get(name));
+  }
+
+
+  /**
+   * Look up an User by id. 
+   *
+   * @param id User ID
+   * @return Optional User
+   */
+  public Optional<User> findById(Integer id) {
+    return Optional.ofNullable(get(id));
   }
 
 

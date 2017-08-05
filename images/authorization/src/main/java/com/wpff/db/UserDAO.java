@@ -26,6 +26,16 @@ public class UserDAO extends AbstractDAO<User> {
     return Optional.ofNullable(get(name));
   }
 
+  /**
+   * Look up an user by id. 
+   *
+   * @param id User ID
+   * @return Optional User
+   */
+  public Optional<User> findById(Integer id) {
+    return Optional.ofNullable(get(id));
+  }
+
 
   /**
    * Persists a new User into the backing DB.

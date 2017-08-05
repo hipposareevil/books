@@ -58,6 +58,7 @@ public class AuthorResource {
    * Return a single author, by id.
    *
    * @param authorId ID of author
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return Author 
    */
   @ApiOperation(
@@ -78,52 +79,14 @@ public class AuthorResource {
   }
 
 
-  /**
-   * Deletes a author by ID
-   *
-   * @param authorId ID of author
-   * @param context security context (INJECTED via TokenFilter)
-   * @return Response denoting if the operation was successful (202) or failed (404)
-   */
-  @ApiOperation(
-    value="Delete author by ID.",
-    notes="Delete author from database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
-                )
-  @DELETE
-  @Path("/{id}")
-  @UnitOfWork
-  @TokenRequired
-  public Response deleteAuthor(
-    @ApiParam(value = "ID of author to retrieve.", required = true)
-    @PathParam("id") IntParam authorId,
-    @Context SecurityContext context,
-    @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
-                        ) {
-    try {
-      // Verify context's name is admin.
-      String userNameFromSecurity = context.getUserPrincipal().getName();
-      if (userNameFromSecurity.equals("admin")) {
-        // Is OK to remove book
-        authorDAO.delete(findSafely(authorId.get()));
-      }
-      else {
-        throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
-      }
-    }
-    catch (org.hibernate.HibernateException he) {
-      throw new NotFoundException("No author by id '" + authorId + "'");
-    }
-    return Response.ok().build();
-  }
-
-
 
   /**
    * Get list authors.
    *
    * @param authorQuery Name of author, or partial name, that is used to
    * match against the database.
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * 
    * @return list of matching Author(s). When query is empty, this will be
    * all author
    */
@@ -170,8 +133,6 @@ public class AuthorResource {
                              ) {
     try {
       author.setId(0);
-      System.out.println("Creating new author: " + author);
-      System.out.println("Creating new author: " + author.getName());
       return authorDAO.create(author);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
@@ -184,6 +145,47 @@ public class AuthorResource {
       throw new WebApplicationException(errorMessage, 409);
     }
   }
+
+
+
+  /**
+   * Deletes a author by ID
+   *
+   * @param authorId ID of author
+   * @param context security context (INJECTED via TokenFilter)
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * 
+   * @return Response denoting if the operation was successful (202) or failed (404)
+   */
+  @ApiOperation(
+    value="Delete author by ID.",
+    notes="Delete author from database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+                )
+  @DELETE
+  @Path("/{id}")
+  @UnitOfWork
+  @TokenRequired
+  public Response deleteAuthor(
+    @ApiParam(value = "ID of author to retrieve.", required = true)
+    @PathParam("id") IntParam authorId,
+    @Context SecurityContext context,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+                        ) {
+    try {
+      // Start
+      verifyAdminUser(context);
+
+      authorDAO.delete(findSafely(authorId.get()));
+    }
+    catch (org.hibernate.HibernateException he) {
+      throw new NotFoundException("No author by id '" + authorId + "'");
+    }
+    return Response.ok().build();
+  }
+
+
+
 
   /************************************************************************/
   /** Helper methods **/
@@ -198,4 +200,17 @@ public class AuthorResource {
     return authorDAO.findById(id).orElseThrow(() -> new NotFoundException("No author by id " + id));
   }
   
+
+  /**
+   * Verifies the incoming user is 'admin'.
+   * Throws exception if user is not admin.
+   */
+  static void verifyAdminUser(SecurityContext context) throws WebApplicationException {
+    String userNameFromSecurity = context.getUserPrincipal().getName();
+    if (! userNameFromSecurity.equals("admin")) {
+      throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
+    }
+  }
+
+
 }

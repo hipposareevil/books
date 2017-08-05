@@ -6,9 +6,13 @@ import com.wpff.core.User;
 import com.wpff.db.UserDAO;
 import com.wpff.filter.TokenRequired;
 
-
 // utils
-import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.*;
+
+import com.fasterxml.jackson.databind.ser.impl.*;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.*;
+import com.fasterxml.jackson.databind.*;
 
 
 import java.net.URI;
@@ -31,6 +35,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import io.dropwizard.hibernate.UnitOfWork;
+import io.dropwizard.jersey.params.IntParam;
 
 // Jedis
 import redis.clients.jedis.Jedis;
@@ -76,147 +81,69 @@ public class UserResource {
   }
 
 
+
   /**
-   * Return all usernames in the database
+   * Return a single user, by id.
    *
    * @param context security context (INJECTED via TokenFilter)
-   * @return List of user names as Strings
+   * @param userId ID of user
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @return User 
    */
   @ApiOperation(
-    value="Get list of all user names.",
-    notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+    value="Get user by ID.",
+    notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user."
+                )
+  @GET
+  @Path("/{id}")
+  @UnitOfWork
+  @TokenRequired
+  public User getUser(
+    @Context SecurityContext context,
+    @ApiParam(value = "ID of user to retrieve.", required = false)
+    @PathParam("id") IntParam userId,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+                          ) {
+    // Start
+    verifyAdminUser(context);
+
+    return findSafely(userId.get());
+  }
+
+
+
+  /**
+   * Return all users in the database
+   *
+   * @param context security context (INJECTED via TokenFilter)
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @return List of VisableUsers
+   */
+  @ApiOperation(
+    value="Get list of all users.",
+    notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user."
                 )
   @GET
   @UnitOfWork
   @TokenRequired
-  public List<String> getUsers(
+  public List<VisableUser> getUsers(
     @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                                ) {
-    String userNameFromSecurity = context.getUserPrincipal().getName();
-    if (! userNameFromSecurity.equals("admin")) {
-      throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
-    }
+    // Start
+    verifyAdminUser(context);
 
+    // Get list of all Users.
     List<User> users = userDAO.findAll();
-    List<String> userNames = users.stream().map((u) -> u.getName()).collect(Collectors.toList());
 
-    return userNames;
+    // Convert each User into a VisableUser bean that just contains 'id' and 'name'
+    List<VisableUser> userList = users.stream().map(e -> new VisableUser(e.getName(), e.getId())).collect(Collectors.toList());
+
+    return userList;
   }
 
-
-  /**
-   * Delete a specified user from the database.
-   * A deletion is only performed if one of the following is true:
-   * - Username from security (token) is the same as the user being deleted
-   * - Username from security is 'admin'
-   *
-   * @param userName Name of user to delete
-   * @param context security context (INJECTED via TokenFilter)
-   * @return Response denoting if the operation was successful (202) or failed (404)
-   */
-  @ApiOperation(
-    value ="Delete user from database",
-    notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
-                )
-  @DELETE
-  @Path("/{name}")
-  @UnitOfWork
-  @TokenRequired
-  public Response delete(
-    @ApiParam(value = "Name of user to delete.", required = true)     
-    @PathParam("name") String userName,
-    @Context SecurityContext context,
-    @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
-                         ) {
-    try {
-      // Verify the userName is equal to the context's name
-      // or context's name is admin.
-      String userNameFromSecurity = context.getUserPrincipal().getName();
-      if (userNameFromSecurity.equals(userName) ||
-          userNameFromSecurity.equals("admin")) {
-        // Is OK to remove user
-        userDAO.delete(findSafely(userName));
-      }
-      else {
-        throw new WebApplicationException("Must be logged in as " + userName + " or 'admin'", Response.Status.UNAUTHORIZED);
-      }
-    }
-    catch (org.hibernate.HibernateException he) {
-      throw new NotFoundException("No user by name '" + userName + "'");
-    }
-    return Response.ok().build();
-  }
-
-
-  /**
-   * Update a specified user from the database.
-   * An update is only performed if one of the following is true:
-   * - Username from security (token) is the same as the user being updated
-   * - Username from security is 'admin'
-   *
-   * @param userName Name of user to update
-   * @param user User bean with data that is used to update the User in the database.
-   * @param context security context (INJECTED via TokenFilter)
-   * @return Response denoting if the operation was successful (202) or failed (404)
-   */
-  @ApiOperation(value ="Update user in the database",
-                notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
-  @PUT
-  @Path("/{name}")
-  @UnitOfWork
-  @TokenRequired
-  public Response update(
-    @PathParam("name") String userName,
-    User user,
-    @Context SecurityContext context,
-    @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
-                         ) {
-    try {
-      // Verify the userName is equal to the context's name
-      // or context's name is admin.
-      String userNameFromSecurity = context.getUserPrincipal().getName();
-      if (userNameFromSecurity.equals(userName) ||
-          userNameFromSecurity.equals("admin")) {
-
-        System.out.println("UPDATE user: " + userName);
-        System.out.println("incoming user: " + user);
-
-        // Verify user exists in database
-        User userInDatabase = findSafely(userName);
-        if (userInDatabase == null) {
-          throw new NotFoundException("No user by name '" + userName + "'");
-        }
-
-        // Update properties in database
-        try {
-        BeanUtils.copyProperty(userInDatabase,
-                               "password",
-                               user.getPassword());
-        BeanUtils.copyProperty(userInDatabase,
-                               "data",
-                               user.getData());
-        }
-        catch (Exception bean) {
-          throw new WebApplicationException("Error in updating database for user.", Response.Status.INTERNAL_SERVER_ERROR);
-        }
-
-        // Is OK to update user
-        userDAO.update(userInDatabase);
-      }
-      else {
-        throw new WebApplicationException("Must be logged in as " + userName + " or 'admin'", Response.Status.UNAUTHORIZED);
-      }
-    }
-    catch (org.hibernate.HibernateException he) {
-      he.printStackTrace();
-      throw new NotFoundException("Error in database" + he.getMessage());
-    }
-    return Response.ok().build();
-  }
 
 
 
@@ -226,11 +153,12 @@ public class UserResource {
    *
    * @param user User to create in the database
    * @param jedis Jedis instance used to store token data. (INJECTED)
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return The newly created user
    */
   @ApiOperation(
     value = "Create new user",
-    notes = "Create new user in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
+    notes = "Create new user in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. ",
     response = User.class
                 )
   @ApiResponse(code = 409, message = "Duplicate user")
@@ -259,6 +187,110 @@ public class UserResource {
   }  
 
 
+
+
+  /**
+   * Update a specified user from the database.
+   * An update is only performed if one of the following is true:
+   * - Username from security (token) is the same as the user being updated
+   * - Username from security is 'admin'
+   *
+   * @param userId ID of user to delete
+   * @param userBean User bean with data that is used to update the User in the database.
+   * @param context security context (INJECTED via TokenFilter)
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @return Response denoting if the operation was successful (202) or failed (404)
+   */
+  @ApiOperation(value ="Update user in the database",
+                notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. ")
+  @PUT
+  @Path("/{id}")
+  @UnitOfWork
+  @TokenRequired
+  public Response update(
+    @ApiParam(value = "ID of user to delete.", required = true)     
+    @PathParam("id") Integer userId,
+    User userBean,
+    @Context SecurityContext context,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+                         ) {
+    try {
+      // Start
+      verifyAdminUser(context);
+
+      // Verify user exists in database
+      User userInDatabase = findSafely(userId);
+      if (userInDatabase == null) {
+        throw new NotFoundException("No user by id '" + userId + "'");
+      }
+
+      // Update properties in user
+      try {
+        BeanUtils.copyProperty(userInDatabase,
+                               "password",
+                               userBean.getPassword());
+        BeanUtils.copyProperty(userInDatabase,
+                               "data",
+                               userBean.getData());
+      }
+      catch (Exception bean) {
+        throw new WebApplicationException("Error in updating database for user.", Response.Status.INTERNAL_SERVER_ERROR);
+      }
+
+      // Update database
+      userDAO.update(userInDatabase);
+    }
+    catch (org.hibernate.HibernateException he) {
+      he.printStackTrace();
+      throw new NotFoundException("Error in database" + he.getMessage());
+    }
+
+    return Response.ok().build();
+  }
+
+
+  /**
+   * Delete a specified user from the database.
+   * A deletion is only performed if one of the following is true:
+   * - Username from security is 'admin'
+   *
+   * @param userId ID of user to delete
+   * @param context security context (INJECTED via TokenFilter)
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @return Response denoting if the operation was successful (202) or failed (404)
+   */
+  @ApiOperation(
+    value ="Delete user from database",
+    notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. "
+                )
+  @DELETE
+  @Path("/{id}")
+  @UnitOfWork
+  @TokenRequired
+  public Response delete(
+    @ApiParam(value = "ID of user to delete.", required = true)     
+    @PathParam("id") Integer userId,
+    @Context SecurityContext context,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+                         ) {
+    try {
+      // Start
+      verifyAdminUser(context);
+
+      // Is OK to remove user
+      userDAO.delete(findSafely(userId));
+    }
+    catch (org.hibernate.HibernateException he) {
+      throw new NotFoundException("No user by id '" + userId + "'");
+    }
+    return Response.ok().build();
+  }
+
+
+
+
   /****************************************************************
 
     Helper methods
@@ -271,5 +303,49 @@ public class UserResource {
   private User findSafely(String name) {
     return this.userDAO.findByName(name).orElseThrow(() -> new NotFoundException("No user by name '" + name + "'"));
   }
+
+  /**
+   * Look for User by incoming id. If returned User is null, throw Not Found (404).
+   */
+  private User findSafely(int id) {
+    return this.userDAO.findById(id).orElseThrow(() -> new NotFoundException("No user by id '" + id + "'"));
+  }
+
+
+
+  /**
+   * Verifies the incoming user is 'admin'.
+   * Throws exception if user is not admin.
+   */
+  static void verifyAdminUser(SecurityContext context) throws WebApplicationException {
+    String userNameFromSecurity = context.getUserPrincipal().getName();
+    if (! userNameFromSecurity.equals("admin")) {
+      throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
+    }
+  }
+
+
+  /**
+   * Truncated version of User. This will be returned from 'getUsers'.
+   */
+  static class VisableUser {
+    private String name;
+    private int id;
+
+    public VisableUser(String name, int id) {
+      this.name = name;
+      this.id = id;
+    }
+
+    public int getId() {
+      return this.id;
+    }
+
+
+    public String getName() {
+      return name;
+    }
+  }
+
 
 }

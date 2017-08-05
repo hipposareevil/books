@@ -74,6 +74,73 @@ public class BookResource {
     return findSafely(bookId.get());
   }
 
+
+
+  /**
+   * Get list of books.
+   *
+   * @param titleQuery Name of book, or partial name, that is used to match against the database.
+   * @return List of matching Books. When titleQuery is empty, this will be
+   * all book titles
+   */
+  @ApiOperation(value="Get books via optional 'title' query param.",
+                response=Book.class,
+                notes="Returns list of books. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+                )
+  @GET
+  @UnitOfWork
+  @TokenRequired
+  public List<Book> getBook(
+    @ApiParam(value = "Book or partial title of book to retrieve.", required = false)
+    @QueryParam("title") String titleQuery,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+                            ) {
+    if (titleQuery != null) {
+      return bookDAO.findByName(titleQuery);
+    }
+    else {
+      return bookDAO.findAll();
+    }
+  }
+
+
+
+  /**
+   * Create a new book
+   *
+   * @param newBook Book data
+   * @return newly created Book
+   */
+  @ApiOperation(
+    value = "Create new book.",
+    notes = "Creates new book. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
+    response = Book.class
+                )
+  @POST
+  @UnitOfWork(transactional = false)
+  @ApiResponse(code = 409, message = "Duplicate value")
+  public Book createBook(
+    @ApiParam(value = "Book information.", required = true)
+    Book newBook,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+                           ) {
+    try {
+    return bookDAO.create(newBook);
+    }
+    catch (org.hibernate.exception.ConstraintViolationException e) {
+      String errorMessage = e.getMessage();
+      // check cause/parent
+      if (e.getCause() != null) {
+        errorMessage = e.getCause().getMessage();
+      }
+
+      throw new WebApplicationException(errorMessage, 409);
+    }
+  }
+
+
   /**
    * Deletes a book by ID
    *
@@ -111,72 +178,6 @@ public class BookResource {
       throw new NotFoundException("No book by id '" + bookId + "'");
     }
     return Response.ok().build();
-  }
-
-
-
-
-  /**
-   * Get list of books.
-   *
-   * @param titleQuery Name of book, or partial name, that is used to match against the database.
-   * @return List of matching Books. When titleQuery is empty, this will be
-   * all book titles
-   */
-  @ApiOperation(value="Get books via optional 'title' query param.",
-                response=Book.class,
-                notes="Returns list of books. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
-                )
-  @GET
-  @UnitOfWork
-  @TokenRequired
-  public List<Book> getBook(
-    @ApiParam(value = "Book or partial title of book to retrieve.", required = false)
-    @QueryParam("title") String titleQuery,
-    @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
-                            ) {
-    if (titleQuery != null) {
-      return bookDAO.findByName(titleQuery);
-    }
-    else {
-      return bookDAO.findAll();
-    }
-  }
-
-
-  /**
-   * Create a new book
-   *
-   * @param newBook Book data
-   * @return newly created Book
-   */
-  @ApiOperation(
-    value = "Create new book.",
-    notes = "Creates new book. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
-    response = Book.class
-                )
-  @POST
-  @UnitOfWork(transactional = false)
-  @ApiResponse(code = 409, message = "Duplicate value")
-  public Book createBook(
-    @ApiParam(value = "Book information.", required = true)
-    Book newBook,
-    @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
-                           ) {
-    try {
-    return bookDAO.create(newBook);
-    }
-    catch (org.hibernate.exception.ConstraintViolationException e) {
-      String errorMessage = e.getMessage();
-      // check cause/parent
-      if (e.getCause() != null) {
-        errorMessage = e.getCause().getMessage();
-      }
-
-      throw new WebApplicationException(errorMessage, 409);
-    }
   }
 
   

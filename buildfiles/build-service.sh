@@ -29,11 +29,11 @@ build_maven() {
     # See if mvn is already installed
     which mvn > /dev/null
     if [ $? -eq 0 ]; then
-        echo "Using local maven."
+        echo "[Using local maven]"
         (cd $our_directory; mvn package)
         build_result=$?
     else
-        echo "Running maven via docker."
+        echo "[[Running maven via docker]]"
         ###
         # build project via maven using a docker container
         # volumes:
@@ -61,11 +61,11 @@ build_maven() {
 build_gradle() {
     which gradle > /dev/null
     if [ $? -eq 0 ]; then
-        echo "Using local gradle."
+        echo "[Using local gradle]"
         (cd $our_directory; gradle build)
         build_result=$?
     else
-        echo "Running gradle via docker."
+        echo "[[Running gradle via docker]]"
         ###
         # build project via gradle using a docker container
         # volumes:
@@ -88,7 +88,7 @@ build_gradle() {
 #
 #############
 build_image() {
-    echo "Building Docker image '$image_name'"
+    echo "[Building Docker image '$image_name']"
     (cd $our_directory; docker build "$our_directory" -t $image_name)
     build_result=$?
 
@@ -109,14 +109,14 @@ build_image() {
 #############
 build() {
     if [ -z "$our_directory" ]; then
-        echo "Calling script must set 'our_directory' variable"
+        echo "NOTE: Calling script must set 'our_directory' variable"
         exit 1
     fi
 
     initialize_variables
 
     # build project
-    echo "Building web service '$project'"
+    echo "[Building web service '$project']"
     if [ -e $our_directory/pom.xml ]; then
         build_maven
     elif [ -e $our_directory/build.gradle ]; then
@@ -136,5 +136,5 @@ build() {
     build_image
 
     #done
-    echo "Build for '$project' complete"
+    echo "[Build for '$project' complete]"
 }

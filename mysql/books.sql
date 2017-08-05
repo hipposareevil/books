@@ -1,3 +1,15 @@
+
+DROP TABLE IF EXISTS `tag`;
+
+
+CREATE TABLE `tag` (
+  `name` varchar(255) NOT NULL,
+  `id`  int(11) NOT NULL AUTO_INCREMENT,
+  `data` varchar(2048) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `user`;
 
 
