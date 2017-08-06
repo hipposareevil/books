@@ -191,7 +191,6 @@ public class UserResource {
    * Update a specified user from the database.
    * An update is only performed if one of the following is true:
    * - Username from security is 'admin'
-   * - Username from security matches the one returned for the id
    *
    * @param userId ID of user update delete
    * @param userBean User bean with data that is used to update the User in the database.

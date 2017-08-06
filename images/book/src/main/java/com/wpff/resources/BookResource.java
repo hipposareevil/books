@@ -163,12 +163,14 @@ public class BookResource {
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                         ) {
+    // Start
     try {
       // Verify context's name is admin.
       String userNameFromSecurity = context.getUserPrincipal().getName();
       if (userNameFromSecurity.equals("admin")) {
         // Is OK to remove book
         bookDAO.delete(findSafely(bookId.get()));
+        return Response.ok().build();
       }
       else {
         throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
@@ -177,7 +179,6 @@ public class BookResource {
     catch (org.hibernate.HibernateException he) {
       throw new NotFoundException("No book by id '" + bookId + "'");
     }
-    return Response.ok().build();
   }
 
   

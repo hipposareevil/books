@@ -3,8 +3,8 @@ DROP TABLE IF EXISTS `tag`;
 
 
 CREATE TABLE `tag` (
-  `name` varchar(255) NOT NULL,
   `id`  int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
   `data` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -14,8 +14,8 @@ DROP TABLE IF EXISTS `user`;
 
 
 CREATE TABLE `user` (
-  `name` varchar(255) NOT NULL,
   `id`  int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
   `data` varchar(2048) DEFAULT NULL,
   `password` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -25,7 +25,7 @@ LOCK TABLES `user` WRITE;
 
 -- Insert initial admin/admin user
 
-INSERT INTO `user` VALUES ('admin', 1, '', 'ZEiRIzMMip7aN7nRSbLZLRaCUzIjIWwc');
+INSERT INTO `user` VALUES (1, 'admin', '', 'ZEiRIzMMip7aN7nRSbLZLRaCUzIjIWwc');
 
 UNLOCK TABLES;
 

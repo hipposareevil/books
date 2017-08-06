@@ -7,6 +7,7 @@ Table of Contents
       * [book](#book)
       * [query](#query)
       * [user](#user)
+      * [tag](#tag)
       * [authorize](#authorize)
       * [swagger](#swagger)
    * [Databases](#databases)
@@ -50,6 +51,7 @@ Endpoint | Purpose
 /book | Manage books in database.
 /query | Microservice to query google for book titles and authors.
 /user | Manage users.
+/tag | Manage tags.
 /authorize | Authorize access to endpoints.
 /swagger/ | [swagger](http://swagger.io) documentation describing the REST apis.
 
@@ -68,6 +70,9 @@ When there is no google api key, this endpoint will just return empty results.  
 
 ## user
 REST microservice managing users. A user is necessary to access the other services (except /query). Once a user exists, an authorization token must be created via the /authorize endpoint.
+
+## tag
+REST microservice managing tags. Tags can be applied to a user's books (via the _user_books_ endpoint).  Multiple tags may be applied to a single book, e.g. "e-book" and "sci-fi".
 
 ## authorize
 REST microservice to authenticate a user. Creates a token of the form 'Bearer qwerty-1234-asdf-9876'.
