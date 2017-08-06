@@ -23,7 +23,7 @@ import java.util.Objects;
         )
     }
 )
-public class Book {
+public class Book implements Comparable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
@@ -99,5 +99,13 @@ public class Book {
   @Override
   public int hashCode() {
     return Objects.hash(id, title);
+  }
+
+  @Override
+  public int compareTo(Object o) {
+    final Book that = (Book) o;
+    if (this == that) return 0;
+
+    return (this.id - that.id);
   }
 }

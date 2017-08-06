@@ -6,6 +6,11 @@ import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+
+
 import java.util.List;
 import java.util.Optional;
 
@@ -40,6 +45,20 @@ public class BookDAO extends AbstractDAO<Book> {
     return currentSession()
         .createCriteria(Book.class)
         .add(Restrictions.like("title", "%"+ titleName +"%"))
+        .list();
+  }
+
+
+  /**
+   * Return all books with the incoming IDs. Unknown IDs will be ignored.
+   *
+   * @param bookIds list of book IDs
+   * @return List of Books. May be empty
+   */
+  public List<Book> findById(List<Integer> bookIds) {
+    return currentSession()
+        .createCriteria(Book.class)
+        .add(Restrictions.in("id", bookIds))
         .list();
   }
 

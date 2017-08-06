@@ -3,6 +3,7 @@ package com.wpff.resources;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
  
 import com.wpff.core.Book;
 import com.wpff.db.BookDAO;
@@ -55,6 +56,7 @@ public class BookResource {
    * Get a single book, by id.
    *
    * @param bookId ID of book
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return Book
    */
   @ApiOperation(
@@ -79,37 +81,64 @@ public class BookResource {
   /**
    * Get list of books.
    *
-   * @param titleQuery Name of book, or partial name, that is used to match against the database.
+   * @param titleQuery [optional] Name of book, or partial name, that is used to match against the database.
+   * @param idQuery [optional] List of book ids.
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return List of matching Books. When titleQuery is empty, this will be
    * all book titles
    */
-  @ApiOperation(value="Get books via optional 'title' query param.",
+  @ApiOperation(value="Get books via optional 'title' query param or optional 'ids' query param. The two query params may be used at the same time.",
                 response=Book.class,
-                notes="Returns list of books. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+                notes="Returns list of books. When no 'title' or 'ids' specified, all books in database are returned. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
   @UnitOfWork
   @TokenRequired
   public List<Book> getBook(
-    @ApiParam(value = "Book or partial title of book to retrieve.", required = false)
+    @ApiParam(value = "Title or partial title of book to retrieve.", required = false)
     @QueryParam("title") String titleQuery,
+    @ApiParam(value = "List of book IDs to retrieve.", required = false)
+    @QueryParam("id") List<Integer> idQuery,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                             ) {
-    if (titleQuery != null) {
-      return bookDAO.findByName(titleQuery);
-    }
-    else {
-      return bookDAO.findAll();
-    }
-  }
+    // Start
+    Set<Book> bookSet = new TreeSet<Book>();
 
+    // Grab books by title, if it exists
+    if (titleQuery != null) {
+      System.out.println("Looking at title query: " + titleQuery);
+      bookSet.addAll(bookDAO.findByName(titleQuery));
+    }
+
+    // The idQuery will be empty if nothing is specified, but will still exist as a List.
+    if ( (idQuery != null) && (! idQuery.isEmpty()) ){
+      System.out.println("Looking at id query: " + idQuery);
+      bookSet.addAll(bookDAO.findById(idQuery));
+    }
+
+    // If set of books is empty, grab all books
+    if (bookSet.isEmpty()) {
+      System.out.println("bookSet is empty. adding all");
+      bookSet.addAll(bookDAO.findAll());
+    }
+
+    // Convert set to list
+    List<Book> bookList = bookSet.
+        stream().
+        sorted().
+        collect(Collectors.toList());
+
+    // Return list of books
+    return bookList;
+  }
 
 
   /**
    * Create a new book
    *
    * @param newBook Book data
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return newly created Book
    */
   @ApiOperation(
@@ -127,7 +156,7 @@ public class BookResource {
     @HeaderParam(value="Authorization") String authDummy
                            ) {
     try {
-    return bookDAO.create(newBook);
+      return bookDAO.create(newBook);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -146,6 +175,7 @@ public class BookResource {
    *
    * @param bookId ID of book
    * @param context security context (INJECTED via TokenFilter)
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return Response denoting if the operation was successful (202) or failed (404)
    */
   @ApiOperation(

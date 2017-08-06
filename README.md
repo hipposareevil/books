@@ -88,7 +88,7 @@ This waits for the various endpoints to come up and then grabs the designated (i
 There are two databases used to manage the books and users.
 
 ## MySQL
-[MySQL](https://www.mysql.com/) is used to store books, authors, users and users lists.
+[MySQL](https://www.mysql.com/) is used to store books, authors, users, tags and user books lists.
 
 ## Redis
 [Redis](https://redis.io/) is used to store and manage authorization tokens. The various services utilize redis to authorize a caller for an operation.
