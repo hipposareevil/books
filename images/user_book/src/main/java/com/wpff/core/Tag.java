@@ -1,12 +1,7 @@
 package com.wpff.core;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import java.util.Objects;
+import javax.persistence.*;
+import java.util.*;
 
 import org.jasypt.util.password.BasicPasswordEncryptor;
 
@@ -16,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Named query to select all tags
  */
 @Entity
-@Table(name = "tag")
+@Table(name="tag")
 @NamedQueries(
     {
         @NamedQuery(
@@ -37,6 +32,10 @@ public class Tag {
   @Column(name = "tag_id", unique=true, nullable=false)
   @ApiModelProperty(hidden=true)
   private int id;
+
+
+  @ManyToMany(fetch = FetchType.LAZY, mappedBy = "tags")
+  private Set<UserBook> associatedBooks;
 
 
   /**
