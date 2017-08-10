@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import java.util.Objects;
 
 /***
- * Represents a book.
+ * Represents a book. This is marshalled to/from the database.
  */
 @Entity
 @Table(name = "book")

@@ -4,9 +4,6 @@ import javax.persistence.*;
 
 import java.util.*;
 
-
-import org.jasypt.util.password.BasicPasswordEncryptor;
-
 // Used to hide fields from Swagger definition
 import io.swagger.annotations.ApiModelProperty;
 
@@ -88,12 +85,12 @@ public class UserBook {
   }
 
   
-  @ApiModelProperty(hidden=true)
+//  @ApiModelProperty(hidden=true)
   public void setUserBookId(int id) {
     this.user_book_id = id;
   }
 
-  @ApiModelProperty(hidden=true)
+//  @ApiModelProperty(hidden=true)
   public int getUserBookId() {
     return this.user_book_id;
   }
@@ -133,7 +130,6 @@ public class UserBook {
   public boolean getRating() {
     return rating;
   }
-
 
 
   @Override

@@ -5,6 +5,7 @@ import com.wpff.core.Credentials;
 import com.wpff.core.Tag;
 import com.wpff.core.User;
 import com.wpff.core.UserBook;
+import com.wpff.core.PostUserBook;
 import com.wpff.db.TagDAO;
 import com.wpff.db.UserDAO;
 import com.wpff.db.UserBookDAO;
@@ -12,7 +13,7 @@ import com.wpff.filter.TokenRequired;
 
 // utils
 import org.apache.commons.beanutils.BeanUtils;
-
+import java.lang.reflect.InvocationTargetException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -193,7 +194,7 @@ public class UserBookResource {
     @PathParam("user_id") IntParam userId,
 
     @ApiParam(value = "User Book information.", required = true) 
-    UserBook userBookBean,
+    PostUserBook userBookBean,
 
     @Context Jedis jedis,
     @ApiParam(value="Bearer authorization", required=true)
@@ -204,8 +205,17 @@ public class UserBookResource {
     // Verify the username matches the userid or is 'admin'
     verifyUserIdMatches(context, userId.get());
 
-    // Create a new userbook
-    return this.userBookDAO.create(userBookBean);
+    try {
+      // Make a new UserBook from incoming userBookBean (which is a PostUserBook)
+      UserBook userBook = new UserBook();
+      // copy(destination, source)
+      BeanUtils.copyProperties(userBook, userBookBean);
+    
+      return this.userBookDAO.create(userBook);
+    }
+    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
+      throw new WebApplicationException("Error in updating database when creating user_book   " + userBookBean + ".", Response.Status.INTERNAL_SERVER_ERROR);
+    }
   }  
 
 

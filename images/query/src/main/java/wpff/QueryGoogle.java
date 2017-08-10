@@ -15,7 +15,7 @@ import com.google.api.services.books.BooksRequestInitializer;
 import com.google.api.services.books.model.Volume;
 import com.google.api.services.books.model.Volumes;
 
-import wpff.Book.ID_TYPE;
+import wpff.BookQueryBean.ID_TYPE;
 
 /**
  * Utility to query google for book and author information.
@@ -32,10 +32,10 @@ public class QueryGoogle {
 	 *            Name of author to query
 	 * @return list of Authors returned from google
 	 */
-	static java.util.List<wpff.Author> getAuthor(String googleApiKey, String author) {
+	static java.util.List<wpff.AuthorQueryBean> getAuthor(String googleApiKey, String author) {
 
 		// List of Authors to be returned.
-		java.util.List<Author> authorList = new ArrayList<Author>();
+		java.util.List<AuthorQueryBean> authorList = new ArrayList<AuthorQueryBean>();
 
 		if ((googleApiKey == null) || (googleApiKey.isEmpty())) {
 			System.out.println("No key for google api.");
@@ -85,7 +85,7 @@ public class QueryGoogle {
 				}
 
 				// Go through each author name and add to list
-				authorList = authorMap.keySet().stream().map(i -> new Author(i)).collect(Collectors.toList());
+				authorList = authorMap.keySet().stream().map(i -> new AuthorQueryBean(i)).collect(Collectors.toList());
 
 			} catch (Exception e) {
 				// TODO
@@ -99,10 +99,10 @@ public class QueryGoogle {
 	/**
 	 * Query google for books.
 	 */
-	static java.util.List<Book> getBooks(String googleApiKey, String author, String title) {
+	static java.util.List<BookQueryBean> getBooks(String googleApiKey, String author, String title) {
 
 		// List of Books to be returned.
-		java.util.List<Book> bookList = new ArrayList<Book>();
+		java.util.List<BookQueryBean> bookList = new ArrayList<BookQueryBean>();
 
 		if ((googleApiKey == null) || (googleApiKey.isEmpty())) {
 			System.out.println("No key for google api.");
@@ -156,7 +156,7 @@ public class QueryGoogle {
 						}
 					}
 
-					Book newBook = bookBuilder.build();
+					BookQueryBean newBook = bookBuilder.build();
 					bookList.add(newBook);
 				}
 			} catch (Exception e) {

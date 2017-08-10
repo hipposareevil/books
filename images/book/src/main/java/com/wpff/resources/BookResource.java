@@ -5,7 +5,13 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
  
+// utils
+import org.apache.commons.beanutils.*;
+import java.lang.reflect.InvocationTargetException;
+
+
 import com.wpff.core.Book;
+import com.wpff.core.PostBook;
 import com.wpff.db.BookDAO;
 import com.wpff.filter.TokenRequired;
 
@@ -137,7 +143,7 @@ public class BookResource {
   /**
    * Create a new book
    *
-   * @param newBook Book data
+   * @param bookBean Book data
    * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return newly created Book
    */
@@ -151,12 +157,18 @@ public class BookResource {
   @ApiResponse(code = 409, message = "Duplicate value")
   public Book createBook(
     @ApiParam(value = "Book information.", required = true)
-    Book newBook,
+    PostBook bookBean,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                            ) {
+    // START
     try {
-      return bookDAO.create(newBook);
+      // Make new Book from bookBean (which is a PostBook)
+      Book book = new Book();
+      // copy(destination, source)
+      BeanUtils.copyProperties(book, bookBean);
+
+      return bookDAO.create(book);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -166,6 +178,9 @@ public class BookResource {
       }
 
       throw new WebApplicationException(errorMessage, 409);
+    }
+    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
+      throw new WebApplicationException("Error in updating database when creating book  " + bookBean + ".", Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
 

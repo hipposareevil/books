@@ -35,16 +35,18 @@ public class BookQueryController {
   * @param title Book title (or partial)
   * @return list of matching Books
   */
-  @ApiOperation(value = "/title", nickname = "query titles", notes="Query google for book titles")
+  @ApiOperation(value = "/title",
+                nickname = "query titles",
+                notes="Query google for book titles. A title will have a set of ids that corresond to ISBN 10 or ISBN 13 values. ")
   @ApiImplicitParams({
       @ApiImplicitParam(name = "author", value = "Author's name", required = false, dataType = "string", paramType = "query"),
       @ApiImplicitParam(name = "title", value = "Book Title", required = false, dataType = "string", paramType = "query")
           })
   @ApiResponses(value = { 
-      @ApiResponse(code = 200, message = "Success", response = Book.class)
+      @ApiResponse(code = 200, message = "Success", response = BookQueryBean.class)
     }) 
   @RequestMapping(method = RequestMethod.GET, path="/title", produces = "application/json")
-  public List<Book> query(@RequestParam(value="author") String author,
+  public List<BookQueryBean> query(@RequestParam(value="author") String author,
                           @RequestParam(value="title") String title) {
     // Query google
     return QueryGoogle.getBooks(googleApiKey, author, title);    
@@ -58,15 +60,17 @@ public class BookQueryController {
   * @param author Name (or partial) of author
   * @return list of matching author
   */
-  @ApiOperation(value = "/author", nickname = "query author", notes="Query google for authors")
+  @ApiOperation(value = "/author",
+                nickname = "query author",
+                notes="Query google for authors. Returns list of Author names.")
   @ApiImplicitParams({
       @ApiImplicitParam(name = "author", value = "Author's name", required = false, dataType = "string", paramType = "query")
           })
   @ApiResponses(value = { 
-      @ApiResponse(code = 200, message = "Success", response = Author.class)
+      @ApiResponse(code = 200, message = "Success", response = AuthorQueryBean.class)
     }) 
   @RequestMapping(method = RequestMethod.GET, path="/author", produces = "application/json")
-  public List<Author> query(@RequestParam(value="author") String author) {
+  public List<AuthorQueryBean> query(@RequestParam(value="author") String author) {
     // Query google
     return QueryGoogle.getAuthor(googleApiKey, author);
   }

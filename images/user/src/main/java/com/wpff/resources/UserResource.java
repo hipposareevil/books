@@ -3,11 +3,14 @@ package com.wpff.resources;
 // books
 import com.wpff.core.Credentials;
 import com.wpff.core.User;
+import com.wpff.core.PostUser;
+import com.wpff.core.VisableUser;
 import com.wpff.db.UserDAO;
 import com.wpff.filter.TokenRequired;
 
 // utils
 import org.apache.commons.beanutils.*;
+import java.lang.reflect.InvocationTargetException;
 
 import com.fasterxml.jackson.databind.ser.impl.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
@@ -158,8 +161,7 @@ public class UserResource {
    */
   @ApiOperation(
     value = "Create new user",
-    notes = "Create new user in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. ",
-    response = User.class
+    notes = "Create new user in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. "
                 )
   @ApiResponse(code = 409, message = "Duplicate user")
   @POST
@@ -167,21 +169,32 @@ public class UserResource {
   @TokenRequired
   public User createUser(
     @ApiParam(value = "User information.", required = true) 
-    User userBean,
+    PostUser userBean,
     @Context Jedis jedis,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                          ) {
-    // Check if user already exists
+    // START
 
-    // userDAO.findByName looks for exact
+    // Check if user already exists
+    // userDAO.findByName looks for exact name
     List<User> existing = userDAO.findByName(userBean.getName());
     if (! existing.isEmpty() ) {
       throw new WebApplicationException("User '" + userBean.getName() + "' already exists.", Response.Status.CONFLICT);
     }
-
     // No existing user, go ahead and create
-    return this.userDAO.create(userBean);
+
+    try {
+      // Make a new User from incoming userBean (which is a PostBook)
+      User user = new User();
+      // copy(destination, source)
+      BeanUtils.copyProperties(user, userBean);
+    
+      return this.userDAO.create(user);
+    }
+    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
+      throw new WebApplicationException("Error in updating database when creating user   " + userBean + ".", Response.Status.INTERNAL_SERVER_ERROR);
+    }
   }  
 
 
@@ -319,29 +332,6 @@ public class UserResource {
     String userNameFromSecurity = context.getUserPrincipal().getName();
     if (! userNameFromSecurity.equals("admin")) {
       throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
-    }
-  }
-
-
-  /**
-   * Truncated version of User. This will be returned from 'getUsers'.
-   */
-  static class VisableUser {
-    private String name;
-    private int id;
-
-    public VisableUser(String name, int id) {
-      this.name = name;
-      this.id = id;
-    }
-
-    public int getId() {
-      return this.id;
-    }
-
-
-    public String getName() {
-      return name;
     }
   }
 

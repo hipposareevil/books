@@ -41,6 +41,7 @@
             <artifactId>dropwizard-core</artifactId>
         </dependency>
 
+        <!-- for bean manipulate -->
         <dependency>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
