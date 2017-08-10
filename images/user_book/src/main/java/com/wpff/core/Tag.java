@@ -34,10 +34,6 @@ public class Tag {
   private int id;
 
 
-  @ManyToMany(fetch = FetchType.LAZY, mappedBy = "tags")
-  private Set<UserBook> associatedBooks;
-
-
   /**
    * Name of Tag
    */
@@ -50,7 +46,6 @@ public class Tag {
    */
   @Column(name = "data", nullable=true)
   private String data;
-
 
 
   /**
@@ -74,9 +69,9 @@ public class Tag {
     return data;
   }
 
-  @ApiModelProperty(hidden=true)
-  public int getId() {
-    return this.id;
+
+  public void setData(String data) {
+    this.data = data;
   }
 
 
@@ -90,13 +85,15 @@ public class Tag {
   }
 
 
-  @ApiModelProperty(hidden=true)
-  public void setId(int id) {
-    this.id = id;
+//  @ApiModelProperty(hidden=true)
+  public int getId() {
+    return this.id;
   }
 
-  public void setData(String data) {
-    this.data = data;
+
+//  @ApiModelProperty(hidden=true)
+  public void setId(int id) {
+    this.id = id;
   }
 
 

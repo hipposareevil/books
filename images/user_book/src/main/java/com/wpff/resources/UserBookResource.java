@@ -123,23 +123,11 @@ public class UserBookResource {
                                ) {
     // Start
 
-    // Get the username corresponding to the incoming userId and verify that is the same as the authenticated caller.
-    String userNameFromSecurity = context.getUserPrincipal().getName();
-    User userFromId = userDAO.findById(userId.get()).orElseThrow(() -> new NotFoundException("No user with ID '" + userId.get() + "' found."));
+    // Verify the username matches the userid or is 'admin'
+    verifyUserIdMatches(context, userId.get());
 
-    // Check names, if:
-    // userNameFromSecurity == admin or
-    // userNameFromSecurity == name from id
-    // we can proceed
-    if ( (userFromId.getName().equals("admin")) ||
-         (userFromId.getName().equals(userNameFromSecurity)) ) {
-      UserBook userBook = findSafely(userBookId.get());
-      return userBook;
-    }
-    else {
-      throw new WebApplicationException("Must be logged in as user with id '" + userId + "' to view this.",
-                                        Response.Status.UNAUTHORIZED);
-    }
+    UserBook userBook = findSafely(userBookId.get());
+    return userBook;
   }
 
   /**
@@ -168,24 +156,12 @@ public class UserBookResource {
                                ) {
     // Start
 
-    // Get the username corresponding to the incoming userId and verify that is the same as the authenticated caller.
-    String userNameFromSecurity = context.getUserPrincipal().getName();
-    User userFromId = userDAO.findById(userId.get()).orElseThrow(() -> new NotFoundException("No user with ID '" + userId.get() + "' found."));
+    // Verify the username matches the userid or is 'admin'
+    verifyUserIdMatches(context, userId.get());
 
-    // Check names, if:
-    // userNameFromSecurity == admin or
-    // userNameFromSecurity == name from id
-    // we can proceed
-    if ( (userFromId.getName().equals("admin")) ||
-         (userFromId.getName().equals(userNameFromSecurity)) ) {
-
-      List<UserBook> userBooks = userBookDAO.findBooksByUserId(userId.get());
-      return userBooks;
-    }
-    else {
-      throw new WebApplicationException("Must be logged in as user with id '" + userId + "' to view this.",
-                                        Response.Status.UNAUTHORIZED);
-    }
+    // Ok to get books
+    List<UserBook> userBooks = userBookDAO.findBooksByUserId(userId.get());
+    return userBooks;
   }
 
 
@@ -194,6 +170,7 @@ public class UserBookResource {
    * Create a userbook in the database. This requires an authorization token to be
    * present in the headers.
    *
+   * @param context security context (INJECTED via TokenFilter)
    * @param userBookBean UserBook to create in the database
    * @param userId ID of user
    * @param jedis Jedis instance used to store token data. (INJECTED)
@@ -211,6 +188,7 @@ public class UserBookResource {
   @TokenRequired
   @Path("/{user_id}")
   public UserBook createUserBook(
+    @Context SecurityContext context,
     @ApiParam(value = "ID of user.", required = false)
     @PathParam("user_id") IntParam userId,
 
@@ -221,17 +199,12 @@ public class UserBookResource {
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                          ) {
-    // Verify the userID matches the username from context
+    // Start
 
-/*
-    // userDAO.findByName looks for exact
-    List<User> existing = userDAO.findByName(userBean.getName());
-    if (! existing.isEmpty() ) {
-      throw new WebApplicationException("User '" + userBean.getName() + "' already exists.", Response.Status.CONFLICT);
-    }
-*/
+    // Verify the username matches the userid or is 'admin'
+    verifyUserIdMatches(context, userId.get());
 
-    // No existing user, go ahead and create
+    // Create a new userbook
     return this.userBookDAO.create(userBookBean);
   }  
 
@@ -250,8 +223,31 @@ public class UserBookResource {
    * Look for UserBook by incoming id. If returned UserBook is null, throw Not Found (404).
    */
   private UserBook findSafely(int id) {
-    return this.userBookDAO.findById(id).orElseThrow(() -> new NotFoundException("No tag by id '" + id + "'"));
+    return this.userBookDAO.findById(id).orElseThrow(() -> new NotFoundException("No UserBook by id '" + id + "'"));
   }
 
+  /**
+   * Verify the userId in the path matches the user from the security context.
+   * Or if the context user is 'admin'.
+   *
+   * @param context SecurityContext to grab username from
+   * @param userId ID of user from the Path
+   */
+  private void verifyUserIdMatches(SecurityContext context,
+                                          int userId) throws WebApplicationException {
+    // Get the username corresponding to the incoming userId and verify that is the same as the authenticated caller.
+    String userNameFromSecurity = context.getUserPrincipal().getName();
+    User userFromId = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("No user with ID '" + userId + "' found."));
+
+    // Check names, if:
+    // userNameFromSecurity == admin or
+    // userNameFromSecurity == name from id
+    // we can proceed
+    if ( ! (userFromId.getName().equals("admin")) ||
+         (userFromId.getName().equals(userNameFromSecurity)) ) {
+      throw new WebApplicationException("Must be logged in as user with id '" + userId + "' or as admin to access this resource.",
+                                        Response.Status.UNAUTHORIZED);
+    }
+  }
 
 }

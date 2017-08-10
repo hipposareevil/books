@@ -18,7 +18,8 @@ import io.swagger.annotations.ApiModelProperty;
  * - bookID (ID in book table)
  * - rating of book by the user (up or down)
  * - extra data
- * - tags on the book. Tags are NOT persisted to the 'user_book' table.
+ *
+ * Tags are store in ViewableUserBook which is a subclass of this.
  */
 @Entity
 @Table(name = "userbook")
@@ -29,7 +30,7 @@ public class UserBook {
    */ 
   @Id
   @Column(name = "user_book_id", unique=true, nullable=false)
-  @ApiModelProperty(hidden=true)
+//  @ApiModelProperty(hidden=true)
   private int user_book_id;
 
 
@@ -54,65 +55,10 @@ public class UserBook {
 
 
   /**
-   * Data for the tag. May be empty
+   * Data for the UserBook. May be empty
    */
   @Column(name = "data", nullable=true)
   private String data;
-
-
-
-
-/*
-  @OneToMany(cascade = CascadeType.ALL)
-  @JoinTable(name = "tagmap",
-             joinColumns = { @JoinColumn(name = "user_book_id", referencedColumnName="user_book_id") },
-             inverseJoinColumns = { @JoinColumn(name = "tag_id", referencedColumnName="tag_id") })
-*/
-
- 
-/*
-  @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  @JoinTable(name = "tagmap", joinColumns = { 
-      @JoinColumn(name = "user_book_id",
-                  nullable = false, updatable = false)
-    }, inverseJoinColumns = { 
-      @JoinColumn(name = "tag_id",
-                  nullable = false, updatable = false)
-    }
-    )
-*/
-
-
-  @OneToMany(cascade = CascadeType.ALL)
-  @JoinTable(name = "tagmap",
-             joinColumns = { @JoinColumn(name = "user_book_id", referencedColumnName="user_book_id") },
-             inverseJoinColumns = { @JoinColumn(name = "tag_id", referencedColumnName="tag_id") })
-  private Set<Tag> tags = new HashSet<Tag>();
-
-
-  public Set<Tag> getTags() {
-    return new HashSet<Tag>(this.tags);
-  }
-
-  public void setTags(Set<Tag> tags) {
-    this.tags = new HashSet<Tag>(tags);
-  }
-
-
-/*
-
- @ManyToOne(targetEntity = Role.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "roleId", referencedColumnName = "id")
-  
-
-
-@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "STUDENT_PHONE", joinColumns = { @JoinColumn(name = "STUDENT_ID") }, inverseJoinColumns = { @JoinColumn(name = "PHONE_ID") })
-	public Set<Phone> getStudentPhoneNumbers() {
-		return this.studentPhoneNumbers;
-	}
-*/
-
 
 
   /**
@@ -121,13 +67,12 @@ public class UserBook {
   public UserBook() {
   }
 
-  public UserBook(int id, int user_id, int bookId, boolean rating, String data, Set<Tag> tags) {
+  public UserBook(int id, int user_id, int bookId, boolean rating, String data) {
     this.user_book_id = id;
     this.user_id = user_id;
     this.bookId = bookId;
     this.rating = rating;
     this.data = data;
-    this.tags = new HashSet<Tag>(tags);
   }
 
   public String toString() {
@@ -137,19 +82,18 @@ public class UserBook {
     string.append(", user_id=" + user_id);
     string.append(", bookId=" + bookId);
     string.append(", rating=" + rating);
-    string.append(", tags=[" + tags + "]");
     string.append("]");
 
     return string.toString();
   }
 
   
-//  @ApiModelProperty(hidden=true)
+  @ApiModelProperty(hidden=true)
   public void setUserBookId(int id) {
     this.user_book_id = id;
   }
 
-  //  @ApiModelProperty(hidden=true)
+  @ApiModelProperty(hidden=true)
   public int getUserBookId() {
     return this.user_book_id;
   }
