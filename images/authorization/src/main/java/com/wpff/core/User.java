@@ -31,6 +31,15 @@ import io.swagger.annotations.ApiModelProperty;
 public class User {
 
   /**
+   * User ID.
+   */ 
+  @Column(name = "user_id", unique=true, nullable=false)
+  @ApiModelProperty(hidden=true)
+  private int id;
+
+
+
+  /**
    * Name of User
    */
   @Id
@@ -48,13 +57,6 @@ public class User {
    */ 
   @Column(name = "password", nullable=false)
   private String password;
-
-  /**
-   * Users ID.
-   */ 
-  @Column(name = "id", unique=true, nullable=false)
-  @ApiModelProperty(hidden=true)
-  private int id;
 
 
   /**

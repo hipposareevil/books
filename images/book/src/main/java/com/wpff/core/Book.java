@@ -26,6 +26,7 @@ import java.util.Objects;
 public class Book implements Comparable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "book_id", nullable=false)
   private int id;
 
   @Column(name = "title", unique=true, nullable = false)

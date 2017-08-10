@@ -1,12 +1,7 @@
 package com.wpff.core;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import java.util.Objects;
+import javax.persistence.*;
+import java.util.*;
 
 import org.jasypt.util.password.BasicPasswordEncryptor;
 
@@ -16,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Named query to select all tags
  */
 @Entity
-@Table(name = "tag")
+@Table(name="tag")
 @NamedQueries(
     {
         @NamedQuery(
@@ -53,7 +48,6 @@ public class Tag {
   private String data;
 
 
-
   /**
    * Default constructor
    */
@@ -75,9 +69,9 @@ public class Tag {
     return data;
   }
 
-  @ApiModelProperty(hidden=true)
-  public int getId() {
-    return this.id;
+
+  public void setData(String data) {
+    this.data = data;
   }
 
 
@@ -91,13 +85,15 @@ public class Tag {
   }
 
 
-  @ApiModelProperty(hidden=true)
-  public void setId(int id) {
-    this.id = id;
+//  @ApiModelProperty(hidden=true)
+  public int getId() {
+    return this.id;
   }
 
-  public void setData(String data) {
-    this.data = data;
+
+//  @ApiModelProperty(hidden=true)
+  public void setId(int id) {
+    this.id = id;
   }
 
 

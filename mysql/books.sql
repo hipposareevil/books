@@ -1,24 +1,60 @@
-
+-- TAG
 DROP TABLE IF EXISTS `tag`;
 
 
 CREATE TABLE `tag` (
-  `id`  int(11) NOT NULL AUTO_INCREMENT,
+  `tag_id`  int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `data` varchar(2048) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+LOCK TABLES `tag` WRITE;
+
+INSERT INTO `tag` VALUES (1, "sci-fi", "Science Fiction & Fantasy" );
+INSERT INTO `tag` VALUES (2, "e-book", "Electronic books" );
+
+UNLOCK TABLES;
+
+
+
+-- User Book
+
+DROP TABLE IF EXISTS `userbook`;
+
+CREATE TABLE `userbook` (
+  `user_book_id`  int(11) NOT NULL AUTO_INCREMENT,
+  `user_id`  int(11) NOT NULL,
+  `book_id`  int(11) NOT NULL,
+  `rating` tinyint(1) DEFAULT NULL,
+  `data` varchar(2048) DEFAULT NULL,
+  PRIMARY KEY (`user_book_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+-- TAG MAP
+DROP TABLE IF EXISTS `tagmap`;
+ 
+
+CREATE TABLE `tagmap` (
+  `user_book_id`  int(11) NOT NULL,
+  `tag_id`  int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+
+
+-- USER
 
 DROP TABLE IF EXISTS `user`;
 
 
 CREATE TABLE `user` (
-  `id`  int(11) NOT NULL AUTO_INCREMENT,
+  `user_id`  int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `data` varchar(2048) DEFAULT NULL,
   `password` varchar(2048) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 LOCK TABLES `user` WRITE;
@@ -40,11 +76,11 @@ DROP TABLE IF EXISTS `author`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `author` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `author_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(40) DEFAULT NULL,
   `image_url` varchar(400) DEFAULT NULL,
   `searched_image` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`author_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=365 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -69,7 +105,7 @@ DROP TABLE IF EXISTS `book`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `book` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `book_id` int(11) NOT NULL AUTO_INCREMENT,
   `author_id` int(11) NOT NULL DEFAULT '0',
   `isbn` char(50) DEFAULT NULL,
   `year` char(11) DEFAULT NULL,
@@ -81,7 +117,7 @@ CREATE TABLE `book` (
   `read_flag` tinyint(1) DEFAULT NULL,
   `rating` int(11) NOT NULL DEFAULT '0',
   `description` varchar(15000) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`book_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=808 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

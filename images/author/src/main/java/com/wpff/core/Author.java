@@ -25,9 +25,9 @@ import io.swagger.annotations.*;
     }
 )
 public class Author {
-//  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Id
-  @Column(name = "id", unique=true, nullable = false)
+//  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "author_id", unique=true, nullable = false)
   private int id;
 
   @Column(name = "name", unique=true, nullable = false)
