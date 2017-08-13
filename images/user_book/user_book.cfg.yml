@@ -1,3 +1,6 @@
+server:
+  registerDefaultExceptionMappers: false
+
 database:
   # Using mysql
   driverClass: com.mysql.jdbc.Driver

@@ -48,6 +48,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ResponseHeader;
 
 
@@ -180,10 +181,10 @@ public class UserBookResource {
    */
   @ApiOperation(
     value = "Create new userbook",
-    notes = "Create new userbook in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
-    response = UserBook.class
+    notes = "Create new userbook in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
-  @ApiResponse(code = 409, message = "Duplicate userbook")
+  @ApiResponses(value = { @ApiResponse(code = 409, message = "Userbook already exists in database."),
+                          @ApiResponse(code = 200, response=UserBook.class, message = "Userbook successfully added.") })
   @POST
   @UnitOfWork
   @TokenRequired
@@ -208,8 +209,17 @@ public class UserBookResource {
     try {
       // Make a new UserBook from incoming userBookBean (which is a PostUserBook)
       UserBook userBook = new UserBook();
-      // copy(destination, source)
+
+      // Copy over bean values - copy(destination, source)
       BeanUtils.copyProperties(userBook, userBookBean);
+      // Add in the user_id from the URL to the 'userBook'
+      userBook.setUserId(userId.get());
+
+      // Get tags and add some if necessary
+      List<String> incomingTags = userBookBean.getTags();
+      for (String s: incomingTags) {
+        System.out.println("tag: " + s);
+      }
     
       return this.userBookDAO.create(userBook);
     }
@@ -249,15 +259,22 @@ public class UserBookResource {
     String userNameFromSecurity = context.getUserPrincipal().getName();
     User userFromId = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("No user with ID '" + userId + "' found."));
 
+    System.out.println("userNameFromSecurity: " + userNameFromSecurity);
+    System.out.println("userFromId:" + userFromId.getName());
+
     // Check names, if:
     // userNameFromSecurity == admin or
     // userNameFromSecurity == name from id
     // we can proceed
-    if ( ! (userFromId.getName().equals("admin")) ||
-         (userFromId.getName().equals(userNameFromSecurity)) ) {
-      throw new WebApplicationException("Must be logged in as user with id '" + userId + "' or as admin to access this resource.",
+    if ( ! (userNameFromSecurity.equals("admin")) ||
+         (userNameFromSecurity.equals(userFromId.getName())) ) {
+      throw new WebApplicationException("Must be logged in as user with id '"
+                                        + userFromId.getName()
+                                        + "' or as 'admin' to access this resource.",
                                         Response.Status.UNAUTHORIZED);
     }
   }
 
 }
+
+

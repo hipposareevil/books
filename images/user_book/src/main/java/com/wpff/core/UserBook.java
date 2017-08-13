@@ -26,8 +26,8 @@ public class UserBook {
    * UserBook ID.
    */ 
   @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "user_book_id", unique=true, nullable=false)
-//  @ApiModelProperty(hidden=true)
   private int user_book_id;
 
 

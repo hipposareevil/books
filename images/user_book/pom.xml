@@ -41,6 +41,14 @@
             <artifactId>dropwizard-core</artifactId>
         </dependency>
 
+        <!-- for exception utilities -->
+        <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.6</version>
+        </dependency>
+
+        <!-- for bean copying -->
         <dependency>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>

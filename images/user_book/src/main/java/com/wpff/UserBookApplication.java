@@ -16,6 +16,13 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 
+// Exception mapping
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import javax.persistence.PersistenceException;
+import java.util.HashMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.ExceptionMapper;
 
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
@@ -104,11 +111,39 @@ public class UserBookApplication extends Application<UserBookConfiguration> {
     // Register endpoints
     environment.jersey().register(new UserBookResource(userDao, tagDao, userBookDao));
 
+    environment.jersey().register(new PersistenceExceptionMapper());
 
     // Add a container request filter for securing webservice endpoints.
     DynamicFeature tokenRequired =new TokenRequiredFeature(jedis) ;
     environment.jersey().register(tokenRequired);
   }
 
+}
 
+
+/**
+ * Mapper to convert peristence exceptions into something more readable.
+ * 
+ */
+class PersistenceExceptionMapper implements ExceptionMapper<PersistenceException> {
+    @Override
+    public Response toResponse(final PersistenceException e) {
+      final String rootMessage = ExceptionUtils.getRootCauseMessage(e);
+      System.out.println("Got exception from database: " + rootMessage);
+
+      if (rootMessage.contains("Duplicate entry")) {
+        return Response.status(409)
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(new HashMap<String, String>() { {
+              put("error", "Entity already exists, please update your query and try again.");
+            } }).build();
+      }
+
+      // Create a JSON response with the provided hashmap
+      return Response.status(500)
+          .type(MediaType.APPLICATION_JSON_TYPE)
+          .entity(new HashMap<String, String>() { {
+            put("error", rootMessage);
+          } }).build();
+    }
 }

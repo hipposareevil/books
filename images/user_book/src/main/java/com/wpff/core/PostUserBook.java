@@ -1,5 +1,6 @@
 package com.wpff.core;
 
+import java.util.*;
 
 /**
  * User bean that is used in the POST method of UserBook.
@@ -9,13 +10,13 @@ package com.wpff.core;
  */
 public class PostUserBook {
 
-  private int user_id;
-
   private int bookId;
 
   private boolean rating;
 
   private String data;
+
+  private List<String> tags = new ArrayList<String>();
 
 
   public void setBookId(int bookId) {
@@ -24,15 +25,6 @@ public class PostUserBook {
 
   public int getBookId() {
     return this.bookId;
-  }
-
-
-  public void setUserId(int user_id) {
-    this.user_id = user_id;
-  }
-
-  public int getUserId() {
-    return this.user_id;
   }
 
 
@@ -53,5 +45,11 @@ public class PostUserBook {
     return rating;
   }
 
+  public void setTags(List<String> tags) {
+    this.tags = new ArrayList<String>(tags);
+  } 
 
+  public List<String> getTags() {
+    return new ArrayList<String>(this.tags);
+  }
 }

@@ -190,7 +190,11 @@ public class UserResource {
       // copy(destination, source)
       BeanUtils.copyProperties(user, userBean);
     
-      return this.userDAO.create(user);
+      User newUser = this.userDAO.create(user);
+
+      System.out.println("UserResource.createUser: created new user with ID:" + newUser.getId());
+
+      return newUser;
     }
     catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
       throw new WebApplicationException("Error in updating database when creating user   " + userBean + ".", Response.Status.INTERNAL_SERVER_ERROR);
@@ -241,15 +245,18 @@ public class UserResource {
         // via the 'setPassword' method on User.
         // So this sets the already encrypted version, otherwise it will be
         // encrypted again and we lose the original password.
-        BeanUtils.copyProperty(userInDatabase,
-                               "encryptedPassword",
-                               userBean.getPassword());
-        BeanUtils.copyProperty(userInDatabase,
-                               "name",
-                               userBean.getName());
-        BeanUtils.copyProperty(userInDatabase,
-                               "data",
-                               userBean.getData());
+        if (userBean.getPassword() != null)
+          BeanUtils.copyProperty(userInDatabase,
+                                 "encryptedPassword",
+                                 userBean.getPassword());
+        if (userBean.getName() != null)
+          BeanUtils.copyProperty(userInDatabase,
+                                 "name",
+                                 userBean.getName());
+        if (userBean.getData() != null)
+          BeanUtils.copyProperty(userInDatabase,
+                                 "data",
+                                 userBean.getData());
       }
       catch (Exception bean) {
         throw new WebApplicationException("Error in updating database for user " + userId + ".", Response.Status.INTERNAL_SERVER_ERROR);
