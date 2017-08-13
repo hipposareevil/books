@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Represents a book, with title and author.
  */
-public class Book {
+public class BookQueryBean {
 
 	/**
 	 * Type of Identification for this book,
@@ -20,7 +20,7 @@ public class Book {
 	private final String publicationDate;
 	private final Map<ID_TYPE, String> ids = new HashMap<ID_TYPE, String>();
 
-	Book(String title, String author, String publicationDate, Map<ID_TYPE, String> ids) {
+	BookQueryBean(String title, String author, String publicationDate, Map<ID_TYPE, String> ids) {
 		this.title = title;
 		this.author = author;
 		this.publicationDate = publicationDate;

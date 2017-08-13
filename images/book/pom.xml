@@ -37,6 +37,14 @@
 
     <dependencies>
 
+
+        <!-- for bean manipulate -->
+        <dependency>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+          <version>1.9.3</version>
+        </dependency>
+
         <!-- swagger for REST description -->
         <dependency>
           <groupId>com.smoketurner</groupId>

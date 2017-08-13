@@ -1,10 +1,16 @@
 package com.wpff.resources;
 
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+
+// utils
+import org.apache.commons.beanutils.*;
+import java.lang.reflect.InvocationTargetException;
  
 import com.wpff.core.Author;
+import com.wpff.core.PostAuthor;
 import com.wpff.db.AuthorDAO;
 import com.wpff.filter.TokenRequired;
 
@@ -116,23 +122,27 @@ public class AuthorResource {
   /**
    * Create a new author in the DB.
    *
-   * @param author Author to add
+   * @param authorBean Author to add
    * @return newly created Author
    */
   @ApiOperation(
     value="Create author.",
-    notes="Create new author in the database. The 'id' field will be ignored. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
-    response = Author.class
+    notes="Create new author in the database. The 'id' field will be ignored. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @POST
   @UnitOfWork
   @ApiResponse(code = 409, message = "Duplicate value")
   public Author createAuthor(
     @ApiParam(value = "Author information.", required = false)
-    Author author
+    PostAuthor authorBean
                              ) {
+    // START
     try {
-      author.setId(0);
+      // Make new Author from authorBean
+      Author author = new Author();
+      // copy(destination, source)
+      BeanUtils.copyProperties(author, authorBean);
+
       return authorDAO.create(author);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
@@ -143,6 +153,9 @@ public class AuthorResource {
       }
 
       throw new WebApplicationException(errorMessage, 409);
+    }
+    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
+      throw new WebApplicationException("Error in updating database when creating author  " + authorBean + ".", Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
 

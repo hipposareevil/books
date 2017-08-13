@@ -34,9 +34,7 @@ public class User {
    */ 
   @Id
   @Column(name = "user_id", unique=true, nullable=false)
-  @ApiModelProperty(hidden=true)
   private int id;
-
 
   /**
    * Name of User
@@ -56,39 +54,12 @@ public class User {
   @Column(name = "password", nullable=false)
   private String password;
 
-  /**
-   * Default constructor
-   */
-  public User() {
-  }
-
-  public User(String name, int id, String data, String password) {
-    this.name = name;
+  public void setId(int id) {
     this.id = id;
-    this.data = data;
-    this.password = password;
   }
 
-  public String toString() {
-    return "User[name=" + name + "]";
-  }
-
-  public String getData() {
-    return data;
-  }
-
-  @ApiModelProperty(hidden=true)
   public int getId() {
     return this.id;
-  }
-
-
-  public String getName() {
-    return name;
-  }
-
-  public String getPassword() {
-    return this.password;
   }
 
 
@@ -97,14 +68,23 @@ public class User {
   }
 
 
-  @ApiModelProperty(hidden=true)
-  public void setId(int id) {
-    this.id = id;
+  public String getName() {
+    return name;
   }
 
   public void setData(String data) {
     this.data = data;
   }
+
+  public String getData() {
+    return data;
+  }
+
+
+  public String getPassword() {
+    return this.password;
+  }
+
 
   /**
    * Encrypts the incoming password and sets it.

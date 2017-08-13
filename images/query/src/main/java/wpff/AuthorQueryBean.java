@@ -3,11 +3,11 @@ package wpff;
 /**
  * Represents an author
  */
-public class Author {
+public class AuthorQueryBean {
 
   private final String name;
 
-  public Author(String name) {
+  public AuthorQueryBean(String name) {
     this.name = name;
   }
 

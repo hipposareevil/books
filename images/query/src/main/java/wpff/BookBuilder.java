@@ -13,7 +13,7 @@ public class BookBuilder {
 	private String title;
 	private String author;
 	private String publicationDate;
-	private Map<Book.ID_TYPE, String> ids = new HashMap<Book.ID_TYPE, String>();
+	private Map<BookQueryBean.ID_TYPE, String> ids = new HashMap<BookQueryBean.ID_TYPE, String>();
 
 	public BookBuilder setAuthor(String author) {
 		this.author = author;
@@ -30,13 +30,13 @@ public class BookBuilder {
 		return this;
 	}
 
-	public BookBuilder addId(Book.ID_TYPE type, String value) {
+	public BookBuilder addId(BookQueryBean.ID_TYPE type, String value) {
 		this.ids.put(type, value);
 		return this;
 	}
 
-	public Book build() {
-		return new Book(this.title, this.author, this.publicationDate, this.ids);
+	public BookQueryBean build() {
+		return new BookQueryBean(this.title, this.author, this.publicationDate, this.ids);
 	}
 
 }
