@@ -29,6 +29,10 @@ database:
   # whether or not idle connections should be validated
   checkConnectionWhileIdle: false
 
+logging:
+  loggers:
+    org.hibernate:
+      level: OFF
 
 redis:
   # The redis server's address
