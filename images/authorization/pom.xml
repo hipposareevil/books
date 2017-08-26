@@ -10,11 +10,11 @@
     </prerequisites>
 
     <groupId>com.wpff</groupId>
-    <artifactId>auth</artifactId>
+    <artifactId>authorization</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <name>auth</name>
+    <name>authorization</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

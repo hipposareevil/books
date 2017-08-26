@@ -35,10 +35,10 @@ ALTER TABLE userbook ADD CONSTRAINT unique_book UNIQUE(user_id, book_id);
 
 
 -- TAG MAP
-DROP TABLE IF EXISTS `tagmap`;
+DROP TABLE IF EXISTS `tagmapping`;
  
 
-CREATE TABLE `tagmap` (
+CREATE TABLE `tagmapping` (
   `user_book_id`  int(11) NOT NULL,
   `tag_id`  int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
