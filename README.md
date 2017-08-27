@@ -5,7 +5,9 @@ Table of Contents
 
 # Books
 Set of webservices to support a book repository (like goodreads.com or librarything.com). This is composed of services to: query google for book titles *(/query)*, manage users *(/users)*, a book catalog *(/book)*, an author catalog *(/author)*, set of tags *(/tag)*, and sets of books per each user *(/book_users)*. Each endpoint (except */query*) requires authorization which is obtained at the */authorize* endpoint.
+
 The entire set of books in the database is obtained via the */book* endpoint. Same with authors of those books at the */author* endpoint. Each user may have a set of books they are tracking, which is managed through the */user_book* endpoint. Each 'user book' has a set of tags, like *sci-fi* or *e-bok*, some metadata and a rating of thumbs up (1) or thumbs down (0).
+
 There is an initial user of *admin* with same password. The *admin* user can create new users via the */user* endpoint.
 
 # tldr
@@ -38,7 +40,7 @@ Endpoint | Purpose
 REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application.
 This service requires a google api key. 
 
-See [images/query](https://github.com/hipposareevil/books/blob/master/images/query/README.md) for more information. 
+See [query](https://github.com/hipposareevil/books/blob/master/images/query/README.md) for more information. 
 When there is no google api key, this endpoint will just return empty results.
 
 ## author
@@ -54,7 +56,7 @@ See [book](https://github.com/hipposareevil/books/blob/master/images/book/README
 ## user
 Microservice to manage users. A *user* is used to maintain a set of *user books*, which stores which books the user is cataloging, along with metadata, tags and a rating. In addition, a *user* is used to obtain an authorization token for authenticating against the various endpoints.
 
-See [user](https://github.com/hipposareevil/books/blob/master/images/book/README.md) for more information. 
+See [user](https://github.com/hipposareevil/books/blob/master/images/user/README.md) for more information. 
 
 ## user_book
 Microservice to manage a set of books for a user. Each user has a list of books they can catalog. Each *user book* has a link to the real Book and associated Author. In addition, a *user book* has user *data* and a set of *tags*. 
