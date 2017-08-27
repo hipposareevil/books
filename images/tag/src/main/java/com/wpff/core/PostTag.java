@@ -1,7 +1,8 @@
 package com.wpff.core;
 
 /**
- * Tag class used in the Post methods
+ * Tag class used in the Post methods. Different than the Tag class for the
+ * swagger definitions.
  */
 public class PostTag {
 
