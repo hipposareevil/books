@@ -2,6 +2,7 @@ package com.wpff.resources;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,17 +14,18 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.FullUserBook;
 import com.wpff.core.PostUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
-import com.wpff.core.DatabaseUserBook;
 import com.wpff.db.TagDAO;
 import com.wpff.db.UserBookDAO;
 import com.wpff.db.UserDAO;
@@ -100,12 +102,13 @@ public class UserBookResource {
 	 * @return GetUserBook
 	 * 
 	 */
-	@ApiOperation(value = "Get single userBook.", notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
+	@ApiOperation(value = "Get single userBook.",
+			notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
 	@GET
 	@Path("/{user_id}/{user_book_id}")
 	@TokenRequired
-	public FullUserBook getUserBook(@Context SecurityContext context,
-			@ApiParam(value = "ID of user.", required = false) @PathParam("user_id") IntParam userId,
+	public FullUserBook getUserBook(@Context SecurityContext context, @ApiParam(value = "ID of user.",
+			required = false) @PathParam("user_id") IntParam userId,
 
 			@ApiParam(value = "ID of userBook.", required = false) @PathParam("user_book_id") IntParam userBookId,
 
@@ -134,18 +137,25 @@ public class UserBookResource {
 	 *            security context (INJECTED via TokenFilter)
 	 * @param userId
 	 *            ID of user
+	 * @param tagQuery
+	 *            [optional] List of tags of books.
+	 * 
 	 * @param authDummy
 	 *            Dummy authorization string that is solely used for Swagger
 	 *            description.
 	 * @return List of GetUserBook
 	 * 
 	 */
-	@ApiOperation(value = "Get userBooks for user.", notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
+	@ApiOperation(value = "Get userBooks for user.",
+			notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
 	@GET
 	@Path("/{user_id}")
 	@TokenRequired
-	public List<FullUserBook> getUserBook(@Context SecurityContext context,
-			@ApiParam(value = "ID of user.", required = false) @PathParam("user_id") IntParam userId,
+	public List<FullUserBook> getUserBooks(@Context SecurityContext context, @ApiParam(value = "ID of user.",
+			required = false) @PathParam("user_id") IntParam userId,
+
+			@ApiParam(value = "List of tags of books to retrieve. Only user books that have these tags will be returned",
+					required = false) @QueryParam("tag") List<String> tagQuery,
 
 			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
 		// Start
@@ -155,6 +165,17 @@ public class UserBookResource {
 
 			// Ok to get books
 			List<FullUserBook> userBooks = ubHelper.getUserBooksForUser(userId.get());
+
+			// If tagQuery is non null, filter out tags
+			if (tagQuery.isEmpty()) {
+				// Return all books
+				return userBooks;
+			} else {
+				// Filter out books by tag. If the books tags match any in the query, keep
+				// them
+				userBooks = userBooks.stream().filter(t -> !Collections.disjoint(t.getTags(), tagQuery)).collect(Collectors.toList());
+			}
+
 			return userBooks;
 
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
@@ -182,19 +203,20 @@ public class UserBookResource {
 	 *            description.
 	 * @return The newly created user
 	 */
-	@ApiOperation(value = "Create new userbook", notes = "Create new userbook in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
-	@ApiResponses(value = { @ApiResponse(code = 409, message = "Userbook already exists in database."),
-			@ApiResponse(code = 200, response = FullUserBook.class, message = "Userbook successfully added.") })
+	@ApiOperation(value = "Create new userbook",
+			notes = "Create new userbook in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
+	@ApiResponses(value = { @ApiResponse(code = 409, message = "Userbook already exists in database."), @ApiResponse(code = 200,
+			response = FullUserBook.class, message = "Userbook successfully added.") })
 	@POST
 	@TokenRequired
 	@Path("/{user_id}")
-	public FullUserBook createUserBook(@Context SecurityContext context,
-			@ApiParam(value = "ID of user.", required = false) @PathParam("user_id") IntParam userId,
+	public FullUserBook createUserBook(@Context SecurityContext context, @ApiParam(value = "ID of user.",
+			required = false) @PathParam("user_id") IntParam userId,
 
 			@ApiParam(value = "User Book information.", required = true) PostUserBook userBookBean,
 
-			@Context Jedis jedis,
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+			@Context Jedis jedis, @ApiParam(value = "Bearer authorization", required = true) @HeaderParam(
+					value = "Authorization") String authDummy) {
 		// Start
 		try {
 			// Verify the username is 'admin or matches the userid's username.
@@ -218,8 +240,8 @@ public class UserBookResource {
 
 			// Iterate over tagsInDbMap values and for each entry,
 			// if it is contained in 'incomingTags', add it to the list.
-			List<Tag> matchingTags = tagsInDbMap.values().stream().filter(t -> incomingTags.contains(t.getName()))
-					.collect(Collectors.toList());
+			List<Tag> matchingTags = tagsInDbMap.values().stream().filter(t -> incomingTags.contains(t.getName())).collect(
+					Collectors.toList());
 
 			for (Tag x : matchingTags) {
 				System.out.println("got matching tag: " + x);

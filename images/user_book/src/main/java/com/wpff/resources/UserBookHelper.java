@@ -69,8 +69,8 @@ public class UserBookHelper {
 	 * @return Newly created UserBook from database.
 	 */
 	@UnitOfWork
-	DatabaseUserBook createUserBook(PostUserBook userBookBean, IntParam userId)
-			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	DatabaseUserBook createUserBook(PostUserBook userBookBean, IntParam userId) throws IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException {
 		// Create transient UserBook
 		DatabaseUserBook userBookToCreate = new DatabaseUserBook();
 
@@ -125,8 +125,8 @@ public class UserBookHelper {
 	 */
 	@UnitOfWork
 	FullUserBook getUserBookById(int userBookId) throws IllegalAccessException, InvocationTargetException {
-		DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId)
-				.orElseThrow(() -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
+		DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
+				() -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
 
 		System.out.println("got userbook from DB: " + bookInDb);
 
@@ -166,7 +166,7 @@ public class UserBookHelper {
 		System.out.println("TAG names: " + Arrays.toString(tagNames.toArray()));
 
 		for (String x : tagNames) {
-			System.out.println("Assiging tag " + x + " to userbook: " + userBook);
+			System.out.println("Assigning tag " + x + " to userbook: " + userBook);
 		}
 
 		userBook.setTags(tagNames);
@@ -234,8 +234,7 @@ public class UserBookHelper {
 		// Get the username corresponding to the incoming userId and verify that is the
 		// same as the authenticated caller.
 		String userNameFromSecurity = context.getUserPrincipal().getName();
-		User userFromId = userDAO.findById(userId)
-				.orElseThrow(() -> new NotFoundException("No user with ID '" + userId + "' found."));
+		User userFromId = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("No user with ID '" + userId + "' found."));
 
 		String userNameFromId = userFromId.getName();
 		System.out.println("userNameFromSecurity>" + userNameFromSecurity + "<");
@@ -251,8 +250,9 @@ public class UserBookHelper {
 			// Is ok
 			System.out.println("User logged in as " + userNameFromId);
 		} else {
-			throw new WebApplicationException("Must be logged in as user with id '" + userFromId.getName()
-					+ "' or as 'admin' to access this resource.", Response.Status.UNAUTHORIZED);
+			throw new WebApplicationException(
+					"Must be logged in as user with id '" + userFromId.getName() + "' or as 'admin' to access this resource.",
+					Response.Status.UNAUTHORIZED);
 		}
 	}
 
