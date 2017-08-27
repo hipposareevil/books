@@ -12,4 +12,4 @@ COPY book.cfg.yml /opt/docker/
 COPY waitforit.sh /opt/docker/
 
 # wait for the DB at url books_db:3306 for 240 seconds
-ENTRYPOINT ["/opt/docker/waitforit.sh", "books_db:3306", "240",   "java -jar /opt/docker/book-1.0.jar server /opt/docker/book.cfg.yml"]
+ENTRYPOINT ["/opt/docker/waitforit.sh", "books_db:3306", "240",   "java -Xmx64m -jar /opt/docker/book-1.0.jar server /opt/docker/book.cfg.yml"]

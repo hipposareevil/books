@@ -7,8 +7,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.MatchMode;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -52,7 +52,9 @@ public class TagDAO extends AbstractDAO<Tag> {
    * @return Tag that was just persisted
    */
   public Tag create(Tag tag) {
-    return persist(tag);
+    Tag newtag = persist(tag);
+    System.out.println("TagDAO: Create new tag: " + newtag);
+    return newtag;
   }
 
   /**
@@ -78,8 +80,12 @@ public class TagDAO extends AbstractDAO<Tag> {
    *
    * @return List of Tags, may be empty
    */
-  public List<Tag> findAll() {
-    return list(namedQuery("com.wpff.core.Tag.findAll"));
+  public Map<String, Tag> findAll() {
+    List<Tag> tags = list(namedQuery("com.wpff.core.Tag.findAll"));
+
+    Map<String, Tag> tagsMap = tags.stream().collect(
+      Collectors.toMap(Tag::getName, p -> p));
+    return tagsMap;
   }
 
 

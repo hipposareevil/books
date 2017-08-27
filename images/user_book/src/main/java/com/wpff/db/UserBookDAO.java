@@ -1,6 +1,6 @@
 package com.wpff.db;
 
-import com.wpff.core.UserBook;
+import com.wpff.core.DatabaseUserBook;
 
 import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * Data access object for a UserBook
  */
-public class UserBookDAO extends AbstractDAO<UserBook> {
+public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
 
   public UserBookDAO(SessionFactory factory) {
     super(factory);
@@ -26,8 +26,7 @@ public class UserBookDAO extends AbstractDAO<UserBook> {
    * @param id UserBook ID
    * @return Optional UserBook
    */
-  public Optional<UserBook> findById(Integer id) {
-    System.out.println("userBookDao.findbyid:" + id);
+  public Optional<DatabaseUserBook> findById(Integer id) {
     return Optional.ofNullable(get(id));
   }
 
@@ -37,9 +36,9 @@ public class UserBookDAO extends AbstractDAO<UserBook> {
    * @param userId User ID
    * @return list of UserBooks for incoming user
    */
-  public List<UserBook> findBooksByUserId(Integer userId) {
+  public List<DatabaseUserBook> findBooksByUserId(Integer userId) {
     return currentSession()
-        .createCriteria(UserBook.class)
+        .createCriteria(DatabaseUserBook.class)
         .add(Restrictions.eq("user_id", userId))
         .list();
   }
@@ -50,7 +49,7 @@ public class UserBookDAO extends AbstractDAO<UserBook> {
    * @param userBook UserBook to be created. Comes in via UserBookResource.
    * @return UserBook that was just persisted
    */
-  public UserBook create(UserBook userBook) {
+  public DatabaseUserBook create(DatabaseUserBook userBook) {
     return persist(userBook);
   }
 
@@ -59,7 +58,7 @@ public class UserBookDAO extends AbstractDAO<UserBook> {
    *
    * @param userBook to update
    */
-  public void update(UserBook userBook) {
+  public void update(DatabaseUserBook userBook) {
     currentSession().saveOrUpdate(userBook);
   }
 
@@ -68,7 +67,7 @@ public class UserBookDAO extends AbstractDAO<UserBook> {
    *
    * @param userBook to delete
    */
-  public void delete(UserBook userBook) {
+  public void delete(DatabaseUserBook userBook) {
     currentSession().delete(userBook);
   }
 

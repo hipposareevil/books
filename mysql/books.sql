@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS `tag`;
 
 CREATE TABLE `tag` (
   `tag_id`  int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL UNIQUE,
   `data` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -31,12 +31,14 @@ CREATE TABLE `userbook` (
   PRIMARY KEY (`user_book_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+ALTER TABLE userbook ADD CONSTRAINT unique_book UNIQUE(user_id, book_id);
+
 
 -- TAG MAP
-DROP TABLE IF EXISTS `tagmap`;
+DROP TABLE IF EXISTS `tagmapping`;
  
 
-CREATE TABLE `tagmap` (
+CREATE TABLE `tagmapping` (
   `user_book_id`  int(11) NOT NULL,
   `tag_id`  int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -51,11 +53,13 @@ DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE `user` (
   `user_id`  int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL UNIQUE,
   `data` varchar(2048) DEFAULT NULL,
   `password` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+ALTER TABLE user ADD CONSTRAINT unique_user UNIQUE(name);
 
 LOCK TABLES `user` WRITE;
 

@@ -7,3 +7,8 @@ target
 dependency-reduced-pom.xml
 /.metadata/
 /.recommenders/
+.classpath
+.project
+.settings/
+.DS_Store
+*/bin/
