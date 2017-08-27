@@ -1,34 +1,12 @@
 Table of Contents
 =================
-   * [Books](#books)
-   * [tldr](#tldr)
-   * [Endpoints](#endpoints)
-      * [author](#author)
-      * [book](#book)
-      * [query](#query)
-      * [user](#user)
-      * [tag](#tag)
-      * [authorize](#authorize)
-      * [swagger](#swagger)
-   * [Databases](#databases)
-      * [MySQL](#mysql)
-      * [Redis](#redis)
-   * [Prerequisites](#prerequisites)
-   * [Building](#building)
-      * [Docker images used](#docker-images-used)
-      * [Frameworks used](#frameworks-used)
-   * [Customizing application deployment](#customizing-application-deployment)
-      * [Google API key](#google-api-key)
-      * [Docker image location](#docker-image-location)
-      * [Deployment Host name](#deployment-host-name)
-   * [Managing application](#managing-application)
-      * [Running application](#running-application)
-      * [Stopping application](#stopping-application)
-      * [Cleaning maven &amp; gradle cache](#cleaning-maven--gradle-cache)
-   * [Accessing the application](#accessing-the-application)
+
+
 
 # Books
-Set of webservices to support a book repository (like goodreads.com or librarything.com).  Includes authorization to protect endpoitns.
+Set of webservices to support a book repository (like goodreads.com or librarything.com). This is composed of services to: query google for book titles *(/query)*, manage users *(/users)*, a book catalog *(/book)*, an author catalog *(/author)*, set of tags *(/tag)*, and sets of books per each user *(/book_users)*. Each endpoint (except */query*) requires authorization which is obtained at the */authorize* endpoint.
+The entire set of books in the database is obtained via the */book* endpoint. Same with authors of those books at the */author* endpoint. Each user may have a set of books they are tracking, which is managed through the */user_book* endpoint. Each 'user book' has a set of tags, like *sci-fi* or *e-bok*, some metadata and a rating of thumbs up (1) or thumbs down (0).
+There is an initial user of *admin* with same password. The *admin* user can create new users via the */user* endpoint.
 
 # tldr
 * build: *./books.sh build*
@@ -39,45 +17,61 @@ Set of webservices to support a book repository (like goodreads.com or libraryth
 
 
 # Endpoints
-Docker containers are used to house the Nginx frontend proxy (API Gateway), the backend databases, and each of the microservices. All calls will be routed through gateay and delegated to one of the microservices. 
+Each microservice (endpoint) and backend database are contained in Docker containers. All containers are attached to the Docker network *booknet*. The microservices are exposed to the outside world via a frontend proxy (API Gateway) which runs in a separate container and listens on port 8080.
 
 ![Books Structure](https://github.com/hipposareevil/books/blob/master/diagrams/structure.png)
 
-The following REST endpoints will be exposed wherever this application is run on port 8080.
+The following REST endpoints are proxied via the API Gateway on port 8080 (configurable via the *docker-compose.yml* file).
 
 Endpoint | Purpose
 --- | ---
-/author | Manage authors in database.
-/book | Manage books in database.
 /query | Microservice to query google for book titles and authors.
+/author | Manage list of authors in database.
+/book | Manage list of books in database. 
 /user | Manage users.
+/user_book | Manage books for a user. 
 /tag | Manage tags.
 /authorize | Authorize access to endpoints.
-/swagger/ | [swagger](http://swagger.io) documentation describing the REST apis.
-
-## author
-REST microservice managing authors; list, query, add, delete. Built with the [dropwizard](http://www.dropwizard.io/) framework.
-
-## book
-REST microservice managing books; list, query, add, delete. Built with the [dropwizard](http://www.dropwizard.io/) framework.
+/swagger/ | [swagger](http://swagger.io) documentation describing the REST APIs.
 
 ## query
 REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application.
 This service requires a google api key. 
 
-See [images/query](https://github.com/hipposareevil/images/books/blob/master/query/README.md) for more information. 
-When there is no google api key, this endpoint will just return empty results.  Built with the [spring boot](https://projects.spring.io/spring-boot/) framework.
+See [images/query](https://github.com/hipposareevil/books/blob/master/images/query/README.md) for more information. 
+When there is no google api key, this endpoint will just return empty results.
+
+## author
+Microservice to manage the complete set of Authors in the database. Operations include: add, list all, list single and delete.
+
+See [author](https://github.com/hipposareevil/books/blob/master/images/author/README.md) for more information. 
+
+## book
+Microservice to manage the complete set of Books in the database. Operations include; list, query, add, delete.
+
+See [book](https://github.com/hipposareevil/books/blob/master/images/book/README.md) for more information. 
 
 ## user
-REST microservice managing users. A user is necessary to access the other services (except /query). Once a user exists, an authorization token must be created via the /authorize endpoint.
+Microservice to manage users. A *user* is used to maintain a set of *user books*, which stores which books the user is cataloging, along with metadata, tags and a rating. In addition, a *user* is used to obtain an authorization token for authenticating against the various endpoints.
+
+See [user](https://github.com/hipposareevil/books/blob/master/images/book/README.md) for more information. 
+
+## user_book
+Microservice to manage a set of books for a user. Each user has a list of books they can catalog. Each *user book* has a link to the real Book and associated Author. In addition, a *user book* has user *data* and a set of *tags*. 
+
+See [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book/README.md) for more information. 
+
 
 ## tag
-REST microservice managing tags. Tags can be applied to a user's books (via the _user_books_ endpoint).  Multiple tags may be applied to a single book, e.g. "e-book" and "sci-fi".
+Microservice to manage tags. Tags can be applied to a user's set of booksvia the *user_books* endpoint.  Multiple tags may be applied to a single book, e.g. "e-book" and "sci-fi".
+
+See [tag](https://github.com/hipposareevil/books/blob/master/images/tag/README.md) for more information. 
+
 
 ## authorize
-REST microservice to authenticate a user. Creates a token of the form 'Bearer qwerty-1234-asdf-9876'.
+Microservice to authenticate a user. This creates a token of the form 'Bearer qwerty-1234-asdf-9876', which is then added to the headers of any calls to the other endpoints.
 
-Token should be put in the HTTP Headers with key 'AUTHORIZATION'. See the /swagger/ endpoint for more information.
+See [authorize](https://github.com/hipposareevil/books/blob/master/images/authorization/README.md) for more information. 
 
 ## swagger
 Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions.
@@ -89,6 +83,9 @@ There are two databases used to manage the books and users.
 
 ## MySQL
 [MySQL](https://www.mysql.com/) is used to store books, authors, users, tags and user books lists.
+
+See [mysql](https://github.com/hipposareevil/books/blob/master/mysql/README.md) for more information and method to update the *admin* user's password.
+
 
 ## Redis
 [Redis](https://redis.io/) is used to store and manage authorization tokens. The various services utilize redis to authorize a caller for an operation.

@@ -35,7 +35,6 @@ public class Tag {
    */ 
   @Id
   @Column(name = "tag_id", unique=true, nullable=false)
-  @ApiModelProperty(hidden=true)
   private int id;
 
 
@@ -75,7 +74,6 @@ public class Tag {
     return data;
   }
 
-  @ApiModelProperty(hidden=true)
   public int getId() {
     return this.id;
   }
@@ -91,7 +89,6 @@ public class Tag {
   }
 
 
-  @ApiModelProperty(hidden=true)
   public void setId(int id) {
     this.id = id;
   }
