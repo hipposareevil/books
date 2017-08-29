@@ -49,5 +49,15 @@ public class TagMappingDAO extends AbstractDAO<TagMapping> {
 	public TagMapping addTagMapingEntry(TagMapping tagMapping) {
 		return persist(tagMapping);
 	}
+	
+	/**
+	 * Delete all tag mappings for the incoming user book
+	 * @param userBookId ID of user book to remove from tag mappings
+	 */
+	public void deleteTagMappingByUserBookId(int userBookId) {
+		namedQuery("com.wpff.core.TagMapping.deleteUserBook")
+			.setParameter("user_book_id", userBookId)
+			.executeUpdate();
+	}
 
 }

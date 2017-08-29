@@ -14,14 +14,20 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "tagmapping")
-@NamedQueries({
-		@NamedQuery(name = "com.wpff.core.TagMapping.findAll", query = "SELECT u FROM TagMapping u"),
-		@NamedQuery(name = "com.wpff.core.TagMapping.findByUserBookId", query = "SELECT u FROM TagMapping u WHERE u.user_book_id = :user_book_id")
-})
+@NamedQueries({ 
+	    @NamedQuery(name = "com.wpff.core.TagMapping.findAll", 
+	    		       query = "SELECT u FROM TagMapping u"),
+		@NamedQuery(name = "com.wpff.core.TagMapping.findByUserBookId",
+				   query = "SELECT u FROM TagMapping u WHERE u.user_book_id = :user_book_id"), 
+		@NamedQuery(name = "com.wpff.core.TagMapping.deleteUserBook",
+				    query = "DELETE FROM TagMapping u WHERE u.user_book_id = :user_book_id") 
+	    })
 /**
  * TagMap class
  */
 public class TagMapping implements java.io.Serializable {
+
+	private static final long serialVersionUID = -9079509977863749820L;
 
 	/**
 	 * Tag ID.
@@ -84,7 +90,8 @@ public class TagMapping implements java.io.Serializable {
 
 		final TagMapping that = (TagMapping) o;
 
-		return Objects.equals(this.user_book_id, that.user_book_id) && Objects.equals(this.tag_id, that.tag_id);
+		return Objects.equals(this.user_book_id, that.user_book_id) && Objects.equals(
+				this.tag_id, that.tag_id);
 	}
 
 	@Override

@@ -37,7 +37,7 @@ public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
 	 *            User ID
 	 * @return list of UserBooks for incoming user
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "unchecked" })
 	public List<DatabaseUserBook> findBooksByUserId(Integer userId) {
 		return currentSession()
 				.createCriteria(DatabaseUserBook.class)

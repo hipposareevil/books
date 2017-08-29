@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -88,6 +89,44 @@ public class UserBookResource {
 	}
 
 	/**
+	 * Delete a single UserBook by its id
+	 * 
+	 * @param context
+	 *            security context (INJECTED via TokenFilter)
+	 * @param userId
+	 *            ID of user
+	 * @param userBookId
+	 *            ID of user_book
+	 * @param authDummy
+	 *            Dummy authorization string that is solely used for Swagger
+	 *            description
+	 * @return Response denoting if the operation was successful (202) or failed
+	 *         (404)
+	 */
+	@ApiOperation(value = "Delete a UserBook.",
+			notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
+	@DELETE
+	@Path("/{user_id}/{user_book_id}")
+	@TokenRequired
+	public Response deleteUserBook(@Context SecurityContext context, @ApiParam(value = "ID of user.",
+			required = false) @PathParam("user_id") IntParam userId,
+
+			@ApiParam(value = "ID of userBook.", required = false) @PathParam("user_book_id") IntParam userBookId,
+
+			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+		// Start
+
+		// Verify the username matches the userid or is 'admin'
+		ubHelper.verifyUserIdMatches(context, userId.get());
+
+		System.out.println("UBR: getUserBook for user " + userId.get() + ", userbookid: " + userBookId.get());
+
+		ubHelper.deleteUserBookById(userBookId.get());
+
+		return Response.ok().build();
+	}
+
+	/**
 	 * Return single userBook from database
 	 *
 	 * @param context
@@ -102,7 +141,7 @@ public class UserBookResource {
 	 * @return GetUserBook
 	 * 
 	 */
-	@ApiOperation(value = "Get single userBook.",
+	@ApiOperation(value = "Get single UserBook.",
 			notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
 	@GET
 	@Path("/{user_id}/{user_book_id}")

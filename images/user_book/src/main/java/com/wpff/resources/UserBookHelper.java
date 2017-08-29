@@ -49,13 +49,13 @@ public class UserBookHelper {
 	/**
 	 * DAO for tagmap
 	 */
-	private final TagMappingDAO tagMapDAO;
+	private final TagMappingDAO tagMappingDAO;
 
 	public UserBookHelper(UserBookDAO userBookDAO, UserDAO userDAO, TagDAO tagDAO, TagMappingDAO tagMapDAO) {
 		this.tagDAO = tagDAO;
 		this.userBookDAO = userBookDAO;
 		this.userDAO = userDAO;
-		this.tagMapDAO = tagMapDAO;
+		this.tagMappingDAO = tagMapDAO;
 	}
 
 	/**
@@ -115,6 +115,25 @@ public class UserBookHelper {
 	}
 
 	/**
+	 * Delete a user book. It is assumed the caller of this function has already
+	 * verified the user IDs match up to the owner of this user book.
+	 * 
+	 * @param userBookId
+	 *            ID of user_book to delete
+	 */
+	@UnitOfWork
+	void deleteUserBookById(int userBookId) {
+		// Get book in db
+		DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
+				() -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
+
+		this.userBookDAO.delete(bookInDb);
+
+		// Delete tag mappings from tagmapping table
+		this.tagMappingDAO.deleteTagMappingByUserBookId(userBookId);
+	}
+
+	/**
 	 * Get UserBook from database. This will contain the UserBooks tags
 	 *
 	 * @param userBookId
@@ -150,7 +169,7 @@ public class UserBookHelper {
 		System.out.println("Adding tags to userbook:" + userBook);
 
 		// Get tag mappings for user book
-		List<TagMapping> tagMappings = this.tagMapDAO.findTagMappings(userBook.getUserBookId());
+		List<TagMapping> tagMappings = this.tagMappingDAO.findTagMappings(userBook.getUserBookId());
 
 		// Get tag IDs for the user book
 		List<Integer> tagIds = tagMappings.stream().map(TagMapping::getTagId).collect(Collectors.toList());
@@ -192,7 +211,7 @@ public class UserBookHelper {
 	 */
 	@UnitOfWork
 	TagMapping createTagMapping(TagMapping tagMapping) {
-		return this.tagMapDAO.addTagMapingEntry(tagMapping);
+		return this.tagMappingDAO.addTagMapingEntry(tagMapping);
 	}
 
 	/**
@@ -202,7 +221,7 @@ public class UserBookHelper {
 	 */
 	@UnitOfWork
 	List<TagMapping> getTagMap() {
-		return this.tagMapDAO.findAll();
+		return this.tagMappingDAO.findAll();
 	}
 
 	/**
