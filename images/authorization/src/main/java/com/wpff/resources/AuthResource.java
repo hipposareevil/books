@@ -1,48 +1,33 @@
 package com.wpff.resources;
 
-// books
-import com.wpff.core.Credentials;
-import com.wpff.core.User;
-import com.wpff.db.UserDAO;
-import com.wpff.filter.TokenRequired;
-
-
-// utils
-import org.apache.commons.beanutils.BeanUtils;
-
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.stream.Collectors;
 import java.util.UUID;
-import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import javax.ws.rs.*;
-import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-
-import io.dropwizard.hibernate.UnitOfWork;
-
-// Jedis
-import redis.clients.jedis.Jedis;
 
 // password encryption
 import org.jasypt.util.password.BasicPasswordEncryptor;
 
+import com.wpff.core.Bearer;
+// books
+import com.wpff.core.Credentials;
+import com.wpff.core.User;
+import com.wpff.db.UserDAO;
+
+import io.dropwizard.hibernate.UnitOfWork;
 // Swagger
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ResponseHeader;
+// Jedis
+import redis.clients.jedis.Jedis;
 
 
 
@@ -88,18 +73,16 @@ public class AuthResource {
    * 
    * @param creds A credentials bean with name and password.
    * @param jedis Jedis instance used to store token data. (INJECTED)
-   * @return Response with a new token or an UNAUTHORIZED error
+   * @return Bearer with authentication token and ID.
    */
   @ApiOperation(
-    value="Creates authentication token which is then used for various endpoints.",
+    value="Creates authentication token which is then used for various endpoints.",	// 
     notes="Token is created for the user being authenticated. Token is of form 'Bearer qwerty-1234-asdf-9876'. Where required, it should be put in the HTTP Headers with key 'AUTHORIZATION'."
                 )
   @POST
-  @Produces("application/json")
-  @Consumes("application/json")
   @UnitOfWork
   @Path("/token")
-  public Response authenticate(
+  public Bearer authenticate(
     @ApiParam(value = "Credentials for creating authentication token", required = true) 
     Credentials creds,
     @Context Jedis jedis) {
@@ -130,12 +113,16 @@ public class AuthResource {
       jedis.set(token, userInDatabase.getName());
       jedis.expire(token, 60 * 60 * 24);
 
-      return Response.ok(fullToken).build();
+      Bearer tokenToReturn = new Bearer();
+      tokenToReturn.setToken(token);
+      tokenToReturn.setUserId(userInDatabase.getId());
+      
+      return tokenToReturn;
     }
     else {
       // bad password
       System.out.println("AuthResource.authenticate: invalid password for '" + userToAuthenticate + "'");
-      return Response.status(Response.Status.UNAUTHORIZED).build();
+      throw new WebApplicationException(Response.Status.UNAUTHORIZED);
     }
   }
 

@@ -9,6 +9,11 @@ import java.io.Serializable;
 public class Credentials implements Serializable {
 
   /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4121720342119725462L;
+
+/**
    * User to authenticate
    */
   private String name;
