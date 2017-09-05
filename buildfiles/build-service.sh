@@ -32,7 +32,7 @@ _maven() {
   # See if mvn is already installed
     which mvn > /dev/null
     if [ $? -eq 0 ]; then
-        echo "[Using local maven]"
+        echo "[[Using local maven]]"
         (cd $our_directory; mvn "$command")
         build_result=$?
     else
@@ -87,7 +87,7 @@ _gradle() {
 
     which gradle > /dev/null
     if [ $? -eq 0 ]; then
-        echo "[Using local gradle]"
+        echo "[[Using local gradle]]"
         (cd $our_directory; gradle "$command")
         build_result=$?
     else
@@ -132,13 +132,17 @@ clean_gradle() {
 #
 #############
 build_image() {
-    echo "[Building Docker image '$image_name']"
+    local then=$(date +%s)
+    echo "[[Building Docker image '$image_name']]"
     (cd $our_directory; docker build "$our_directory" -t $image_name)
     build_result=$?
 
+    local now=$(date +%s)
+    local elapsed=$(expr $now - $then)
+
     if [ $build_result -eq 0 ]; then
         echo ""
-        echo "Built $image_name"
+        echo "[[Built $image_name in $elapsed seconds]]"
     else
         echo ""
         echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -162,7 +166,9 @@ build-service::build() {
     initialize_variables
 
     # build project
-    echo "[Building web service '$project']"
+    echo "[[Building web service '$project']]"
+    local then=$(date +%s)
+
     if [ -e $our_directory/pom.xml ]; then
         build_maven
     elif [ -e $our_directory/build.gradle ]; then
@@ -173,6 +179,10 @@ build-service::build() {
         echo 1
     fi
 
+    local now=$(date +%s)
+    local elapsed=$(expr $now - $then)
+    echo "[[Built application in $elapsed seconds]]"
+
     if [ $? -ne 0 ]; then
         echo "Unable to build project. Exiting"
         exit 1
@@ -182,7 +192,7 @@ build-service::build() {
     build_image
 
     #done
-    echo "[Build for '$project' complete]"
+    echo "[[Build for '$project' complete]]"
 }
 
 
@@ -199,7 +209,7 @@ build-service::clean() {
     initialize_variables
 
     # build project
-    echo "[Cleaning web service '$project']"
+    echo "[[Cleaning web service '$project']]"
     if [ -e $our_directory/pom.xml ]; then
         clean_maven
     elif [ -e $our_directory/build.gradle ]; then
@@ -216,7 +226,7 @@ build-service::clean() {
     fi
 
     #done
-    echo "[Clean for '$project' complete]"
+    echo "[[Clean for '$project' complete]]"
 }
 
 
