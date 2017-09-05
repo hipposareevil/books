@@ -20,17 +20,20 @@ initialize_variables() {
     image_name="books.$project:latest"
 }
 
-
-#############
-# Build maven
+#########
+# Run a maven command
 #
-#############
-build_maven() {
-    # See if mvn is already installed
+# params:
+# 1- command to run
+#########
+_maven() {
+    command=$1
+    
+  # See if mvn is already installed
     which mvn > /dev/null
     if [ $? -eq 0 ]; then
         echo "[Using local maven]"
-        (cd $our_directory; mvn package)
+        (cd $our_directory; mvn "$command")
         build_result=$?
     else
         echo "[[Running maven via docker]]"
@@ -47,7 +50,7 @@ build_maven() {
                maven:3.3.9-jdk-8-alpine \
                mvn \
                -Dmaven.repo.local=/opt/.m2/ \
-               package
+               "$command"
         build_result=$?
     fi
     # return result of build
@@ -55,14 +58,37 @@ build_maven() {
 }
 
 #############
-# Build gradle
+# Build maven
 #
 #############
-build_gradle() {
+build_maven() {
+    _maven "package"
+    return $?
+}
+
+#############
+# Clean maven
+#
+#############
+clean_maven() {
+    _maven "clean"
+    return $?
+}
+
+
+############
+# Run a gradle command
+#
+# params:
+# 1- command to run
+############
+_gradle() {
+    command=$1
+
     which gradle > /dev/null
     if [ $? -eq 0 ]; then
         echo "[Using local gradle]"
-        (cd $our_directory; gradle build)
+        (cd $our_directory; gradle "$command")
         build_result=$?
     else
         echo "[[Running gradle via docker]]"
@@ -76,11 +102,29 @@ build_gradle() {
                -v "$our_directory":/work \
                -v "$our_directory"/../../.gradle:/GRADLE_CACHE \
                hipposareevil/alpine-gradle \
-               build
+               ""$command""
         build_result=$?
     fi
-    # return result of build
+    # return result of command
     return $build_result
+}
+
+#############
+# Build gradle
+#
+#############
+build_gradle() {
+    _gradle "build"
+    return $?
+}
+
+#############
+# Clean gradle
+#
+#############
+clean_gradle() {
+    _gradle "clean"
+    return $?
 }
 
 #############
@@ -97,7 +141,9 @@ build_image() {
         echo "Built $image_name"
     else
         echo ""
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         echo "Unable to build Docker image for $image_name"
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         exit 1
     fi
 }
@@ -107,7 +153,7 @@ build_image() {
 # Build the project
 #
 #############
-build() {
+build-service::build() {
     if [ -z "$our_directory" ]; then
         echo "NOTE: Calling script must set 'our_directory' variable"
         exit 1
@@ -138,3 +184,39 @@ build() {
     #done
     echo "[Build for '$project' complete]"
 }
+
+
+#############
+# Clean the project
+#
+#############
+build-service::clean() {
+    if [ -z "$our_directory" ]; then
+        echo "NOTE: Calling script must set 'our_directory' variable"
+        exit 1
+    fi
+
+    initialize_variables
+
+    # build project
+    echo "[Cleaning web service '$project']"
+    if [ -e $our_directory/pom.xml ]; then
+        clean_maven
+    elif [ -e $our_directory/build.gradle ]; then
+        clean_gradle
+    else 
+        echo "Unable to find maven or gradle artifacts to perform the clean."
+        echo "Exiting"
+        echo 1
+    fi
+
+    if [ $? -ne 0 ]; then
+        echo "Unable to clean the project. Exiting"
+        exit 1
+    fi
+
+    #done
+    echo "[Clean for '$project' complete]"
+}
+
+

@@ -5,6 +5,7 @@
 # * start
 # * stop
 # * clean
+# * clean-cache
 
 
 # See if docker-compose exists. If it doesn't, use the docker-compose-run container.
@@ -32,10 +33,11 @@ usage()
   echo
   echo "Usage: $0 [build] [start] [stop] [clean]"
   echo ""
-  echo "* build     : Builds application"
-  echo "* start     : Starts application"
-  echo "* stop      : Stops application"
-  echo "* clean     : Cleans maven & gradle repositories"
+  echo "* build       : Builds application"
+  echo "* start       : Starts application"
+  echo "* stop        : Stops application"
+  echo "* clean       : Cleans each application's build"
+  echo "* clean-cache : Cleans maven & gradle repositories"
   echo ""
   exit 0;
 }
@@ -69,7 +71,7 @@ start() {
 # remove the .m2 and .gradle directories
 # 
 ############
-clean() {
+clean-cache() {
     echo "Cleaning up maven and gradle repositories"
     rm -rf .m2 .gradle
 }
@@ -111,6 +113,46 @@ build() {
     echo "All webservices built!" 
 }
 
+###########
+# Iterate on all of the projects and call some executable.
+#
+# params:
+# 1- script to call, e.g. 'build.sh'
+###########
+_iterate_projects() {
+    script=$1
+
+    # find all scripts 
+    projects=$(ls images/*/$script)
+
+    # break up into array by space
+    IFS=$'\n' projectList=(${projects//$' '/ })
+
+    # go through all build files
+    for i in "${!projectList[@]}"
+    do
+        project=$(dirname "${projectList[i]}")
+        echo ""
+        echo " -------------------------------------------------"
+        echo ""
+        echo "  Running project '$project'"
+        $project/$script
+        if [ $? -ne 0 ]; then
+            echo "Unable to execute $script for $project, exiting"
+            exit 1
+        fi
+
+        echo "$script for '$project' completed."
+    done
+}
+
+##############
+# Clean all projects
+##############
+clean() {
+    _iterate_projects "clean.sh"
+}
+
 
 ############
 # main
@@ -136,6 +178,10 @@ main() {
                 build
                 exit 0
                 ;;
+            "clean")
+                clean
+                exit 0
+                ;;
             "start")
                 start
                 exit 0
@@ -144,8 +190,8 @@ main() {
                 stop
                 exit 0
                 ;;
-            "clean")
-                clean
+            "clean-cache")
+                clean-cache
                 exit 0
                 ;;
         esac

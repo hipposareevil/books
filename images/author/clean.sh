@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #######
-# Build project 
+# clean project 
 #######
 
 # The real directory (so this can be called from outside directories)
@@ -11,6 +11,6 @@ root=$our_directory/../..
 # load in common build file
 . $root/buildfiles/build-service.sh
 
-# build the project including the image
-build-service::build
+# clean the build
+build-service::clean
 

@@ -12,5 +12,5 @@ root=$our_directory/../..
 . $root/buildfiles/build-service.sh
 
 # build the project including the image
-build
+build-service::build
 
