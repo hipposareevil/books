@@ -174,17 +174,25 @@ build-service::build() {
     elif [ -e $our_directory/build.gradle ]; then
         build_gradle
     else 
-        echo "Unable to find maven or gradle artifacts to build."
-        echo "Exiting"
+        echo "[[Unable to find maven or gradle artifacts to build.]]"
+        echo "[[Exiting]]"
         echo 1
     fi
+
+    build_success=$?
+    if [ $build_success -ne 0 ]; then
+        echo "[[Unable to build successfully.]]"
+        echo "[[Exiting]]"
+        exit 1
+    fi
+
 
     local now=$(date +%s)
     local elapsed=$(expr $now - $then)
     echo "[[Built application in $elapsed seconds]]"
 
     if [ $? -ne 0 ]; then
-        echo "Unable to build project. Exiting"
+        echo "[[Unable to build project. Exiting.]]"
         exit 1
     fi
 
