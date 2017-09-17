@@ -1,4 +1,4 @@
-package wpff;
+package wpff.google;
 
 /**
  * Represents an author

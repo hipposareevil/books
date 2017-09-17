@@ -1,4 +1,4 @@
-package wpff;
+package wpff.google;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import com.google.api.services.books.BooksRequestInitializer;
 import com.google.api.services.books.model.Volume;
 import com.google.api.services.books.model.Volumes;
 
-import wpff.BookQueryBean.ID_TYPE;
+import wpff.google.BookQueryBean.ID_TYPE;
 
 /**
  * Utility to query google for book and author information.
@@ -32,7 +32,7 @@ public class QueryGoogle {
 	 *            Name of author to query
 	 * @return list of Authors returned from google
 	 */
-	static java.util.List<wpff.AuthorQueryBean> getAuthor(String googleApiKey, String author) {
+	public static java.util.List<wpff.google.AuthorQueryBean> getAuthor(String googleApiKey, String author) {
 
 		// List of Authors to be returned.
 		java.util.List<AuthorQueryBean> authorList = new ArrayList<AuthorQueryBean>();
@@ -99,7 +99,7 @@ public class QueryGoogle {
 	/**
 	 * Query google for books.
 	 */
-	static java.util.List<BookQueryBean> getBooks(String googleApiKey, String author, String title) {
+	public static java.util.List<BookQueryBean> getBooks(String googleApiKey, String author, String title) {
 
 		// List of Books to be returned.
 		java.util.List<BookQueryBean> bookList = new ArrayList<BookQueryBean>();
