@@ -1,6 +1,7 @@
 package wpff.openlibrary;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -99,7 +100,14 @@ public class OpenLibraryTitle {
 	}
 
 	public void setSubject(List<String> subject) {
-		this.subject = subject;
+			// Remove "Protected DAISY"	
+		List<String> subjects = subject.stream()
+				.filter(t -> !(t.contains("Protected DAISY") || 
+						(t.contains("In library")) || 
+						(t.contains("Accessible book"))))
+				.collect(Collectors.toList());
+
+		this.subject = subjects;
 	}
 
 	public String getKey() {

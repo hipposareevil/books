@@ -27,10 +27,17 @@ public class OpenLibraryAuthor {
 		return top_subjects;
 	}
 
+	/**
+	 * Set the subjects for this author.
+	 * Remove 'protected daisy' and 'accessible book'
+	 * 
+	 * @param top_subjects
+	 */
 	public void setTop_subjects(List<String> top_subjects) {
-		// Remove "Protected DAISY"
+		// Remove "Protected DAISY" and others
 		List<String> subjects = top_subjects.stream()
-				.filter(t -> !(t.contains("Protected DAISY") || (t.contains("Accessible book"))))
+				.filter(t -> !(t.contains("Protected DAISY") || 
+						(t.contains("Accessible book"))))
 				.collect(Collectors.toList());
 
 		this.top_subjects = subjects;

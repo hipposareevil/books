@@ -1,5 +1,6 @@
 package wpff.results;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ public class AuthorResult {
 
 	private String name;
 	private String key;
-	private List<String> subjects;
+	private List<String> subjects = new ArrayList<String>();
 	private String birthDate;
 	private String authorImageSmall;
 	private String authorImageMedium;
@@ -39,7 +40,8 @@ public class AuthorResult {
 	}
 
 	public void setSubjects(List<String> subjects) {
-		this.subjects = subjects;
+		if (subjects != null)
+		this.subjects.addAll(subjects);
 	}
 
 	public String getBirthDate() {
@@ -50,24 +52,7 @@ public class AuthorResult {
 		this.birthDate = birthDate;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("AuthorResult [name=");
-		builder.append(name);
-		builder.append(", key=");
-		builder.append(key);
-		builder.append(", subjects=");
-		builder.append(subjects);
-		builder.append(", birthDate=");
-		builder.append(birthDate);
-		builder.append("]");
-		return builder.toString();
-	}
-
+	
 	/**
 	 * @return the authorImageSmall
 	 */
@@ -111,6 +96,23 @@ public class AuthorResult {
 	}
 
 	
-	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("AuthorResult [name=");
+		builder.append(name);
+		builder.append(", key=");
+		builder.append(key);
+		builder.append(", subjects=");
+		builder.append(subjects);
+		builder.append(", birthDate=");
+		builder.append(birthDate);
+		builder.append("]");
+		return builder.toString();
+	}
+
 
 }

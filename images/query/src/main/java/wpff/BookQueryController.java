@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -151,7 +152,7 @@ public class BookQueryController {
 	 * @throws IOException 
 	 */
 	@ApiOperation(value = "/title", nickname = "query titles",
-			notes = "Query openlibrary for book titles.")
+			notes = "Query openlibrary for book titles. Results are sorted by the number of ISBNs per book. So the first titles in the resulting list will be the ones with more associated ISBNS")
 	@ApiImplicitParams({ @ApiImplicitParam(name = "author", value = "Author's name", required = false,
 			dataType = "string", paramType = "query"), @ApiImplicitParam(name = "title", value = "Book Title",
 					required = false, dataType = "string", paramType = "query") })
@@ -172,6 +173,7 @@ public class BookQueryController {
 			results.add(newResult);
 		}		
 		
+		Collections.sort(results);
 		return results;		
 	}
 	
@@ -219,11 +221,10 @@ public class BookQueryController {
 		newResult.setTitle(openLibraryTitle.getTitle_suggest());
 		
 		// Set images for book
-		newResult.setCoverImageSmall(ImageUrlCreator.createCoverImageUrl(openLibraryTitle.getCover_i(), ImageSize.SMALL));
-		newResult.setCoverImageMedium(ImageUrlCreator.createCoverImageUrl(openLibraryTitle.getCover_i(), ImageSize.MEDIUM));
-		newResult.setCoverImageLarge(ImageUrlCreator.createCoverImageUrl(openLibraryTitle.getCover_i(), ImageSize.LARGE));
-		
-		
+		newResult.setCoverImageSmall(ImageUrlCreator.createCoverImageUrl(openLibraryTitle, ImageSize.SMALL));
+		newResult.setCoverImageMedium(ImageUrlCreator.createCoverImageUrl(openLibraryTitle, ImageSize.MEDIUM));
+		newResult.setCoverImageLarge(ImageUrlCreator.createCoverImageUrl(openLibraryTitle, ImageSize.LARGE));
+				
 		newResult.setSubjects(openLibraryTitle.getSubject());
 		if (!openLibraryTitle.getAuthor_key().isEmpty())
 			newResult.setAuthorKey(openLibraryTitle.getAuthor_key().get(0));

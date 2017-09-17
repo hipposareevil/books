@@ -1,5 +1,6 @@
 package wpff.results;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,7 +8,7 @@ import java.util.List;
  * This is filled w/ data from the OpenLibraryTitle
  *
  */
-public class TitleResult {
+public class TitleResult implements Comparable {
 
 	/**
 	 * Title of book
@@ -30,7 +31,7 @@ public class TitleResult {
 	/**
 	 * List of subjects this book covers
 	 */
-	private List<String> subjects;
+	private List<String> subjects = new ArrayList<String>();
 	
 	/**
 	 * Key into openlibrary for the author. Can be used for querying for images.
@@ -57,12 +58,12 @@ public class TitleResult {
 	/**
 	 * List of ISBNs
 	 */
-	private List<String> isbns;
+	private List<String> isbns = new ArrayList<String>();
 	
 	/**
 	 * Set of edition keys for the books in openlibrary
 	 */
-	private List<String> openLibraryKeys;
+	private List<String> openLibraryKeys = new ArrayList<String>();
 	
 	//////////////////////////////////////////////////
 
@@ -92,7 +93,8 @@ public class TitleResult {
 	 * @param subjects the subjects to set
 	 */
 	public void setSubjects(List<String> subjects) {
-		this.subjects = subjects;
+		if (subjects != null)
+		this.subjects.addAll(subjects);
 	}
 
 	/**
@@ -162,7 +164,8 @@ public class TitleResult {
 	 * @param isbns the isbns to set
 	 */
 	public void setIsbns(List<String> isbns) {
-		this.isbns = isbns;
+		if (isbns != null)
+		this.isbns.addAll(isbns);
 	}
 
 	/**
@@ -176,7 +179,8 @@ public class TitleResult {
 	 * @param openLibraryKeys the openLibraryKeys to set
 	 */
 	public void setOpenLibraryKeys(List<String> openLibraryKeys) {
-		this.openLibraryKeys = openLibraryKeys;
+		if (openLibraryKeys != null)
+		this.openLibraryKeys.addAll(openLibraryKeys);
 	}
 
 	/**
@@ -219,6 +223,119 @@ public class TitleResult {
 	 */
 	public void setCoverImageLarge(String coverImageLarge) {
 		this.coverImageLarge = coverImageLarge;
+	}
+
+	/**
+	 * Compare TitleResults. This is solely dependent on the number of ISBNs.
+	 * The more ISBNS means higher ranking
+	 */
+	@Override
+	public int compareTo(Object o) {
+		if (o == null) {
+			throw new NullPointerException("Unable to compare a TitleResult to null.");
+		}
+		if (this == o)
+			return 0;
+		if (getClass() != o.getClass())
+			throw new RuntimeException("Unable to compare a TitleResult to class: " + o.getClass());
+					
+		TitleResult other = (TitleResult) o;
+				
+		int thisSize = this.getIsbns().size();
+		int thatSize = other.getIsbns().size();
+		
+		return Integer.compare(thatSize, thisSize);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((authorKey == null) ? 0 : authorKey.hashCode());
+		result = prime * result + ((authorName == null) ? 0 : authorName.hashCode());
+		result = prime * result + ((coverImageLarge == null) ? 0 : coverImageLarge.hashCode());
+		result = prime * result + ((coverImageMedium == null) ? 0 : coverImageMedium.hashCode());
+		result = prime * result + ((coverImageSmall == null) ? 0 : coverImageSmall.hashCode());
+		result = prime * result + ((firstPublishedYear == null) ? 0 : firstPublishedYear.hashCode());
+		result = prime * result + ((isbns == null) ? 0 : isbns.hashCode());
+		result = prime * result + ((openLibraryKeys == null) ? 0 : openLibraryKeys.hashCode());
+		result = prime * result + ((subjects == null) ? 0 : subjects.hashCode());
+		result = prime * result + ((title == null) ? 0 : title.hashCode());
+		result = prime * result + ((worksKey == null) ? 0 : worksKey.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TitleResult other = (TitleResult) obj;
+		if (authorKey == null) {
+			if (other.authorKey != null)
+				return false;
+		} else if (!authorKey.equals(other.authorKey))
+			return false;
+		if (authorName == null) {
+			if (other.authorName != null)
+				return false;
+		} else if (!authorName.equals(other.authorName))
+			return false;
+		if (coverImageLarge == null) {
+			if (other.coverImageLarge != null)
+				return false;
+		} else if (!coverImageLarge.equals(other.coverImageLarge))
+			return false;
+		if (coverImageMedium == null) {
+			if (other.coverImageMedium != null)
+				return false;
+		} else if (!coverImageMedium.equals(other.coverImageMedium))
+			return false;
+		if (coverImageSmall == null) {
+			if (other.coverImageSmall != null)
+				return false;
+		} else if (!coverImageSmall.equals(other.coverImageSmall))
+			return false;
+		if (firstPublishedYear == null) {
+			if (other.firstPublishedYear != null)
+				return false;
+		} else if (!firstPublishedYear.equals(other.firstPublishedYear))
+			return false;
+		if (isbns == null) {
+			if (other.isbns != null)
+				return false;
+		} else if (!isbns.equals(other.isbns))
+			return false;
+		if (openLibraryKeys == null) {
+			if (other.openLibraryKeys != null)
+				return false;
+		} else if (!openLibraryKeys.equals(other.openLibraryKeys))
+			return false;
+		if (subjects == null) {
+			if (other.subjects != null)
+				return false;
+		} else if (!subjects.equals(other.subjects))
+			return false;
+		if (title == null) {
+			if (other.title != null)
+				return false;
+		} else if (!title.equals(other.title))
+			return false;
+		if (worksKey == null) {
+			if (other.worksKey != null)
+				return false;
+		} else if (!worksKey.equals(other.worksKey))
+			return false;
+		return true;
 	} 
 	
 	
