@@ -114,7 +114,7 @@ public class AuthResource {
       jedis.expire(token, 60 * 60 * 24);
 
       Bearer tokenToReturn = new Bearer();
-      tokenToReturn.setToken(token);
+      tokenToReturn.setToken(fullToken);
       tokenToReturn.setUserId(userInDatabase.getId());
       
       return tokenToReturn;
