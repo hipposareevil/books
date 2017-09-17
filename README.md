@@ -1,33 +1,65 @@
 Table of Contents
 =================
 
-
+  * [Books](#books)
+   * [tldr](#tldr)
+   * [Endpoints](#endpoints)
+      * [query](#query)
+      * [author](#author)
+      * [book](#book)
+      * [user](#user)
+      * [user_book](#user_book)
+      * [tag](#tag)
+      * [authorize](#authorize)
+      * [swagger](#swagger)
+   * [Databases](#databases)
+      * [MySQL](#mysql)
+      * [Redis](#redis)
+   * [Prerequisites](#prerequisites)
+   * [Building](#building)
+      * [Docker images used](#docker-images-used)
+      * [Frameworks used](#frameworks-used)
+   * [Customizing application deployment](#customizing-application-deployment)
+      * [Google API key](#google-api-key)
+      * [Docker image location](#docker-image-location)
+      * [Deployment Host name](#deployment-host-name)
+   * [Managing application](#managing-application)
+      * [Running application](#running-application)
+      * [Stopping application](#stopping-application)
+      * [Cleaning maven &amp; gradle cache](#cleaning-maven--gradle-cache)
+   * [Accessing the application](#accessing-the-application)
 
 # Books
-Set of webservices to support a book repository (like goodreads.com or librarything.com). This is composed of services to: query google for book titles *(/query)*, manage users *(/users)*, a book catalog *(/book)*, an author catalog *(/author)*, set of tags *(/tag)*, and sets of books per each user *(/book_users)*. Each endpoint (except */query*) requires authorization which is obtained at the */authorize* endpoint.
+Web application and collection of webservices to support a book repository (like [goodreads.com](http://goodreads.com) or [librarything.com](http://librarything.com)).
 
-The entire set of books in the database is obtained via the */book* endpoint. Same with authors of those books at the */author* endpoint. Each user may have a set of books they are tracking, which is managed through the */user_book* endpoint. Each 'user book' has a set of tags, like *sci-fi* or *e-bok*, some metadata and a rating of thumbs up (1) or thumbs down (0).
+The frontend web application is a set of webpages and javascript. This will live at the root of the host: *(/)*.
+
+The backend is composed of services to: query [openlibrary](http://openlibrary.org) for book titles and authors *(/query)*, manage users *(/users)*, a book catalog *(/book)*, an author catalog *(/author)*, a set of tags *(/tag)*, and lists of books per each user *(/book_users)*. Most endpoints requires authorization, which is obtained at the */authorize* endpoint. See the */swagger* endpoint for full information.  
+
+The entire set of books in the database is obtained via the */book* endpoint. Same with authors at the */author* endpoint. Each user may have a set of books they are tracking, which is managed through the */user_book* endpoint. Each 'user book' has a set of tags, like *sci-fi* or *e-book*, some metadata, and a rating of thumbs up (1) or thumbs down (0).
 
 There is an initial user of *admin* with same password. The *admin* user can create new users via the */user* endpoint.
 
 # tldr
 * build: *./books.sh build*
 * run: *./books.sh start*
-* url: *[http://localhost:8080/swagger/](http://localhost:8080/swagger/)*
+* swagger url: *[http://localhost:8080/swagger/](http://localhost:8080/swagger/)*
+* frontend url: *[http://localhost:8080/](http://localhost:8080/)*
 * stop: *./books.sh stop*
 * clean: *./books.sh clean*
 
 
 # Endpoints
-Each microservice (endpoint) and backend database are contained in Docker containers. All containers are attached to the Docker network *booknet*. The microservices are exposed to the outside world via a frontend proxy (API Gateway) which runs in a separate container and listens on port 8080.
+The web application, each microservice endpoint, and backend database are contained in Docker containers. All containers are attached to the Docker network *booknet*. All endpoints are exposed to the outside world via a API Gateway which runs in a separate container and listens on port 8080.
 
 ![Books Structure](https://github.com/hipposareevil/books/blob/master/diagrams/structure.png)
 
-The following REST endpoints are proxied via the API Gateway on port 8080 (configurable via the *docker-compose.yml* file).
+The following endpoints are proxied via the API Gateway on port 8080 (configurable via the *docker-compose.yml* file).
 
 Endpoint | Purpose
 --- | ---
-/query | Microservice to query google for book titles and authors.
+/ | Frontend web application. (WIP)
+/query | Microservice to query openlibrary.org for book titles and authors.
 /author | Manage list of authors in database.
 /book | Manage list of books in database. 
 /user | Manage users.
@@ -36,12 +68,14 @@ Endpoint | Purpose
 /authorize | Authorize access to endpoints.
 /swagger/ | [swagger](http://swagger.io) documentation describing the REST APIs.
 
+## /
+Frontend web application. This uses the microservices to manage the books, authors, users, user lists, and tags. Utilizes the [vue](https://vuejs.org/) framework and [bulma](http://bulma.io/) framework.
+
 ## query
-REST microservice that queries google for new authors and book titles. Would be used by frontend to add new entries to application.
-This service requires a google api key. 
+REST microservice that queries openlibrary for new authors and book titles. Would be used by frontend to add new entries to application.
 
 See [query](https://github.com/hipposareevil/books/blob/master/images/query/README.md) for more information. 
-When there is no google api key, this endpoint will just return empty results.
+
 
 ## author
 Microservice to manage the complete set of Authors in the database. Operations include: add, list all, list single and delete.
@@ -120,11 +154,13 @@ hipposareevil/alpine-gradle | Used to build web services; *query*.
 maven:3.3.9-jdk-8-alpine  | Used to build web services; author, title.
 mysql:latest | MySQL database.
 redis:3.0-alpine | Redis K/V database.
-nginx:latest | Frontend API Gateway.
+nginx:latest | API Gateway.
 openjdk:8-jdk-alpine | Base image for web services. 
 
 ## Frameworks used
 
+* [bulma css](http://bulma.io/)
+* [vue javascript](https://vuejs.org/)
 * [dropwizard](http://www.dropwizard.io/)
 * [spring boot](https://projects.spring.io/spring-boot/)
 * [swagger](http://swagger.io)
