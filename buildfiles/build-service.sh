@@ -200,7 +200,8 @@ build-service::build() {
     build_image
 
     #done
-    echo "[[Build for '$project' complete]]"
+    date=$(date)
+    echo "[[Build for '$project' complete on $date]]"
 }
 
 
