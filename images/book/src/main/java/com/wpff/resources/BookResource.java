@@ -1,14 +1,28 @@
 package com.wpff.resources;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.stream.Collectors;
- 
-// utils
-import org.apache.commons.beanutils.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+
+// utils
+import org.apache.commons.beanutils.BeanUtils;
 
 import com.wpff.core.Book;
 import com.wpff.core.PostBook;
@@ -17,31 +31,11 @@ import com.wpff.filter.TokenRequired;
 
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.SecurityContext;
-
 // Swagger
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ResponseHeader;
 
 
 /**
@@ -144,6 +138,7 @@ public class BookResource {
    * Create a new book
    *
    * @param bookBean Book data
+   * @param context security context (INJECTED via TokenFilter)
    * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return newly created Book
    */
@@ -154,15 +149,20 @@ public class BookResource {
                 )
   @POST
   @UnitOfWork(transactional = false)
+  @TokenRequired
   @ApiResponse(code = 409, message = "Duplicate value")
   public Book createBook(
     @ApiParam(value = "Book information.", required = true)
     PostBook bookBean,
+    @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                            ) {
     // START
     try {
+       // Verify context's name is admin.
+      verifyAdminUser(context);
+      
       // Make new Book from bookBean (which is a PostBook)
       Book book = new Book();
       // copy(destination, source)
@@ -211,15 +211,12 @@ public class BookResource {
     // Start
     try {
       // Verify context's name is admin.
-      String userNameFromSecurity = context.getUserPrincipal().getName();
-      if (userNameFromSecurity.equals("admin")) {
-        // Is OK to remove book
-        bookDAO.delete(findSafely(bookId.get()));
-        return Response.ok().build();
-      }
-      else {
-        throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
-      }
+      verifyAdminUser(context);
+
+      // Is OK to remove book
+      bookDAO.delete(findSafely(bookId.get()));
+      return Response.ok().build();
+
     }
     catch (org.hibernate.HibernateException he) {
       throw new NotFoundException("No book by id '" + bookId + "'");
@@ -241,5 +238,18 @@ public class BookResource {
   private Book findSafely(int id) {
     return bookDAO.findById(id).orElseThrow(() -> new NotFoundException("No book by id " + id));
   }
+  
+  
+  /**
+   * Verifies the incoming user is in group "admin"
+   * 
+   * Throws exception if user is not admin.
+   */
+  static void verifyAdminUser(SecurityContext context) throws WebApplicationException {
+    if (! context.isUserInRole("admin")) {
+      throw new WebApplicationException("Must be logged in as a member of the 'admin' user group.", Response.Status.UNAUTHORIZED);
+    }
+  }
+
   
 }

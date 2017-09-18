@@ -1,14 +1,27 @@
 package com.wpff.resources;
 
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 // utils
-import org.apache.commons.beanutils.*;
-import java.lang.reflect.InvocationTargetException;
- 
+import org.apache.commons.beanutils.BeanUtils;
+
 import com.wpff.core.Author;
 import com.wpff.core.PostAuthor;
 import com.wpff.db.AuthorDAO;
@@ -16,32 +29,11 @@ import com.wpff.filter.TokenRequired;
 
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.SecurityContext;
-
-
 // Swagger
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ResponseHeader;
 
 
 /**
@@ -123,6 +115,8 @@ public class AuthorResource {
    * Create a new author in the DB.
    *
    * @param authorBean Author to add
+   * @param context security context (INJECTED via TokenFilter)
+   * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return newly created Author
    */
   @ApiOperation(
@@ -132,11 +126,17 @@ public class AuthorResource {
   @POST
   @UnitOfWork
   @ApiResponse(code = 409, message = "Duplicate value")
+  @TokenRequired
   public Author createAuthor(
     @ApiParam(value = "Author information.", required = false)
-    PostAuthor authorBean
-                             ) {
+    PostAuthor authorBean,
+    @Context SecurityContext context,
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+      ) {
     // START
+    verifyAdminUser(context);
+      
     try {
       // Make new Author from authorBean
       Author author = new Author();
@@ -219,9 +219,8 @@ public class AuthorResource {
    * Throws exception if user is not admin.
    */
   static void verifyAdminUser(SecurityContext context) throws WebApplicationException {
-    String userNameFromSecurity = context.getUserPrincipal().getName();
-    if (! userNameFromSecurity.equals("admin")) {
-      throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
+    if (! context.isUserInRole("admin")) {
+       throw new WebApplicationException("Must be logged in as a member of the 'admin' user group.", Response.Status.UNAUTHORIZED);
     }
   }
 

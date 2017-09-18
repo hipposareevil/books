@@ -117,7 +117,7 @@ public class UserBookResource {
 		// Start
 
 		// Verify the username matches the userid or is 'admin'
-		ubHelper.verifyUserIdMatches(context, userId.get());
+		ubHelper.verifyUserIdHasAccess(context, userId.get());
 
 		System.out.println("UBR: getUserBook for user " + userId.get() + ", userbookid: " + userBookId.get());
 
@@ -156,7 +156,7 @@ public class UserBookResource {
 			// Start
 
 			// Verify the username matches the userid or is 'admin'
-			ubHelper.verifyUserIdMatches(context, userId.get());
+			ubHelper.verifyUserIdHasAccess(context, userId.get());
 
 			System.out.println("UBR: getUserBook for user " + userId.get() + ", userbookid: " + userBookId.get());
 
@@ -200,7 +200,7 @@ public class UserBookResource {
 		// Start
 		try {
 			// Verify the username matches the userid or is 'admin'
-			ubHelper.verifyUserIdMatches(context, userId.get());
+			ubHelper.verifyUserIdHasAccess(context, userId.get());
 
 			// Ok to get books
 			List<FullUserBook> userBooks = ubHelper.getUserBooksForUser(userId.get());
@@ -259,7 +259,7 @@ public class UserBookResource {
 		// Start
 		try {
 			// Verify the username is 'admin or matches the userid's username.
-			this.ubHelper.verifyUserIdMatches(context, userId.get());
+			this.ubHelper.verifyUserIdHasAccess(context, userId.get());
 
 			//////////////////
 			// Save to database

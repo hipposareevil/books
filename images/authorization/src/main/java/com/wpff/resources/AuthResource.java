@@ -91,12 +91,8 @@ public class AuthResource {
     String userToAuthenticate = creds.getName();
     String userPassword = creds.getPassword();
 
-    System.out.println("user: " + userToAuthenticate);
-    System.out.println("pw: " + userPassword);
-
-    // See if there is a matching user in the databse
+    // See if there is a matching user in the database
     User userInDatabase = findSafely(userToAuthenticate);
-    System.out.println("user: " + userInDatabase);
 
     // User exists. Take incoming password and compare against
     // the encrypted one
@@ -106,13 +102,16 @@ public class AuthResource {
       String token = UUID.randomUUID().toString();
       String fullToken = BEARER + " " + token;
 
-      System.out.println("full token: " + fullToken);
-
       // Create token in redis that will last 24 hours
-      // expire token in 24 hours
-      jedis.set(token, userInDatabase.getName());
-      jedis.expire(token, 60 * 60 * 24);
+           
+      // hset user:token name "user name"
+      // hset user:token group "user group"
+      String redisHashName = "user:" + token;
+      jedis.hset(redisHashName, "name", userInDatabase.getName());
+      jedis.hset(redisHashName, "group", userInDatabase.getUserGroup());
+      jedis.expire(redisHashName, 60 * 60 * 24);
 
+      // Create Bearer bean to return to user
       Bearer tokenToReturn = new Bearer();
       tokenToReturn.setToken(fullToken);
       tokenToReturn.setUserId(userInDatabase.getId());

@@ -1,57 +1,43 @@
 package com.wpff.resources;
 
-// books
-import com.wpff.core.Credentials;
-import com.wpff.core.User;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+
+// utils
+import org.apache.commons.beanutils.BeanUtils;
+
 import com.wpff.core.PostUser;
+import com.wpff.core.User;
 import com.wpff.core.VisableUser;
 import com.wpff.db.UserDAO;
 import com.wpff.filter.TokenRequired;
 
-// utils
-import org.apache.commons.beanutils.*;
-import java.lang.reflect.InvocationTargetException;
-
-import com.fasterxml.jackson.databind.ser.impl.*;
-import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.ser.*;
-import com.fasterxml.jackson.databind.*;
-
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.stream.Collectors;
-import java.util.UUID;
-import java.util.List;
-
-import javax.annotation.security.RolesAllowed;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.*;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
-
-// Jedis
-import redis.clients.jedis.Jedis;
-
-// password encryption
-import org.jasypt.util.password.BasicPasswordEncryptor;
-
 // Swagger
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ResponseHeader;
+// Jedis
+import redis.clients.jedis.Jedis;
 
 
 
@@ -142,8 +128,8 @@ public class UserResource {
     List<User> users = userDAO.findAll();
 
     // Convert each User into a VisableUser bean that just contains 'id' and 'name'
-    List<VisableUser> userList = users.stream().map(e -> new VisableUser(e.getName(), e.getId())).collect(Collectors.toList());
-
+    List<VisableUser> userList = users.stream().map(e -> new VisableUser(e.getName(), e.getUserGroup(), e.getId())).collect(Collectors.toList());
+    
     return userList;
   }
 
@@ -155,6 +141,7 @@ public class UserResource {
    * present in the headers.
    *
    * @param userBean User to create in the database
+   * @param context security context (INJECTED via TokenFilter)
    * @param jedis Jedis instance used to store token data. (INJECTED)
    * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * @return The newly created user
@@ -171,11 +158,13 @@ public class UserResource {
     @ApiParam(value = "User information.", required = true) 
     PostUser userBean,
     @Context Jedis jedis,
+        @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                          ) {
     // START
-
+    verifyAdminUser(context);
+  
     // Check if user already exists
     // userDAO.findByName looks for exact name
     List<User> existing = userDAO.findByName(userBean.getName());
@@ -189,11 +178,8 @@ public class UserResource {
       User user = new User();
       // copy(destination, source)
       BeanUtils.copyProperties(user, userBean);
-    
+      
       User newUser = this.userDAO.create(user);
-
-      System.out.println("UserResource.createUser: created new user with ID:" + newUser.getId());
-
       return newUser;
     }
     catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
@@ -253,6 +239,12 @@ public class UserResource {
           BeanUtils.copyProperty(userInDatabase,
                                  "name",
                                  userBean.getName());
+        
+        if (userBean.getUserGroup() != null)
+          BeanUtils.copyProperty(userInDatabase,
+                                 "userGroup",
+                                 userBean.getUserGroup());
+                                 
         if (userBean.getData() != null)
           BeanUtils.copyProperty(userInDatabase,
                                  "data",
@@ -329,16 +321,14 @@ public class UserResource {
     return this.userDAO.findById(id).orElseThrow(() -> new NotFoundException("No user by id '" + id + "'"));
   }
 
-
-
   /**
-   * Verifies the incoming user is 'admin'.
+   * Verifies the incoming user is in group "admin"
+   * 
    * Throws exception if user is not admin.
    */
   static void verifyAdminUser(SecurityContext context) throws WebApplicationException {
-    String userNameFromSecurity = context.getUserPrincipal().getName();
-    if (! userNameFromSecurity.equals("admin")) {
-      throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
+    if (! context.isUserInRole("admin")) {
+      throw new WebApplicationException("Must be logged in as a member of the 'admin' user group.", Response.Status.UNAUTHORIZED);
     }
   }
 

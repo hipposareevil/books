@@ -1,32 +1,28 @@
 package com.wpff;
 
+import javax.ws.rs.container.DynamicFeature;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.dropwizard.Application;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.hibernate.HibernateBundle;
-import io.dropwizard.migrations.MigrationsBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.db.DataSourceFactory;
-
-import io.federecio.dropwizard.swagger.*;
-
-import javax.ws.rs.container.DynamicFeature;
 
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
-import redis.clients.jedis.Jedis;
-
-
+import com.wpff.core.Book;
 // Resources
 import com.wpff.db.BookDAO;
-import com.wpff.core.Book;
-import com.wpff.resources.BookResource;
 import com.wpff.filter.TokenRequiredFeature;
+import com.wpff.resources.BookResource;
+
+import io.dropwizard.Application;
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.migrations.MigrationsBundle;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import redis.clients.jedis.Jedis;
 
 /**
  * Application to serve the book web service
@@ -110,7 +106,7 @@ public class BookApplication extends Application<BookConfiguration> {
     environment.jersey().register(new BookResource(dao));
 
     // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired =new TokenRequiredFeature(jedis) ;
+    DynamicFeature tokenRequired = new TokenRequiredFeature(jedis) ;
     environment.jersey().register(tokenRequired);
 
   }

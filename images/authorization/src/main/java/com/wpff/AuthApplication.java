@@ -1,34 +1,25 @@
 package com.wpff;
 
-import io.dropwizard.Application;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-
-// swagger
-import io.federecio.dropwizard.swagger.*;
-
-// hibernate
-import io.dropwizard.Application;
-import io.dropwizard.db.DataSourceFactory;
-import io.dropwizard.hibernate.HibernateBundle;
-import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.views.ViewBundle;
-
+import javax.ws.rs.container.DynamicFeature;
 
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
-import redis.clients.jedis.Jedis;
-
-import javax.ws.rs.container.DynamicFeature;
-
-// Resources
-import com.wpff.resources.AuthResource;
 import com.wpff.core.User;
 import com.wpff.db.UserDAO;
 import com.wpff.filter.TokenRequiredFeature;
+// Resources
+import com.wpff.resources.AuthResource;
+
+import io.dropwizard.Application;
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+// swagger
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import redis.clients.jedis.Jedis;
 
 
 /**
@@ -99,7 +90,7 @@ public class AuthApplication extends Application<AuthConfiguration> {
     environment.jersey().register(new AuthResource(userDao));
 
     // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired =new TokenRequiredFeature(jedis) ;
+    DynamicFeature tokenRequired = new TokenRequiredFeature(jedis) ;
     environment.jersey().register(tokenRequired);
   }
 

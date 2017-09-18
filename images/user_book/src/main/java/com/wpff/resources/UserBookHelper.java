@@ -240,8 +240,8 @@ public class UserBookHelper {
 	}
 
 	/**
-	 * Verify the userId in the path matches the user from the security context. Or
-	 * if the context user is 'admin'.
+	 * Verify the userId in the path matches the user from the security context. 
+	 * Or if the context user is in group 'admin'.
 	 *
 	 * @param context
 	 *            SecurityContext to grab username from
@@ -249,28 +249,26 @@ public class UserBookHelper {
 	 *            ID of user from the Path
 	 */
 	@UnitOfWork
-	void verifyUserIdMatches(SecurityContext context, int userId) throws WebApplicationException {
+	void verifyUserIdHasAccess(SecurityContext context, int userId) throws WebApplicationException {
 		// Get the username corresponding to the incoming userId and verify that is the
 		// same as the authenticated caller.
 		String userNameFromSecurity = context.getUserPrincipal().getName();
 		User userFromId = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("No user with ID '" + userId + "' found."));
 
 		String userNameFromId = userFromId.getName();
-		System.out.println("userNameFromSecurity>" + userNameFromSecurity + "<");
-		System.out.println("userFromId:" + userNameFromId + ":");
-
+		
 		// Check names.
 		// If:
-		// userNameFromSecurity == admin or
+		// user in security is in the 'admin' group
 		// userNameFromSecurity == name from id
 		// we can proceed
 
-		if ((userNameFromSecurity.equals("admin")) || (userNameFromSecurity.equals(userNameFromId))) {
+		if ( (context.isUserInRole("admin")) || (userNameFromSecurity.equals(userNameFromId))) {
 			// Is ok
 			System.out.println("User logged in as " + userNameFromId);
 		} else {
 			throw new WebApplicationException(
-					"Must be logged in as user with id '" + userFromId.getName() + "' or as 'admin' to access this resource.",
+					"Must be logged in as user with id '" + userFromId.getName() + "' or as as a member of the 'admin' user group to access this resource.",
 					Response.Status.UNAUTHORIZED);
 		}
 	}

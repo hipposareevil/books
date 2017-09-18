@@ -54,6 +54,7 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `user_id`  int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL UNIQUE,
+  `user_group` varchar(255) DEFAULT NULL,
   `data` varchar(2048) DEFAULT NULL,
   `password` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
@@ -65,7 +66,7 @@ LOCK TABLES `user` WRITE;
 
 -- Insert initial admin/admin user
 
-INSERT INTO `user` VALUES (1, 'admin', '', 'ZEiRIzMMip7aN7nRSbLZLRaCUzIjIWwc');
+INSERT INTO `user` VALUES (1, 'admin', 'admin', '', 'ZEiRIzMMip7aN7nRSbLZLRaCUzIjIWwc');
 
 UNLOCK TABLES;
 

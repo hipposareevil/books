@@ -9,39 +9,70 @@ package com.wpff.core;
  */
 public class PostUser {
   private String name;
+  private String userGroup;
   private String data;
   // Not encrypted
   private String password;
 
-  public String toString() {
-    return "PostUser[name=" + name + "]";
-  }
+	public String getData() {
+		return data;
+	}
 
-  public String getData() {
-    return data;
-  }
-  public void setData(String data) {
-    this.data = data;
-  }
+	public void setData(String data) {
+		this.data = data;
+	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getPassword() {
+		return this.password;
+	}
 
-  public String getPassword() {
-    return this.password;
-  }
+	/**
+	 * @return the group
+	 */
+	public String getUserGroup() {
+		return userGroup;
+	}
 
-  /**
-   * Set the password, no encryption performed.
-   */
-  public void setPassword(String password) {
-    this.password = password;
-  }
+	/**
+	 * @param group
+	 *            the group to set
+	 */
+	public void setUserGroup(String group) {
+		this.userGroup = group;
+	}
 
+	/**
+	 * Set the password, no encryption performed.
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("PostUser [name=");
+		builder.append(name);
+		builder.append(", group=");
+		builder.append(userGroup);
+		builder.append(", data=");
+		builder.append(data);
+		builder.append(", password=");
+		builder.append(password);
+		builder.append("]");
+		return builder.toString();
+	}
 }

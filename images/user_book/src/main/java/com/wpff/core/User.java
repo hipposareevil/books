@@ -1,12 +1,13 @@
 package com.wpff.core;
 
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import java.util.Objects;
 
 import org.jasypt.util.password.BasicPasswordEncryptor;
 
@@ -43,6 +44,15 @@ public class User {
    */
   @Column(name = "name", unique=true, nullable = false)
   private String name;
+  
+  
+  /**
+   * User's group
+   */
+  @Column(name = "group", nullable = false)
+  private String group;
+  
+    
 
   /**
    * Data for the user. May be empty
@@ -87,6 +97,21 @@ public class User {
     return name;
   }
 
+  
+  	/**
+	 * @return the group
+	 */
+	public String getGroup() {
+		return group;
+	}
+
+	/**
+	 * @param group
+	 *            the group to set
+	 */
+	public void setGroup(String group) {
+		this.group = group;
+	}
   public String getPassword() {
     return this.password;
   }

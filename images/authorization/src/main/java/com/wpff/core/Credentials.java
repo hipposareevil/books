@@ -4,13 +4,10 @@ package com.wpff.core;
 import java.io.Serializable;
 
 /**
- * Utility bean to group a user name and password for authentication
+ * Utility bean to group a user name and password used for authentication calls.
  */
 public class Credentials implements Serializable {
 
-  /**
-	 * 
-	 */
 	private static final long serialVersionUID = -4121720342119725462L;
 
 /**
