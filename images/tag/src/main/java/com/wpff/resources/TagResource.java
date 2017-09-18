@@ -264,13 +264,12 @@ public class TagResource {
 	}
 
 	/**
-	 * Verifies the incoming user is 'admin'. Throws exception if user is not admin.
-	 */
-	static void verifyAdminUser(SecurityContext context) throws WebApplicationException {
-		String userNameFromSecurity = context.getUserPrincipal().getName();
-		if (!userNameFromSecurity.equals("admin")) {
-			throw new WebApplicationException("Must be logged in as 'admin'", Response.Status.UNAUTHORIZED);
-		}
-	}
+   * Verifies the incoming user is 'admin'. Throws exception if user is not admin.
+   */
+  static void verifyAdminUser(SecurityContext context) throws WebApplicationException {
+    if (!context.isUserInRole("admin")) {
+      throw new WebApplicationException("Must be logged in as a member of the 'admin' user group.", Response.Status.UNAUTHORIZED);
+    }
+  }
 
 }
