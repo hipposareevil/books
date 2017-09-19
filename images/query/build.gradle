@@ -50,5 +50,6 @@ dependencies {
     // https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3'
 
-
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 }

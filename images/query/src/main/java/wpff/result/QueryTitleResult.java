@@ -1,4 +1,4 @@
-package wpff.results;
+package wpff.result;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
  * This is filled w/ data from the OpenLibraryTitle
  *
  */
-public class TitleResult implements Comparable {
+public class QueryTitleResult implements Comparable {
 
 	/**
 	 * Title of book
@@ -239,7 +239,7 @@ public class TitleResult implements Comparable {
 		if (getClass() != o.getClass())
 			throw new RuntimeException("Unable to compare a TitleResult to class: " + o.getClass());
 					
-		TitleResult other = (TitleResult) o;
+		QueryTitleResult other = (QueryTitleResult) o;
 				
 		int thisSize = this.getIsbns().size();
 		int thatSize = other.getIsbns().size();
@@ -279,7 +279,7 @@ public class TitleResult implements Comparable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TitleResult other = (TitleResult) obj;
+		QueryTitleResult other = (QueryTitleResult) obj;
 		if (authorKey == null) {
 			if (other.authorKey != null)
 				return false;

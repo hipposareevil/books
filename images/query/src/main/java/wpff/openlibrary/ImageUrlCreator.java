@@ -2,6 +2,8 @@ package wpff.openlibrary;
 
 import java.util.List;
 
+import wpff.openlibrary.beans.OpenLibraryTitle;
+
 /**
  * Helper class to create image URLs for openlibrary.org artifacts.
  *

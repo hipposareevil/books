@@ -14,11 +14,16 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import wpff.openlibrary.beans.AuthorDocs;
+import wpff.openlibrary.beans.OpenLibraryAuthor;
+import wpff.openlibrary.beans.OpenLibraryTitle;
+import wpff.openlibrary.beans.TitleDocs;
+
 /**
  * Class to query the OpenLibrary for authors and titles.
  *
  */
-public class QueryOpenLibrary {
+public class OpenLibraryHelper {
 	
 	/**
 	 * Base URL at openlibrary for author queries.
@@ -28,7 +33,7 @@ public class QueryOpenLibrary {
 	/**
 	 * Base URL at openlibrary for title queries.
 	 */
-	private static final String titleBaseUrl = "https://openlibrary.org/search";
+	private static final String titleBaseUrl = "https://openlibrary.org/search?";
 	
 	/**
 	 * Query OpenLibrary for list of books
@@ -37,12 +42,31 @@ public class QueryOpenLibrary {
 	 *            Author name, or partial
 	 * @param title
 	 *            Title name, or partial
+   * @param isbn
+	 *            ISBN of book
 	 * @return List of Title beans
 	 */
-	public static List<OpenLibraryTitle> queryForTitles(String author, String title) throws IOException {
-		String queryUrl = titleBaseUrl + "?title=" + title + "&author=" + author;
+	public static List<OpenLibraryTitle> queryForTitles(String author, String title, String isbn) throws IOException {
+	  // construct query
+	  String queryUrl = titleBaseUrl;
+	  
+	  // Adding the "&" if there are more than 1 params
+	  String and = "";
+	  if (title!= null) {
+	    queryUrl += and + "title=" + title;
+	    and = "&";
+	  }
+	  if (author != null) {
+	    queryUrl += and + "author=" + author;
+	    and = "&";
+	  }
+	  if (isbn!= null) {
+	    queryUrl += and + "isbn=" + isbn;
+	    and = "&";
+	  }
+	  
 		System.out.println("making query to: " + queryUrl);
-		
+				
 		RestTemplate restTemplate = new RestTemplate();
 		
 		// Set headers
@@ -59,7 +83,6 @@ public class QueryOpenLibrary {
 			
 		return doc.getDocs();
 	}
-	
 	
 	/**
 	 * Query OpenLibrary for list of authors

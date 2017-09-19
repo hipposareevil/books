@@ -1,4 +1,4 @@
-package wpff.results;
+package wpff.result;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
  * This is filled w/ data from the OpenLibraryAuthor
  *
  */
-public class AuthorResult {
+public class QueryAuthorResult {
 
 	private String name;
 	private String key;

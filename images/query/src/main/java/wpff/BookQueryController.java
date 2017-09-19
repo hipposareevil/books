@@ -3,12 +3,11 @@ package wpff;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,16 +20,13 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import wpff.google.AuthorQueryBean;
-import wpff.google.BookQueryBean;
-import wpff.google.QueryGoogle;
 import wpff.openlibrary.ImageUrlCreator;
 import wpff.openlibrary.ImageUrlCreator.ImageSize;
-import wpff.openlibrary.OpenLibraryAuthor;
-import wpff.openlibrary.OpenLibraryTitle;
-import wpff.openlibrary.QueryOpenLibrary;
-import wpff.results.AuthorResult;
-import wpff.results.TitleResult;
+import wpff.openlibrary.OpenLibraryHelper;
+import wpff.openlibrary.beans.OpenLibraryAuthor;
+import wpff.openlibrary.beans.OpenLibraryTitle;
+import wpff.result.QueryAuthorResult;
+import wpff.result.QueryTitleResult;
 
 
 @Api( value="/query",
@@ -39,58 +35,7 @@ import wpff.results.TitleResult;
 @RequestMapping("/query")
 @RestController
 public class BookQueryController {
-
-	//////////////////////////////////////////////////////////////
-	//
-	// Google queries
-
-	/**
-	 * google api key, injected via spring
-	 */
-	@Value("${googleapikey:#{null}}")
-	private String googleApiKey;
-
-	/**
-	 * /query/g.title endpoint. Queries google for books
-	 *
-	 * @param author
-	 *            Name (or partial) of author
-	 * @param title
-	 *            Book title (or partial)
-	 * @return list of matching Books
-	 */
-	@ApiOperation(value = "/g.title", nickname = "query titles",
-			notes = "Query google for book titles. A title will have a set of ids that corresond to ISBN 10 or ISBN 13 values. ")
-	@ApiImplicitParams({ @ApiImplicitParam(name = "author", value = "Author's name", required = false,
-			dataType = "string", paramType = "query"), @ApiImplicitParam(name = "title", value = "Book Title",
-					required = false, dataType = "string", paramType = "query") })
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Success", response = BookQueryBean.class) }
-	)
-	@RequestMapping(method = RequestMethod.GET, path = "/g.title", produces = "application/json")
-	public List<BookQueryBean> query(@RequestParam(value = "author") String author, @RequestParam(
-			value = "title") String title) {
-		// Query google
-		return QueryGoogle.getBooks(googleApiKey, author, title);
-	}
-
-	/**
-	 * /query/g.author endpoint. Queries google for author names
-	 *
-	 * @param author
-	 *            Name (or partial) of author
-	 * @return list of matching author
-	 */
-	@ApiOperation(value = "/g.author", nickname = "query author",
-			notes = "Query google for authors. Returns list of Author names.")
-	@ApiImplicitParams({ @ApiImplicitParam(name = "author", value = "Author's name", required = false,
-			dataType = "string", paramType = "query") })
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success", response = AuthorQueryBean.class) })
-	@RequestMapping(method = RequestMethod.GET, path = "/g.author", produces = "application/json")
-	public List<AuthorQueryBean> query(@RequestParam(value = "author") String author) {
-		// Query google
-		return QueryGoogle.getAuthor(googleApiKey, author);
-	}
+	
 	
 	////////////////////////////////////////////////////////
 	//
@@ -111,33 +56,28 @@ public class BookQueryController {
 	@ApiImplicitParams({ @ApiImplicitParam(name = "author", value = "Author's name", required = false,
 			dataType = "string", paramType = "query") })
 	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Success", response = AuthorResult.class, responseContainer="List") 
+			@ApiResponse(code = 200, message = "Success", response = QueryAuthorResult.class, responseContainer="List") 
 			})
 	@RequestMapping(method = RequestMethod.GET, path = "/author", produces = "application/json")
-	public List<AuthorResult> queryForAuthor(@RequestParam(value = "author") String authorQuery)
+	public List<QueryAuthorResult> queryForAuthor(@RequestParam(value = "author") String authorQuery)
 			throws UnsupportedEncodingException, IllegalAccessException, InvocationTargetException {
 		// Begin
-		List<OpenLibraryAuthor> authors = QueryOpenLibrary.queryForAuthors(authorQuery);
+		List<OpenLibraryAuthor> authors = OpenLibraryHelper.queryForAuthors(authorQuery);
 		if (authors.size() == 0) {
 			// No authors, try with an asterix
-			authors = QueryOpenLibrary.queryForAuthors(authorQuery);
-		}
-		
-		System.out.println("");
-		System.out.println("We got " + authors.size() + " authors back.");
-		for (OpenLibraryAuthor a : authors) {
-			System.out.println(" >> " + a);
+			authors = OpenLibraryHelper.queryForAuthors(authorQuery);
 		}
 		
 
 		// Convert to AuthorResult. This is done as the OpenLibraryAuthor has strange
 		// field names due to the JSON returned from openlibrary.org
-		List<AuthorResult> results = new ArrayList<AuthorResult>();
-		for (OpenLibraryAuthor current : authors) {
-			AuthorResult newResult = convertToResult(current);
-			results.add(newResult);
-		}
-		return results;
+    List<QueryAuthorResult> results = authors.
+        stream().
+        sorted().
+        map( x -> this.convertToResult(x)).
+        collect(Collectors.toList());
+
+    return results;
 	}
 
 
@@ -148,34 +88,45 @@ public class BookQueryController {
 	 *            Name (or partial) of author
 	 * @param title
 	 *            Book title (or partial)
+	 * @param isbn
+	 *            ISBN of book
 	 * @return list of matching Books
 	 * @throws IOException 
 	 */
 	@ApiOperation(value = "/title", nickname = "query titles",
-			notes = "Query openlibrary for book titles. Results are sorted by the number of ISBNs per book. So the first titles in the resulting list will be the ones with more associated ISBNS")
-	@ApiImplicitParams({ @ApiImplicitParam(name = "author", value = "Author's name", required = false,
-			dataType = "string", paramType = "query"), @ApiImplicitParam(name = "title", value = "Book Title",
-					required = false, dataType = "string", paramType = "query") })
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Success", response = TitleResult.class, responseContainer="List") 
-                  })
+                notes = "Query openlibrary for book titles. Results are sorted by the number of ISBNs per book."
+                + " The first titles in the resulting list will be the ones with more associated ISBNS")
+	@ApiImplicitParams({
+      @ApiImplicitParam(name = "author", value = "Author's name", required = false,
+                        dataType = "string", paramType = "query"),
+      @ApiImplicitParam(name = "title", value = "Book Title", required = false,
+                        dataType = "string", paramType = "query"),
+      @ApiImplicitParam(name = "isbn", value = "Book ISBN", required = false,
+                        dataType = "string", paramType = "query") 
+          })
+  @ApiResponses(value = {
+         @ApiResponse(code = 200, message = "Success", response = QueryTitleResult.class, responseContainer="List")  
+                   })
 	@RequestMapping(method = RequestMethod.GET, path = "/title", produces = "application/json")
-	public List<TitleResult> queryForTitles(@RequestParam(value = "author") String author, 
-											@RequestParam(value = "title") String title) throws IOException {
+	public List<QueryTitleResult> queryForTitles(
+    @RequestParam(value = "author", required=false) String author, 
+    @RequestParam(value = "title", required=false) String title,
+    @RequestParam(value = "isbn", required=false) String isbn) throws IOException {
 		// Begin
-		List<OpenLibraryTitle> titles = QueryOpenLibrary.queryForTitles(author, title);
+		List<OpenLibraryTitle> titles = OpenLibraryHelper.queryForTitles(author, title, isbn);
 
-		// Convert
-		List<TitleResult> results = new ArrayList<TitleResult>();
-		
-		for (OpenLibraryTitle current : titles) {
-			TitleResult newResult = convertToResult(current);
-			results.add(newResult);
-		}		
-		
-		Collections.sort(results);
-		return results;		
+    // Convert
+    List<QueryTitleResult> results = titles.
+        stream().
+        sorted().
+        map( x -> this.convertToResult(x)).
+        collect(Collectors.toList());
+    
+    // Sort the list of titles by the # of isbns
+    Collections.sort(results);
+    return results;
 	}
+	
 	
 	///////////////////////////////////////////////////////////
 	//
@@ -187,18 +138,20 @@ public class BookQueryController {
 	 * 
 	 * @param author
 	 *            Author to convert
-	 * @return
-	 * @throws InvocationTargetException
-	 * @throws IllegalAccessException
+	 * @return converted bean
 	 */
-	private AuthorResult convertToResult(OpenLibraryAuthor author) throws IllegalAccessException,
-			InvocationTargetException {
-		AuthorResult newResult = new AuthorResult();
+	private QueryAuthorResult convertToResult(OpenLibraryAuthor author) {
+		QueryAuthorResult newResult = new QueryAuthorResult();
+		
+		try {
+      BeanUtils.copyProperties(newResult, author);
+      BeanUtils.copyProperty(newResult, "birthDate", author.getBirth_date());
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      // Unable to copy properties
+      e.printStackTrace();
+    }
 
-		BeanUtils.copyProperties(newResult, author);
-		BeanUtils.copyProperty(newResult, "birthDate", author.getBirth_date());
 		newResult.setSubjects(author.getTop_subjects());
-
 		// Set images for the author
 		newResult.setAuthorImageSmall(ImageUrlCreator.createAuthorImageUrl(author.getKey(), ImageSize.SMALL));
 		newResult.setAuthorImageMedium(
@@ -215,8 +168,8 @@ public class BookQueryController {
 	 *            Title to convert
 	 * @return
 	 */
-	private TitleResult convertToResult(OpenLibraryTitle openLibraryTitle) {
-		TitleResult newResult = new TitleResult();
+	private QueryTitleResult convertToResult(OpenLibraryTitle openLibraryTitle) {
+		QueryTitleResult newResult = new QueryTitleResult();
 
 		newResult.setTitle(openLibraryTitle.getTitle_suggest());
 		

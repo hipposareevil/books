@@ -1,4 +1,4 @@
-package wpff.openlibrary;
+package wpff.openlibrary.beans;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

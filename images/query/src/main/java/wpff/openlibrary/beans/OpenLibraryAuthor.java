@@ -1,7 +1,9 @@
-package wpff.openlibrary;
+package wpff.openlibrary.beans;
 	
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -14,15 +16,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @see AuthorDocs
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OpenLibraryAuthor {
-
+public class OpenLibraryAuthor implements Comparable {
 
 	private String name;
 	private String key;
 	private List<String> top_subjects;
 	private String birth_date;
-	
-	
+		
 	public List<String> getTop_subjects() {
 		return top_subjects;
 	}
@@ -84,8 +84,16 @@ public class OpenLibraryAuthor {
 		builder.append("]");
 		return builder.toString();
 	}
-	
 
-	
+  @Override
+  public int compareTo(Object o) {
+    OpenLibraryAuthor other = (OpenLibraryAuthor) o;
+    return new CompareToBuilder().append(this.key, other.key)
+        .append(this.name, other.name)
+        .append(this.birth_date, other.birth_date)
+        .append(this.top_subjects, other.top_subjects)
+        .toComparison();
+  }
+
 
 }

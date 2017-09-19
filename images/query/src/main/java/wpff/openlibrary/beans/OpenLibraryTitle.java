@@ -1,7 +1,9 @@
-package wpff.openlibrary;
+package wpff.openlibrary.beans;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -14,7 +16,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * 
  */
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class OpenLibraryTitle {
+public class OpenLibraryTitle implements Comparable {
+
+  
 	// Title
 	private String title_suggest;
 
@@ -144,10 +148,18 @@ public class OpenLibraryTitle {
 				+ ", publish_year=" + publish_year + ", first_publish_year=" + first_publish_year + ", isbn="
 				+ isbn + ", edition_key=" + edition_key + "]";
 	}
-	
-
-	
-
-
+  
+    
+  @Override
+  public int compareTo(Object o) {
+    OpenLibraryTitle other = (OpenLibraryTitle) o;
+    return new CompareToBuilder().append(this.key, other.key)
+        .append(this.edition_key, other.edition_key)
+        .append(this.title_suggest, other.title_suggest)
+        .append(this.cover_i, other.cover_i)
+        .append(this.isbn, other.isbn)
+        .append(this.publish_year, other.publish_year)
+        .toComparison();
+  }
 
 }
