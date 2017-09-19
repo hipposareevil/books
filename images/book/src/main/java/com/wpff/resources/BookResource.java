@@ -1,6 +1,7 @@
 package com.wpff.resources;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,9 +26,10 @@ import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.wpff.core.Book;
-import com.wpff.core.PostBook;
 import com.wpff.db.BookDAO;
 import com.wpff.filter.TokenRequired;
+import com.wpff.query.BookQuery;
+import com.wpff.result.BookResult;
 
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
@@ -61,19 +63,20 @@ public class BookResource {
    */
   @ApiOperation(
     value="Get book by ID.",
-    notes="Get book information. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+    notes="Get book information. Requires authentication token in header with key AUTHORIZATION. " + 
+    "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
   @Path("/{id}")
   @UnitOfWork
   @TokenRequired
-  public Book getBook(
+  public BookResult getBook(
     @ApiParam(value = "ID of book to retrieve.", required = false)
     @PathParam("id") IntParam bookId,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                         ) {
-    return findSafely(bookId.get());
+    return this.convertToBean(findSafely(bookId.get()));
   }
 
 
@@ -87,14 +90,16 @@ public class BookResource {
    * @return List of matching Books. When titleQuery is empty, this will be
    * all book titles
    */
-  @ApiOperation(value="Get books via optional 'title' query param or optional 'ids' query param. The two query params may be used at the same time.",
-                response=Book.class,
-                notes="Returns list of books. When no 'title' or 'ids' specified, all books in database are returned. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+  @ApiOperation(value="Get books via optional 'title' query param or optional 'ids' query param. " + 
+                "The two query params may be used at the same time.",
+                response=BookResult.class, responseContainer="List",
+                notes="Returns list of books. When no 'title' or 'ids' specified, all books in database are returned. " +
+                "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
   @UnitOfWork
   @TokenRequired
-  public List<Book> getBook(
+  public List<BookResult> getBook(
     @ApiParam(value = "Title or partial title of book to retrieve.", required = false)
     @QueryParam("title") String titleQuery,
     @ApiParam(value = "List of book IDs to retrieve.", required = false)
@@ -103,6 +108,9 @@ public class BookResource {
     @HeaderParam(value="Authorization") String authDummy
                             ) {
     // Start
+    
+    // Using a Set to deal with any duplicates that might come up from using 
+    // a 'title' and a 'id' that would overlap
     Set<Book> bookSet = new TreeSet<Book>();
 
     // Grab books by title, if it exists
@@ -123,13 +131,13 @@ public class BookResource {
       bookSet.addAll(bookDAO.findAll());
     }
 
-    // Convert set to list
-    List<Book> bookList = bookSet.
+    // Convert the set of Books to list of BookResults
+    List<BookResult> bookList = bookSet.
         stream().
         sorted().
+        map( x -> this.convertToBean(x)).
         collect(Collectors.toList());
-
-    // Return list of books
+    
     return bookList;
   }
 
@@ -151,16 +159,16 @@ public class BookResource {
   @UnitOfWork(transactional = false)
   @TokenRequired
   @ApiResponse(code = 409, message = "Duplicate value")
-  public Book createBook(
+  public BookResult createBook(
     @ApiParam(value = "Book information.", required = true)
-    PostBook bookBean,
+    BookQuery bookBean,
     @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                            ) {
     // START
     try {
-       // Verify context's name is admin.
+       // Verify context's group is admin.
       verifyAdminUser(context);
       
       // Make new Book from bookBean (which is a PostBook)
@@ -168,7 +176,7 @@ public class BookResource {
       // copy(destination, source)
       BeanUtils.copyProperties(book, bookBean);
 
-      return bookDAO.create(book);
+      return this.convertToBean(bookDAO.create(book));
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -229,6 +237,32 @@ public class BookResource {
   /** Helper methods **/
   /************************************************************************/
 
+  /**
+   * Convert a Book from the DB into a BookResult for return to caller
+   * 
+   * @param dbBook
+   *          Book in DB
+   * @return Book bean
+   */
+  private BookResult convertToBean(Book dbBook) {
+    BookResult result = new BookResult();
+
+    try {
+      System.out.println("Converting: " + dbBook);
+      BeanUtils.copyProperties(result, dbBook);
+      // dbBook's 'isbn' is a csv. Convert into a list
+      List<String> isbns = Arrays.asList(dbBook.getIsbn().split("\\s*,\\s*"));
+      BeanUtils.copyProperty(result, "isbns", isbns);
+      
+            System.out.println("Returning bean: " + result);
+    } 
+    catch (IllegalAccessException | InvocationTargetException e) {
+          e.printStackTrace();
+    }
+    
+    return result; 
+  }
+  
 
   /**
    * Look for book by incoming id. If returned Book is null, throw 404.

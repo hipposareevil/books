@@ -3,6 +3,7 @@ package com.wpff.resources;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -23,9 +24,10 @@ import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.wpff.core.Author;
-import com.wpff.core.PostAuthor;
 import com.wpff.db.AuthorDAO;
 import com.wpff.filter.TokenRequired;
+import com.wpff.query.AuthorQuery;
+import com.wpff.result.AuthorResult;
 
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
@@ -61,19 +63,20 @@ public class AuthorResource {
    */
   @ApiOperation(
     value="Get author by ID.",
-    notes="Get author information. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+    notes="Get author information. Requires authentication token in header with key AUTHORIZATION. "
+        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
   @Path("/{id}")
   @UnitOfWork
   @TokenRequired
-  public Author getAuthor(
+  public AuthorResult getAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = false)
     @PathParam("id") IntParam authorId,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                           ) {
-    return findSafely(authorId.get());
+    return convertToBean(findSafely(authorId.get()));
   }
 
 
@@ -90,23 +93,36 @@ public class AuthorResource {
    */
   @ApiOperation(
     value="Get authors via optional 'name' query param.",
-    notes="Returns list of authors. When 'name' is specified only matching authors are returned. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."    
+    notes="Returns list of authors. When 'name' is specified only matching authors are returned."  
+        + " Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."    
                 )
   @GET
   @UnitOfWork
   @TokenRequired
-  public List<Author> getAuthor(
+  public List<AuthorResult> getAuthor(
     @ApiParam(value = "Name or partial name of author to retrieve.", required = false)
     @QueryParam("name") String authorQuery,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                                 ) {
+    // Start
+    
+    List<Author> authors = null;
     if (authorQuery != null) {
-      return authorDAO.findByName(authorQuery);
+      authors = authorDAO.findByName(authorQuery);
     }
     else {
-      return authorDAO.findAll();
+      authors = authorDAO.findAll();
     }
+    
+    // Convert list of Authors (DB) to AuthorResults (bean)
+    List<AuthorResult> results = authors.
+        stream().
+        sorted().
+        map( x -> this.convertToBean(x)).
+        collect(Collectors.toList());
+    
+    return results;
   }
 
 
@@ -127,9 +143,9 @@ public class AuthorResource {
   @UnitOfWork
   @ApiResponse(code = 409, message = "Duplicate value")
   @TokenRequired
-  public Author createAuthor(
+  public AuthorResult createAuthor(
     @ApiParam(value = "Author information.", required = false)
-    PostAuthor authorBean,
+    AuthorQuery authorBean,
     @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
@@ -143,7 +159,7 @@ public class AuthorResource {
       // copy(destination, source)
       BeanUtils.copyProperties(author, authorBean);
 
-      return authorDAO.create(author);
+      return this.convertToBean(authorDAO.create(author));
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -203,6 +219,27 @@ public class AuthorResource {
   /************************************************************************/
   /** Helper methods **/
   /************************************************************************/
+  
+  /**
+   * Convert an Author from the DB into a AuthorResult for return to the caller
+   * 
+   * @param dbAuthor Author in DB
+   * @return Author bean
+   */
+  private AuthorResult convertToBean(Author dbAuthor) {
+    AuthorResult result = new AuthorResult();
+    
+    try {
+      BeanUtils.copyProperties(result,  dbAuthor);
+      
+       } 
+    catch (IllegalAccessException | InvocationTargetException e) {
+          e.printStackTrace();
+    }
+    
+    
+    return result;
+  }
   
   /**
    * Look for author by incoming id. If returned Author is null, throw 404.

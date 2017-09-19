@@ -102,6 +102,7 @@ public class AuthResource {
       String token = UUID.randomUUID().toString();
       String fullToken = BEARER + " " + token;
 
+      ///////////
       // Create token in redis that will last 24 hours
            
       // hset user:token name "user name"
@@ -110,7 +111,7 @@ public class AuthResource {
       jedis.hset(redisHashName, "name", userInDatabase.getName());
       jedis.hset(redisHashName, "group", userInDatabase.getUserGroup());
       jedis.expire(redisHashName, 60 * 60 * 24);
-
+      
       // Create Bearer bean to return to user
       Bearer tokenToReturn = new Bearer();
       tokenToReturn.setToken(fullToken);
