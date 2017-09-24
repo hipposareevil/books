@@ -52,15 +52,15 @@ public class OpenLibraryHelper {
 	  
 	  // Adding the "&" if there are more than 1 params
 	  String and = "";
-	  if (title!= null) {
+	  if (title!= null && !title.isEmpty()) {
 	    queryUrl += and + "title=" + title;
 	    and = "&";
 	  }
-	  if (author != null) {
+	  if (author != null && ! author.isEmpty())  {
 	    queryUrl += and + "author=" + author;
 	    and = "&";
 	  }
-	  if (isbn!= null) {
+	  if (isbn!= null && ! isbn.isEmpty()) {
 	    queryUrl += and + "isbn=" + isbn;
 	    and = "&";
 	  }

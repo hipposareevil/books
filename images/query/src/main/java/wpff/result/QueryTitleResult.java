@@ -48,7 +48,7 @@ public class QueryTitleResult implements Comparable {
 	/**
 	 * OpenLibrary key to show the 'works' of the book. Is the top level 'book' for a given title
 	 */
-	private String worksKey;
+	private String openlibraryWorkUrl;
 	
 	/**
 	 * First year of publication
@@ -125,19 +125,7 @@ public class QueryTitleResult implements Comparable {
 		this.authorName = authorName;
 	}
 
-	/**
-	 * @return the worksKey
-	 */
-	public String getWorksKey() {
-		return worksKey;
-	}
-
-	/**
-	 * @param worksKey the worksKey to set
-	 */
-	public void setWorksKey(String worksKey) {
-		this.worksKey = worksKey;
-	}
+	
 
 	/**
 	 * @return the firstPublishedYear
@@ -224,6 +212,22 @@ public class QueryTitleResult implements Comparable {
 	public void setCoverImageLarge(String coverImageLarge) {
 		this.coverImageLarge = coverImageLarge;
 	}
+	
+	  /**
+   * @return the openlibraryWorkUrl
+   */
+  public String getOpenlibraryWorkUrl() {
+    return openlibraryWorkUrl;
+  }
+
+  /**
+   * @param openlibraryWorkUrl the openlibraryWorkUrl to set
+   */
+  public void setOpenlibraryWorkUrl(String openlibraryWorkUrl) {
+    this.openlibraryWorkUrl = openlibraryWorkUrl;
+  } 
+	
+	
 
 	/**
 	 * Compare TitleResults. This is solely dependent on the number of ISBNs.
@@ -264,7 +268,7 @@ public class QueryTitleResult implements Comparable {
 		result = prime * result + ((openLibraryKeys == null) ? 0 : openLibraryKeys.hashCode());
 		result = prime * result + ((subjects == null) ? 0 : subjects.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
-		result = prime * result + ((worksKey == null) ? 0 : worksKey.hashCode());
+		result = prime * result + ((openlibraryWorkUrl == null) ? 0 : openlibraryWorkUrl.hashCode());
 		return result;
 	}
 
@@ -330,14 +334,14 @@ public class QueryTitleResult implements Comparable {
 				return false;
 		} else if (!title.equals(other.title))
 			return false;
-		if (worksKey == null) {
-			if (other.worksKey != null)
+		if (openlibraryWorkUrl == null) {
+			if (other.openlibraryWorkUrl != null)
 				return false;
-		} else if (!worksKey.equals(other.worksKey))
+		} else if (!openlibraryWorkUrl.equals(other.openlibraryWorkUrl))
 			return false;
 		return true;
-	} 
-	
-	
+	}
+
+
 
 }

@@ -20,9 +20,9 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import wpff.openlibrary.ImageUrlCreator;
-import wpff.openlibrary.ImageUrlCreator.ImageSize;
 import wpff.openlibrary.OpenLibraryHelper;
+import wpff.openlibrary.OpenLibraryUrlConverter;
+import wpff.openlibrary.OpenLibraryUrlConverter.ImageSize;
 import wpff.openlibrary.beans.OpenLibraryAuthor;
 import wpff.openlibrary.beans.OpenLibraryTitle;
 import wpff.result.QueryAuthorResult;
@@ -112,6 +112,7 @@ public class BookQueryController {
     @RequestParam(value = "author", required=false) String author, 
     @RequestParam(value = "title", required=false) String title,
     @RequestParam(value = "isbn", required=false) String isbn) throws IOException {
+	  System.out.println("Got query for titles: " + author + ":" + title + ":" + isbn);
 		// Begin
 		List<OpenLibraryTitle> titles = OpenLibraryHelper.queryForTitles(author, title, isbn);
 
@@ -153,10 +154,10 @@ public class BookQueryController {
 
 		newResult.setSubjects(author.getTop_subjects());
 		// Set images for the author
-		newResult.setAuthorImageSmall(ImageUrlCreator.createAuthorImageUrl(author.getKey(), ImageSize.SMALL));
+		newResult.setAuthorImageSmall(OpenLibraryUrlConverter.createAuthorImageUrl(author.getKey(), ImageSize.SMALL));
 		newResult.setAuthorImageMedium(
-				ImageUrlCreator.createAuthorImageUrl(author.getKey(), ImageSize.MEDIUM));
-		newResult.setAuthorImageLarge(ImageUrlCreator.createAuthorImageUrl(author.getKey(), ImageSize.LARGE));
+				OpenLibraryUrlConverter.createAuthorImageUrl(author.getKey(), ImageSize.MEDIUM));
+		newResult.setAuthorImageLarge(OpenLibraryUrlConverter.createAuthorImageUrl(author.getKey(), ImageSize.LARGE));
 
 		return newResult;
 	}
@@ -174,16 +175,19 @@ public class BookQueryController {
 		newResult.setTitle(openLibraryTitle.getTitle_suggest());
 		
 		// Set images for book
-		newResult.setCoverImageSmall(ImageUrlCreator.createCoverImageUrl(openLibraryTitle, ImageSize.SMALL));
-		newResult.setCoverImageMedium(ImageUrlCreator.createCoverImageUrl(openLibraryTitle, ImageSize.MEDIUM));
-		newResult.setCoverImageLarge(ImageUrlCreator.createCoverImageUrl(openLibraryTitle, ImageSize.LARGE));
-				
+		newResult.setCoverImageSmall(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.SMALL));
+		newResult.setCoverImageMedium(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.MEDIUM));
+		newResult.setCoverImageLarge(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.LARGE));
+		
+		// set work url
+	  newResult.setOpenlibraryWorkUrl(OpenLibraryUrlConverter.createWorkUrl(openLibraryTitle.getKey()));
+		
+		// the rest
 		newResult.setSubjects(openLibraryTitle.getSubject());
 		if (!openLibraryTitle.getAuthor_key().isEmpty())
 			newResult.setAuthorKey(openLibraryTitle.getAuthor_key().get(0));
 		if (!openLibraryTitle.getAuthor_name().isEmpty())
 			newResult.setAuthorName(openLibraryTitle.getAuthor_name().get(0));
-		newResult.setWorksKey(openLibraryTitle.getKey());
 		newResult.setFirstPublishedYear(openLibraryTitle.getFirst_publish_year());
 		newResult.setIsbns(openLibraryTitle.getIsbn());
 		newResult.setOpenLibraryKeys(openLibraryTitle.getEdition_key());
