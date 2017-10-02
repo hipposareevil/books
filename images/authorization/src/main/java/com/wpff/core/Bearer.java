@@ -7,6 +7,7 @@ public class Bearer {
 	
 	private String token;
 	private int userId;	
+	private String groupName;
 
 	
 	public int getUserId() {
@@ -21,5 +22,17 @@ public class Bearer {
 	public void setToken(String token) {
 		this.token = token;
 	}
+  /**
+   * @return the groupName
+   */
+  public String getGroupName() {
+    return groupName;
+  }
+  /**
+   * @param groupName the groupName to set
+   */
+  public void setGroupName(String groupName) {
+    this.groupName = groupName;
+  }
 
 }

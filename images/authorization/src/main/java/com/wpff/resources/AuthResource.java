@@ -3,6 +3,8 @@ package com.wpff.resources;
 import java.util.UUID;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -15,6 +17,7 @@ import javax.ws.rs.core.Response;
 // password encryption
 import org.jasypt.util.password.BasicPasswordEncryptor;
 
+import com.google.common.net.HttpHeaders;
 import com.wpff.core.Bearer;
 // books
 import com.wpff.core.Credentials;
@@ -62,7 +65,45 @@ public class AuthResource {
     this.userDAO = userDAO;
   }
 
+  /**
+   * Validate an authorization token.
+   * 
+   * This utilizes code from TokenFilter
+   * 
+   * @param authHeader
+   *          Header to validate
+   * @param jedis
+   *          Jedis instance used to validate token data. (INJECTED)
+   * @return Response
+   */
+  @ApiOperation(
+      value = "Validates an authentication token",
+      notes = "Returns a 200 if the authorization header is OK, 401 otherwise")
+  @GET
+  @Path("validate")
+  public Response validate(
+      @HeaderParam(HttpHeaders.AUTHORIZATION) String authHeader, 
+      @Context Jedis jedis) {
+    // validate authorization bearer
 
+    if ((authHeader == null) || (!authHeader.startsWith(BEARER))) {
+      throw new WebApplicationException("Invalid Authorization header.", Response.Status.UNAUTHORIZED);
+    }
+    
+    // Grab token text from Header
+    String token = authHeader.substring(BEARER.length() + 1);
+    token = token.trim();
+    
+        // Get username and group from Jedis.
+    String redisHashName = "user:" + token;
+    String username = jedis.hget(redisHashName, "name");
+
+    if ((username == null) || (username.isEmpty())) {
+      throw new WebApplicationException("Invalid Authorization header.", Response.Status.UNAUTHORIZED);
+    }
+
+    return Response.ok().build();
+  }
 
   /**
    * Creates an authorization token for an incoming user.
@@ -76,7 +117,7 @@ public class AuthResource {
    * @return Bearer with authentication token and ID.
    */
   @ApiOperation(
-    value="Creates authentication token which is then used for various endpoints.",	// 
+    value="Creates authentication token which is then used for various endpoints.",	 
     notes="Token is created for the user being authenticated. Token is of form 'Bearer qwerty-1234-asdf-9876'. Where required, it should be put in the HTTP Headers with key 'AUTHORIZATION'."
                 )
   @POST
@@ -116,6 +157,7 @@ public class AuthResource {
       Bearer tokenToReturn = new Bearer();
       tokenToReturn.setToken(fullToken);
       tokenToReturn.setUserId(userInDatabase.getId());
+      tokenToReturn.setGroupName(userInDatabase.getUserGroup());
       
       return tokenToReturn;
     }
