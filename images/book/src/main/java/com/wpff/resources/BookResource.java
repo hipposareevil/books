@@ -1,5 +1,8 @@
 package com.wpff.resources;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +27,12 @@ import javax.ws.rs.core.SecurityContext;
 
 // utils
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wpff.core.Book;
 import com.wpff.db.BookDAO;
 import com.wpff.filter.TokenRequired;
@@ -76,7 +84,7 @@ public class BookResource {
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                         ) {
-    return this.convertToBean(findSafely(bookId.get()));
+    return this.convertToBean(authDummy, findSafely(bookId.get()));
   }
 
 
@@ -152,7 +160,7 @@ public class BookResource {
     List<BookResult> bookList = bookSet.
         stream().
         sorted().
-        map( x -> this.convertToBean(x)).
+        map( x -> this.convertToBean(authDummy, x)).
         collect(Collectors.toList());
     
     return bookList;
@@ -205,7 +213,7 @@ public class BookResource {
       // open library url is different too
       BeanUtils.copyProperty(bookInDatabase, "ol_works", bookBean.getOpenlibraryWorkUrl());
       
-      return this.convertToBean(bookDAO.create(bookInDatabase));
+      return this.convertToBean(authDummy, bookDAO.create(bookInDatabase));
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -287,7 +295,7 @@ public class BookResource {
    *          Book in DB
    * @return Book bean
    */
-  private BookResult convertToBean(Book dbBook) {
+  private BookResult convertToBean(String authString, Book dbBook) {
     BookResult result = new BookResult();
 
     try {
@@ -315,6 +323,10 @@ public class BookResource {
       // dbBook's 'isbn' is a csv. Convert into a list
       List<String> isbns = Arrays.asList(dbBook.getIsbn().split("\\s*,\\s*"));
       BeanUtils.copyProperty(result, "isbns", isbns);
+
+      // Get author name now
+      String authorName = getAuthorName(authString, dbBook.getAuthorId());
+      BeanUtils.copyProperty(result, "authorName", authorName);      
     } 
     catch (IllegalAccessException | InvocationTargetException e) {
           e.printStackTrace();
@@ -322,7 +334,73 @@ public class BookResource {
     
     return result; 
   }
-  
+
+  /**
+   * Retrieve the author name from the 'author' webservice for the incoming
+   * authorId
+   * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'author'
+   *          web service
+   * @param authorId
+   *          ID of author to get name for
+   * @return
+   */
+  private String getAuthorName(String authString, int authorId) {
+    try {
+      // Going to the 'author' web service directly
+      String url = "http://author:8080/author/" + authorId;
+      System.out.println("Getting authorname from URL:" + url);
+      
+      HttpClient client = HttpClientBuilder.create().build();
+      HttpGet request = new HttpGet(url);
+
+      // add request header
+      request.addHeader("User-Agent", "BookAgent");
+      request.addHeader("content-type", "application/json");
+      request.addHeader("Authorization", authString);
+      
+      // Execute request
+      HttpResponse response = client.execute(request);
+
+      // Get code
+      int responseCode = response.getStatusLine().getStatusCode();
+      
+      // Convert body of result
+      BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+      StringBuffer result = new StringBuffer();
+      String line = "";
+      while ((line = rd.readLine()) != null) {
+        result.append(line);
+      }
+      
+      String authorName = "";
+
+      // Check result
+      if (responseCode == 200) {
+        // Convert into bean
+        ObjectMapper mapper = new ObjectMapper();
+        AuthorBean authorBean = null;
+        try {
+          authorBean = mapper.readValue(result.toString(), AuthorBean.class);
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+        }
+        
+        authorName = authorBean.getName();
+      }
+      else {
+        System.out.println("Unable to get author name for id: " + authorId);
+        System.out.println("Error code: " + responseCode);
+        System.out.println("Error content: " + result);
+      }
+
+      return authorName;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "";
+    }
+  }
 
   /**
    * Look for book by incoming id. If returned Book is null, throw 404.

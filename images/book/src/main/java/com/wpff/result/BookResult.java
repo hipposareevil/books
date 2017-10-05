@@ -10,7 +10,8 @@ import com.wpff.query.BookQuery;
 public class BookResult extends BookQuery {
 
   private int id;
-
+  
+  private String authorName;
   
   /**
    * @return the id
@@ -26,6 +27,21 @@ public class BookResult extends BookQuery {
     this.id = id;
   }
 
+
+  /**
+   * @return the authorName
+   */
+  public String getAuthorName() {
+    return authorName;
+  }
+
+  /**
+   * @param authorName the authorName to set
+   */
+  public void setAuthorName(String authorName) {
+    this.authorName = authorName;
+  }
+
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
@@ -34,11 +50,13 @@ public class BookResult extends BookQuery {
     StringBuilder builder = new StringBuilder();
     builder.append("BookResult [id=");
     builder.append(id);
-    builder.append(", ");
+    builder.append(", authorName=");
+    builder.append(authorName);
+    builder.append(", parent: " );
     builder.append(super.toString());
     builder.append("]");
     return builder.toString();
   }
 
- 
+
 }
