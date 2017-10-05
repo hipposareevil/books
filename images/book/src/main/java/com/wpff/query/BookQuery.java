@@ -10,23 +10,35 @@ import java.util.List;
 public class BookQuery {
   private int authorId;
 
-  private int year;
+  private int firstPublishedYear;
 
   private String title;
 
+  /**
+   * CSV string of isbns
+   */
   private List<String> isbns;
+  
+  /**
+   * CSV string of subjects
+   */
+  private List<String> subjects;
+  
+  /**
+   * Description of book
+   */
+  private String description;
 
   /**
    * openlibrary.org 'works' identifier
    */
-  private String olWorks;
+  private String openlibraryWorkUrl;
 
   private String imageSmall;
 
   private String imageMedium;
 
-  private String imageLarge;
-  
+  private String imageLarge;  
 
   
    ////////////////////////////////////////////
@@ -61,19 +73,6 @@ public class BookQuery {
     this.authorId = authorId;
   }
 
-  /**
-   * @return the year
-   */
-  public int getYear() {
-    return year;
-  }
-
-  /**
-   * @param year the year to set
-   */
-  public void setYear(int year) {
-    this.year = year;
-  }
 
   /**
    * @return the title
@@ -103,20 +102,7 @@ public class BookQuery {
     this.isbns = isbns;
   }
 
-  /**
-   * @return the olWorks
-   */
-  public String getOlWorks() {
-    return olWorks;
-  }
-
-  /**
-   * @param olWorks the olWorks to set
-   */
-  public void setOlWorks(String olWorks) {
-    this.olWorks = olWorks;
-  }
-
+ 
   /**
    * @return the imageSmall
    */
@@ -144,6 +130,49 @@ public class BookQuery {
   public void setImageMedium(String imageMedium) {
     this.imageMedium = imageMedium;
   }
+  
+    /**
+   * @return the description
+   */
+  public String getDescription() {
+    return description;
+  }
+
+  /**
+   * @param description the description to set
+   */
+  public void setDescription(String description) {
+    this.description = description;
+  }
+  
+    /**
+   * @return the subjects
+   */
+  public List<String> getSubjects() {
+    return subjects;
+  }
+
+  /**
+   * @param subjects the subjects to set
+   */
+  public void setSubjects(List<String> subjects) {
+    this.subjects = subjects;
+  }
+  
+    /**
+   * @return the openlibraryWorkUrl
+   */
+  public String getOpenlibraryWorkUrl() {
+    return openlibraryWorkUrl;
+  }
+
+  /**
+   * @param openlibraryWorkUrl the openlibraryWorkUrl to set
+   */
+  public void setOpenlibraryWorkUrl(String openlibraryWorkUrl) {
+    this.openlibraryWorkUrl = openlibraryWorkUrl;
+  }
+
 
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
@@ -154,13 +183,17 @@ public class BookQuery {
     builder.append("BookQuery [authorId=");
     builder.append(authorId);
     builder.append(", year=");
-    builder.append(year);
+    builder.append(firstPublishedYear);
     builder.append(", title=");
     builder.append(title);
     builder.append(", isbns=");
     builder.append(isbns);
-    builder.append(", olWorks=");
-    builder.append(olWorks);
+    builder.append(", subjects=");
+    builder.append(subjects);
+    builder.append(", description=");
+    builder.append(description);
+    builder.append(", openlibraryWorkUrl=");
+    builder.append(openlibraryWorkUrl);
     builder.append(", imageSmall=");
     builder.append(imageSmall);
     builder.append(", imageMedium=");
@@ -170,4 +203,22 @@ public class BookQuery {
     builder.append("]");
     return builder.toString();
   }
+
+  /**
+   * @return the firstPublishedYear
+   */
+  public int getFirstPublishedYear() {
+    return firstPublishedYear;
+  }
+
+  /**
+   * @param firstPublishedYear the firstPublishedYear to set
+   */
+  public void setFirstPublishedYear(int firstPublishedYear) {
+    this.firstPublishedYear = firstPublishedYear;
+  }
+
+
+
+
 }

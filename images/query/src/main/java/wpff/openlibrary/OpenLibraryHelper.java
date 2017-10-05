@@ -18,6 +18,7 @@ import wpff.openlibrary.beans.AuthorDocs;
 import wpff.openlibrary.beans.OpenLibraryAuthor;
 import wpff.openlibrary.beans.OpenLibraryTitle;
 import wpff.openlibrary.beans.TitleDocs;
+import wpff.openlibrary.beans.WorksBean;
 
 /**
  * Class to query the OpenLibrary for authors and titles.
@@ -36,54 +37,11 @@ public class OpenLibraryHelper {
 	private static final String titleBaseUrl = "https://openlibrary.org/search?";
 	
 	/**
-	 * Query OpenLibrary for list of books
-	 * 
-	 * @param author
-	 *            Author name, or partial
-	 * @param title
-	 *            Title name, or partial
-   * @param isbn
-	 *            ISBN of book
-	 * @return List of Title beans
+	 * Base URL at openlibrary for 'works' queries
 	 */
-	public static List<OpenLibraryTitle> queryForTitles(String author, String title, String isbn) throws IOException {
-	  // construct query
-	  String queryUrl = titleBaseUrl;
-	  
-	  // Adding the "&" if there are more than 1 params
-	  String and = "";
-	  if (title!= null && !title.isEmpty()) {
-	    queryUrl += and + "title=" + title;
-	    and = "&";
-	  }
-	  if (author != null && ! author.isEmpty())  {
-	    queryUrl += and + "author=" + author;
-	    and = "&";
-	  }
-	  if (isbn!= null && ! isbn.isEmpty()) {
-	    queryUrl += and + "isbn=" + isbn;
-	    and = "&";
-	  }
-	  
-		System.out.println("making query to: " + queryUrl);
-				
-		RestTemplate restTemplate = new RestTemplate();
-		
-		// Set headers
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-		HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
-		
-		// Make query
-		ResponseEntity<String> response = restTemplate.exchange(queryUrl, HttpMethod.GET, entity, String.class);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		TitleDocs doc = null;
-		doc = mapper.readValue(response.getBody(), TitleDocs.class);
-			
-		return doc.getDocs();
-	}
-	
+	private static final String worksBaseUrl = "https://openlibrary.org/";
+
+ 
 	/**
 	 * Query OpenLibrary for list of authors
 	 * 
@@ -126,4 +84,91 @@ public class OpenLibraryHelper {
 		List<OpenLibraryAuthor> authors = authorDoc.getDocs();
 		return authors;
 	}
+	
+		
+	/**
+	 * Query OpenLibrary for list of books
+	 * 
+	 * @param author
+	 *            Author name, or partial
+	 * @param title
+	 *            Title name, or partial
+   * @param isbn
+	 *            ISBN of book
+	 * @return List of Title beans
+	 */
+	public static List<OpenLibraryTitle> queryForTitles(String author, String title, String isbn) throws IOException {
+	  // construct query
+	  String queryUrl = titleBaseUrl;
+	  
+	  // Adding the "&" if there are more than 1 params
+	  String and = "";
+	  if (title!= null && !title.isEmpty()) {
+	    queryUrl += and + "title=" + title;
+	    and = "&";
+	  }
+	  if (author != null && ! author.isEmpty())  {
+	    queryUrl += and + "author=" + author;
+	    and = "&";
+	  }
+	  if (isbn!= null && ! isbn.isEmpty()) {
+	    queryUrl += and + "isbn=" + isbn;
+	    and = "&";
+	  }
+		
+		RestTemplate restTemplate = new RestTemplate();
+		
+		// Set headers
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+		
+		// Make query
+		ResponseEntity<String> response = restTemplate.exchange(queryUrl, HttpMethod.GET, entity, String.class);
+		
+		// Map the String response into a TitleDocs
+		ObjectMapper mapper = new ObjectMapper();
+		TitleDocs doc = null;
+		doc = mapper.readValue(response.getBody(), TitleDocs.class);
+			
+		return doc.getDocs();
+	}
+	
+	
+	 /**
+   * Query openlibrary for a description for a title. This will take a 'works'
+   * URL/key and get description
+   * 
+   * @param worksKey
+   *          works key
+   * @return Description of book, or "" if none exists
+   */
+	public static String getDescriptionForTitle(String worksKey) {
+	  	  // construct query
+	  String queryUrl = worksBaseUrl + worksKey;
+	  
+	  System.out.println("Description going to url: " + queryUrl);
+	   RestTemplate restTemplate = new RestTemplate(); 
+		
+		// Set headers
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+		
+		// Make query
+		ResponseEntity<String> response = restTemplate.exchange(queryUrl, HttpMethod.GET, entity, String.class);
+		
+		// Map the String response into a TitleDocs
+		ObjectMapper mapper = new ObjectMapper();
+    WorksBean bean = null;
+    try {
+      bean = mapper.readValue(response.getBody(), WorksBean.class);
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
+      return "";
+    }
+			
+		return bean.getTextDescription();
+	}
+	
 }

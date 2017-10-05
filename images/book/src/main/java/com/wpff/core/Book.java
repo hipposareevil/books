@@ -36,10 +36,17 @@ public class Book implements Comparable {
 
   @Column(name = "title", unique=true, nullable = false)
   private String title;
+  
+  @Column(name = "description", unique=true, nullable = false)
+  private String description;  
 
   // csv list of isbns
   @Column(name = "isbn", unique=false, nullable = true)
   private String isbn;
+  
+  // csv list of subjects
+  @Column(name = "subjects", unique=false, nullable = true)
+  private String subject;  
 
   // openlibrary.org 'works' location
   @Column(name = "ol_works", unique=false, nullable = true)
@@ -263,6 +270,66 @@ public class Book implements Comparable {
    */
   public void setImageLarge(String imageLarge) {
     this.imageLarge = imageLarge;
+  }
+
+  /**
+   * @return the description
+   */
+  public String getDescription() {
+    return description;
+  }
+
+  /**
+   * @param description the description to set
+   */
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  /**
+   * @return the subjects
+   */
+  public String getSubject() {
+    return subject;
+  }
+
+  /**
+   * @param subject  the subjects to set
+   */
+  public void setSubject(String subject) {
+    this.subject = subject;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("Book [id=");
+    builder.append(id);
+    builder.append(", authorId=");
+    builder.append(authorId);
+    builder.append(", year=");
+    builder.append(year);
+    builder.append(", title=");
+    builder.append(title);
+    builder.append(", description=");
+    builder.append(description);
+    builder.append(", isbn=");
+    builder.append(isbn);
+    builder.append(", subject=");
+    builder.append(subject);
+    builder.append(", olWorks=");
+    builder.append(olWorks);
+    builder.append(", imageSmall=");
+    builder.append(imageSmall);
+    builder.append(", imageMedium=");
+    builder.append(imageMedium);
+    builder.append(", imageLarge=");
+    builder.append(imageLarge);
+    builder.append("]");
+    return builder.toString();
   }
 
 

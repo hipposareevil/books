@@ -68,7 +68,6 @@ public class BookQueryController {
 			authors = OpenLibraryHelper.queryForAuthors(authorQuery);
 		}
 		
-
 		// Convert to AuthorResult. This is done as the OpenLibraryAuthor has strange
 		// field names due to the JSON returned from openlibrary.org
     List<QueryAuthorResult> results = authors.
@@ -93,7 +92,7 @@ public class BookQueryController {
 	 * @return list of matching Books
 	 * @throws IOException 
 	 */
-	@ApiOperation(value = "/title", nickname = "query titles",
+	@ApiOperation(value = "/book", nickname = "query book titles",
                 notes = "Query openlibrary for book titles. Results are sorted by the number of ISBNs per book."
                 + " The first titles in the resulting list will be the ones with more associated ISBNS")
 	@ApiImplicitParams({
@@ -107,7 +106,7 @@ public class BookQueryController {
   @ApiResponses(value = {
          @ApiResponse(code = 200, message = "Success", response = QueryTitleResult.class, responseContainer="List")  
                    })
-	@RequestMapping(method = RequestMethod.GET, path = "/title", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, path = "/book", produces = "application/json")
 	public List<QueryTitleResult> queryForTitles(
     @RequestParam(value = "author", required=false) String author, 
     @RequestParam(value = "title", required=false) String title,
@@ -152,12 +151,16 @@ public class BookQueryController {
       e.printStackTrace();
     }
 
+		// openlibrary key
+		newResult.setOlKey(author.getKey());
+		// subjects
 		newResult.setSubjects(author.getTop_subjects());
+
 		// Set images for the author
-		newResult.setAuthorImageSmall(OpenLibraryUrlConverter.createAuthorImageUrl(author.getKey(), ImageSize.SMALL));
-		newResult.setAuthorImageMedium(
+		newResult.setImageSmall(OpenLibraryUrlConverter.createAuthorImageUrl(author.getKey(), ImageSize.SMALL));
+		newResult.setImageMedium(
 				OpenLibraryUrlConverter.createAuthorImageUrl(author.getKey(), ImageSize.MEDIUM));
-		newResult.setAuthorImageLarge(OpenLibraryUrlConverter.createAuthorImageUrl(author.getKey(), ImageSize.LARGE));
+		newResult.setImageLarge(OpenLibraryUrlConverter.createAuthorImageUrl(author.getKey(), ImageSize.LARGE));
 
 		return newResult;
 	}
@@ -169,18 +172,22 @@ public class BookQueryController {
 	 *            Title to convert
 	 * @return
 	 */
-	private QueryTitleResult convertToResult(OpenLibraryTitle openLibraryTitle) {
+	private QueryTitleResult convertToResult(OpenLibraryTitle openLibraryTitle)  {
 		QueryTitleResult newResult = new QueryTitleResult();
 
 		newResult.setTitle(openLibraryTitle.getTitle_suggest());
 		
 		// Set images for book
-		newResult.setCoverImageSmall(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.SMALL));
-		newResult.setCoverImageMedium(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.MEDIUM));
-		newResult.setCoverImageLarge(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.LARGE));
+		newResult.setImageSmall(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.SMALL));
+		newResult.setImageMedium(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.MEDIUM));
+		newResult.setImageLarge(OpenLibraryUrlConverter.createCoverImageUrl(openLibraryTitle, ImageSize.LARGE));
 		
 		// set work url
 	  newResult.setOpenlibraryWorkUrl(OpenLibraryUrlConverter.createWorkUrl(openLibraryTitle.getKey()));
+	  
+	  // Get Description if possible
+	  String description = OpenLibraryHelper.getDescriptionForTitle(openLibraryTitle.getKey());
+	  newResult.setDescription(description);	  
 		
 		// the rest
 		newResult.setSubjects(openLibraryTitle.getSubject());

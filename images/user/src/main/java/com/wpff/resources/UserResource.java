@@ -228,7 +228,7 @@ public class UserResource {
       // Update properties in user
       try {
         // Set the encrypted password as 'userBean' has its password already encrypted
-        // via the 'setPassword' method on User.
+        // via the 'setPassword' method on the User class.
         // So this sets the already encrypted version, otherwise it will be
         // encrypted again and we lose the original password.
         if (userBean.getPassword() != null)

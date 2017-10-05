@@ -13,11 +13,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Will be retrieved through:
  * 'https://openlibrary.org/search?title=X&author=Y'
  * 
- * 
  */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class OpenLibraryTitle implements Comparable {
-
   
 	// Title
 	private String title_suggest;
@@ -46,7 +44,7 @@ public class OpenLibraryTitle implements Comparable {
 	// isbns
 	private List<String> isbn;
 
-	// library thing ids
+	// openlibrary ids
 	private List<String> edition_key;
 
 	////////////////////////////////////////////////////

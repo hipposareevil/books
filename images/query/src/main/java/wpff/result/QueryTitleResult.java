@@ -18,15 +18,15 @@ public class QueryTitleResult implements Comparable {
 	/**
 	 * Cover image - small
 	 */
-	private String coverImageSmall;
+	private String imageSmall;
 	/**
 	 * Cover image - medium
 	 */
-	private String coverImageMedium;
+	private String imageMedium;
 	/**
 	 * Cover image - large
 	 */
-	private String coverImageLarge;
+	private String imageLarge;
 
 	/**
 	 * List of subjects this book covers
@@ -44,6 +44,11 @@ public class QueryTitleResult implements Comparable {
 	 * Name of author
 	 */
 	private String authorName;
+	
+	/**
+	 * Description
+	 */
+	private String description;
 	
 	/**
 	 * OpenLibrary key to show the 'works' of the book. Is the top level 'book' for a given title
@@ -171,48 +176,6 @@ public class QueryTitleResult implements Comparable {
 		this.openLibraryKeys.addAll(openLibraryKeys);
 	}
 
-	/**
-	 * @return the coverImageSmall
-	 */
-	public String getCoverImageSmall() {
-		return coverImageSmall;
-	}
-
-	/**
-	 * @param coverImageSmall the coverImageSmall to set
-	 */
-	public void setCoverImageSmall(String coverImageSmall) {
-		this.coverImageSmall = coverImageSmall;
-	}
-
-	/**
-	 * @return the coverImageMedium
-	 */
-	public String getCoverImageMedium() {
-		return coverImageMedium;
-	}
-
-	/**
-	 * @param coverImageMedium the coverImageMedium to set
-	 */
-	public void setCoverImageMedium(String coverImageMedium) {
-		this.coverImageMedium = coverImageMedium;
-	}
-
-	/**
-	 * @return the coverImageLarge
-	 */
-	public String getCoverImageLarge() {
-		return coverImageLarge;
-	}
-
-	/**
-	 * @param coverImageLarge the coverImageLarge to set
-	 */
-	public void setCoverImageLarge(String coverImageLarge) {
-		this.coverImageLarge = coverImageLarge;
-	}
-	
 	  /**
    * @return the openlibraryWorkUrl
    */
@@ -226,7 +189,21 @@ public class QueryTitleResult implements Comparable {
   public void setOpenlibraryWorkUrl(String openlibraryWorkUrl) {
     this.openlibraryWorkUrl = openlibraryWorkUrl;
   } 
-	
+  
+  
+  /**
+   * @return the description
+   */
+  public String getDescription() {
+    return description;
+  }
+
+  /**
+   * @param description the description to set
+   */
+  public void setDescription(String description) {
+    this.description = description;
+  }
 	
 
 	/**
@@ -251,97 +228,47 @@ public class QueryTitleResult implements Comparable {
 		return Integer.compare(thatSize, thisSize);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((authorKey == null) ? 0 : authorKey.hashCode());
-		result = prime * result + ((authorName == null) ? 0 : authorName.hashCode());
-		result = prime * result + ((coverImageLarge == null) ? 0 : coverImageLarge.hashCode());
-		result = prime * result + ((coverImageMedium == null) ? 0 : coverImageMedium.hashCode());
-		result = prime * result + ((coverImageSmall == null) ? 0 : coverImageSmall.hashCode());
-		result = prime * result + ((firstPublishedYear == null) ? 0 : firstPublishedYear.hashCode());
-		result = prime * result + ((isbns == null) ? 0 : isbns.hashCode());
-		result = prime * result + ((openLibraryKeys == null) ? 0 : openLibraryKeys.hashCode());
-		result = prime * result + ((subjects == null) ? 0 : subjects.hashCode());
-		result = prime * result + ((title == null) ? 0 : title.hashCode());
-		result = prime * result + ((openlibraryWorkUrl == null) ? 0 : openlibraryWorkUrl.hashCode());
-		return result;
-	}
+  /**
+   * @return the imageSmall
+   */
+  public String getImageSmall() {
+    return imageSmall;
+  }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		QueryTitleResult other = (QueryTitleResult) obj;
-		if (authorKey == null) {
-			if (other.authorKey != null)
-				return false;
-		} else if (!authorKey.equals(other.authorKey))
-			return false;
-		if (authorName == null) {
-			if (other.authorName != null)
-				return false;
-		} else if (!authorName.equals(other.authorName))
-			return false;
-		if (coverImageLarge == null) {
-			if (other.coverImageLarge != null)
-				return false;
-		} else if (!coverImageLarge.equals(other.coverImageLarge))
-			return false;
-		if (coverImageMedium == null) {
-			if (other.coverImageMedium != null)
-				return false;
-		} else if (!coverImageMedium.equals(other.coverImageMedium))
-			return false;
-		if (coverImageSmall == null) {
-			if (other.coverImageSmall != null)
-				return false;
-		} else if (!coverImageSmall.equals(other.coverImageSmall))
-			return false;
-		if (firstPublishedYear == null) {
-			if (other.firstPublishedYear != null)
-				return false;
-		} else if (!firstPublishedYear.equals(other.firstPublishedYear))
-			return false;
-		if (isbns == null) {
-			if (other.isbns != null)
-				return false;
-		} else if (!isbns.equals(other.isbns))
-			return false;
-		if (openLibraryKeys == null) {
-			if (other.openLibraryKeys != null)
-				return false;
-		} else if (!openLibraryKeys.equals(other.openLibraryKeys))
-			return false;
-		if (subjects == null) {
-			if (other.subjects != null)
-				return false;
-		} else if (!subjects.equals(other.subjects))
-			return false;
-		if (title == null) {
-			if (other.title != null)
-				return false;
-		} else if (!title.equals(other.title))
-			return false;
-		if (openlibraryWorkUrl == null) {
-			if (other.openlibraryWorkUrl != null)
-				return false;
-		} else if (!openlibraryWorkUrl.equals(other.openlibraryWorkUrl))
-			return false;
-		return true;
-	}
+  /**
+   * @param imageSmall the imageSmall to set
+   */
+  public void setImageSmall(String imageSmall) {
+    this.imageSmall = imageSmall;
+  }
 
+  /**
+   * @return the imageMedium
+   */
+  public String getImageMedium() {
+    return imageMedium;
+  }
 
+  /**
+   * @param imageMedium the imageMedium to set
+   */
+  public void setImageMedium(String imageMedium) {
+    this.imageMedium = imageMedium;
+  }
 
+  /**
+   * @return the imageLarge
+   */
+  public String getImageLarge() {
+    return imageLarge;
+  }
+
+  /**
+   * @param imageLarge the imageLarge to set
+   */
+  public void setImageLarge(String imageLarge) {
+    this.imageLarge = imageLarge;
+  }
+
+	
 }

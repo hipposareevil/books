@@ -1,5 +1,7 @@
 package com.wpff.query;
 
+import java.util.List;
+
 /**
  * Author bean that is used in the POST method of the AuthorResource.
  * This is used to present a view of the Author for creation and is
@@ -20,6 +22,8 @@ public class AuthorQuery {
   private String imageMedium;
 
   private String imageLarge;
+  
+  private List<String> subjects;
   
   /////////////////////////////////////
 
@@ -105,6 +109,20 @@ public class AuthorQuery {
    */
   public void setImageLarge(String imageLarge) {
     this.imageLarge = imageLarge;
+  }
+
+  /**
+   * @return the subjects
+   */
+  public List<String> getSubjects() {
+    return subjects;
+  }
+
+  /**
+   * @param subjects the subjects to set
+   */
+  public void setSubjects(List<String> subjects) {
+    this.subjects = subjects;
   }
   
 }

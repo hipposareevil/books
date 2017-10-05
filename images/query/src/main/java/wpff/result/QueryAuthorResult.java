@@ -11,14 +11,13 @@ import java.util.List;
 public class QueryAuthorResult {
 
 	private String name;
-	private String key;
+	private String olKey;
 	private List<String> subjects = new ArrayList<String>();
 	private String birthDate;
-	private String authorImageSmall;
-	private String authorImageMedium;
-	private String authorImageLarge;
+	private String imageSmall;
+	private String imageMedium;
+	private String imageLarge;
 	
-
 	public String getName() {
 		return name;
 	}
@@ -27,12 +26,12 @@ public class QueryAuthorResult {
 		this.name = name;
 	}
 
-	public String getKey() {
-		return key;
+	public String getOlKey() {
+		return olKey;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setOlKey(String key) {
+		this.olKey = key;
 	}
 
 	public List<String> getSubjects() {
@@ -53,48 +52,6 @@ public class QueryAuthorResult {
 	}
 
 	
-	/**
-	 * @return the authorImageSmall
-	 */
-	public String getAuthorImageSmall() {
-		return authorImageSmall;
-	}
-
-	/**
-	 * @param authorImageSmall the authorImageSmall to set
-	 */
-	public void setAuthorImageSmall(String authorImageSmall) {
-		this.authorImageSmall = authorImageSmall;
-	}
-
-	/**
-	 * @return the authorImageMedium
-	 */
-	public String getAuthorImageMedium() {
-		return authorImageMedium;
-	}
-
-	/**
-	 * @param authorImageMedium the authorImageMedium to set
-	 */
-	public void setAuthorImageMedium(String authorImageMedium) {
-		this.authorImageMedium = authorImageMedium;
-	}
-
-	/**
-	 * @return the authorImageLarge
-	 */
-	public String getAuthorImageLarge() {
-		return authorImageLarge;
-	}
-
-	/**
-	 * @param authorImageLarge the authorImageLarge to set
-	 */
-	public void setAuthorImageLarge(String authorImageLarge) {
-		this.authorImageLarge = authorImageLarge;
-	}
-
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -105,7 +62,7 @@ public class QueryAuthorResult {
 		builder.append("AuthorResult [name=");
 		builder.append(name);
 		builder.append(", key=");
-		builder.append(key);
+		builder.append(olKey);
 		builder.append(", subjects=");
 		builder.append(subjects);
 		builder.append(", birthDate=");
@@ -113,6 +70,48 @@ public class QueryAuthorResult {
 		builder.append("]");
 		return builder.toString();
 	}
+
+  /**
+   * @return the imageSmall
+   */
+  public String getImageSmall() {
+    return imageSmall;
+  }
+
+  /**
+   * @param imageSmall the imageSmall to set
+   */
+  public void setImageSmall(String imageSmall) {
+    this.imageSmall = imageSmall;
+  }
+
+  /**
+   * @return the imageMedium
+   */
+  public String getImageMedium() {
+    return imageMedium;
+  }
+
+  /**
+   * @param imageMedium the imageMedium to set
+   */
+  public void setImageMedium(String imageMedium) {
+    this.imageMedium = imageMedium;
+  }
+
+  /**
+   * @return the imageLarge
+   */
+  public String getImageLarge() {
+    return imageLarge;
+  }
+
+  /**
+   * @param imageLarge the imageLarge to set
+   */
+  public void setImageLarge(String imageLarge) {
+    this.imageLarge = imageLarge;
+  }
 
 
 }

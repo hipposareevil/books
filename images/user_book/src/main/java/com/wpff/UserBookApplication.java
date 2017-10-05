@@ -16,10 +16,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
+import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
 import com.wpff.core.User;
-import com.wpff.core.DatabaseUserBook;
 import com.wpff.db.TagDAO;
 import com.wpff.db.TagMappingDAO;
 import com.wpff.db.UserBookDAO;
@@ -107,9 +107,10 @@ public class UserBookApplication extends Application<UserBookConfiguration> {
 		final TagMappingDAO tagMapDao = new TagMappingDAO(hibernateBundle.getSessionFactory());
 
 		// Helper for UnitOfWork
-		UserBookHelper ubHelper = new UnitOfWorkAwareProxyFactory(hibernateBundle).create(UserBookHelper.class,
-				new Class[] { UserBookDAO.class, UserDAO.class, TagDAO.class, TagMappingDAO.class },
-				new Object[] { userBookDao, userDao, tagDao, tagMapDao });
+		UserBookHelper ubHelper = new UnitOfWorkAwareProxyFactory(hibernateBundle)
+		    .create(UserBookHelper.class,
+		        new Class[] { UserBookDAO.class, UserDAO.class, TagDAO.class, TagMappingDAO.class },
+				new   Object[] { userBookDao, userDao, tagDao, tagMapDao });
 
 		// Register endpoints
 		environment.jersey().register(new UserBookResource(userDao, tagDao, userBookDao, ubHelper));

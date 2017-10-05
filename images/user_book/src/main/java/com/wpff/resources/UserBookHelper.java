@@ -29,6 +29,9 @@ import com.wpff.db.UserDAO;
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
 
+/**
+ * Helper for userbooks to deal with unitofwork issues
+ */
 public class UserBookHelper {
 
 	/**

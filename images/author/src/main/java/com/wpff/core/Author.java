@@ -2,6 +2,8 @@ package com.wpff.core;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -21,9 +23,9 @@ import javax.persistence.Table;
         )
     } 
 )
-public class Author {
+public class Author implements Comparable {
   @Id
-//  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "author_id", unique=true, nullable = false)
   private int id;
 
@@ -48,6 +50,10 @@ public class Author {
   // openlibrary.org 'author key' location
   @Column(name = "ol_key", unique=false, nullable = true)
   private String olKey;
+
+  // openlibrary.org 'author key' location
+  @Column(name = "subjects", unique=false, nullable = true)
+  private String subjectsAsCsv;
 
   //////////////////////////////////
   
@@ -171,6 +177,26 @@ public class Author {
     builder.append(olKey);
     builder.append("]");
     return builder.toString();
+  }
+
+  @Override
+  public int compareTo(Object o) {
+    Author other = (Author) o;
+    return Integer.compare(this.id, other.id);
+  }
+
+  /**
+   * @return the subjects
+   */
+  public String getSubjectsAsCsv() {
+    return subjectsAsCsv;
+  }
+
+  /**
+   * @param subjects the subjects to set
+   */
+  public void setSubjectsAsCsv(String subjects) {
+    this.subjectsAsCsv = subjects;
   }
 
 

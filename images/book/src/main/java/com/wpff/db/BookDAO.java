@@ -1,14 +1,14 @@
 package com.wpff.db;
 
-import com.wpff.core.Book;
+import java.util.List;
+import java.util.Optional;
 
-import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 
+import com.wpff.core.Book;
 
-import java.util.List;
-import java.util.Optional;
+import io.dropwizard.hibernate.AbstractDAO;
 
 
 /**
@@ -55,6 +55,20 @@ public class BookDAO extends AbstractDAO<Book> {
     return currentSession()
         .createCriteria(Book.class)
         .add(Restrictions.in("id", bookIds))
+        .list();
+  }
+
+  
+  /**
+   * Return all books with the incoming Author IDs. Unknown IDs are ignored
+   *
+   * @param authorIds List of Author IDs
+   * @return List of Books. May be empty
+   */
+  public List<Book> findByAuthorId(List<Integer> authorIds) {
+    return currentSession()
+        .createCriteria(Book.class)
+        .add(Restrictions.in("authorId", authorIds))
         .list();
   }
 

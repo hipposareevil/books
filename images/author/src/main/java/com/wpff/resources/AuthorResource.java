@@ -2,6 +2,7 @@ package com.wpff.resources;
 
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,12 +25,10 @@ import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.wpff.core.Author;
-import com.wpff.db.AuthorDAO;
 import com.wpff.filter.TokenRequired;
 import com.wpff.query.AuthorQuery;
 import com.wpff.result.AuthorResult;
 
-import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
 // Swagger
 import io.swagger.annotations.Api;
@@ -48,10 +47,10 @@ import io.swagger.annotations.ApiResponse;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthorResource {
 
-  private final AuthorDAO authorDAO;
+  private final AuthorHelper authorHelper;
 
-  public AuthorResource(AuthorDAO authorDAO) {
-    this.authorDAO = authorDAO;
+  public AuthorResource(AuthorHelper authorHelper) {
+    this.authorHelper = authorHelper;
   }
 
   /**
@@ -68,7 +67,6 @@ public class AuthorResource {
                 )
   @GET
   @Path("/{id}")
-  @UnitOfWork
   @TokenRequired
   public AuthorResult getAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = false)
@@ -76,16 +74,14 @@ public class AuthorResource {
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                           ) {
-    return convertToBean(findSafely(authorId.get()));
+    Author authorInDb = this.authorHelper.findById(authorId.get());
+    return convertToBean(authorInDb);
   }
-
-
 
   /**
    * Get list authors.
    *
-   * @param authorQuery Name of author, or partial name, that is used to
-   * match against the database.
+   * @param authorNameQuery Name of author, or partial name, that is used to match against the database.
    * @param authDummy Dummy authorization string that is solely used for Swagger description.
    * 
    * @return list of matching Author(s). When query is empty, this will be
@@ -97,22 +93,21 @@ public class AuthorResource {
         + " Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."    
                 )
   @GET
-  @UnitOfWork
   @TokenRequired
   public List<AuthorResult> getAuthor(
     @ApiParam(value = "Name or partial name of author to retrieve.", required = false)
-    @QueryParam("name") String authorQuery,
+    @QueryParam("name") String authorNameQuery,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                                 ) {
     // Start
     
     List<Author> authors = null;
-    if (authorQuery != null) {
-      authors = authorDAO.findByName(authorQuery);
+    if (authorNameQuery != null) {
+      authors = this.authorHelper.findByName(authorNameQuery);
     }
     else {
-      authors = authorDAO.findAll();
+      authors = this.authorHelper.findAll();
     }
     
     // Convert list of Authors (DB) to AuthorResults (bean)
@@ -124,7 +119,6 @@ public class AuthorResource {
     
     return results;
   }
-
 
 
   /**
@@ -140,7 +134,6 @@ public class AuthorResource {
     notes="Create new author in the database. The 'id' field will be ignored. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @POST
-  @UnitOfWork
   @ApiResponse(code = 409, message = "Duplicate value")
   @TokenRequired
   public AuthorResult createAuthor(
@@ -155,11 +148,18 @@ public class AuthorResource {
       
     try {
       // Make new Author from authorBean
-      Author author = new Author();
+      Author authorInDatabase = new Author();
+      
       // copy(destination, source)
-      BeanUtils.copyProperties(author, authorBean);
+      BeanUtils.copyProperties(authorInDatabase, authorBean);
+      
+      // Make subjects in DB a CSV string
+      authorInDatabase.setSubjectsAsCsv(convertListToCsv(authorBean.getSubjects()));
 
-      return this.convertToBean(authorDAO.create(author));
+      // Create the author in the database, 
+      // then convert it to a normal bean and return that
+      Author created = this.authorHelper.createAuthor(authorInDatabase);
+      return this.convertToBean(created);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -176,7 +176,21 @@ public class AuthorResource {
   }
 
 
-
+  /**
+   * Helper to convert a list into a csv of those values
+   * @param values
+   * @return
+   */
+  static String convertListToCsv(List<String> values) {
+      String csvString = "";
+      for (String s : values) {
+        csvString += s + ",";
+      }
+      // trim last comma
+      csvString = csvString.substring(0, csvString.length());
+      return csvString;
+  }
+ 
   /**
    * Deletes a author by ID
    *
@@ -188,11 +202,12 @@ public class AuthorResource {
    */
   @ApiOperation(
     value="Delete author by ID.",
-    notes="Delete author from database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+    notes="Delete author from database. Requires authentication token in header with key AUTHORIZATION. "
+        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. "
+        + "User must be in the 'admin' group."
                 )
   @DELETE
   @Path("/{id}")
-  @UnitOfWork
   @TokenRequired
   public Response deleteAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = true)
@@ -205,7 +220,7 @@ public class AuthorResource {
       // Start
       verifyAdminUser(context);
 
-      authorDAO.delete(findSafely(authorId.get()));
+      this.authorHelper.deleteAuthor(authorId.get());
     }
     catch (org.hibernate.HibernateException he) {
       throw new NotFoundException("No author by id '" + authorId + "'");
@@ -228,28 +243,20 @@ public class AuthorResource {
    */
   private AuthorResult convertToBean(Author dbAuthor) {
     AuthorResult result = new AuthorResult();
-    
+
     try {
-      BeanUtils.copyProperties(result,  dbAuthor);
-      
-       } 
-    catch (IllegalAccessException | InvocationTargetException e) {
-          e.printStackTrace();
+      BeanUtils.copyProperties(result, dbAuthor);
+
+      // dbAuthor's 'subjects' is a csv. Convert to a list
+      List<String> subjects = Arrays.asList(dbAuthor.getSubjectsAsCsv().split("\\s*,\\s*"));
+      BeanUtils.copyProperty(result, "subjects", subjects);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      e.printStackTrace();
     }
-    
-    
+
     return result;
   }
-  
-  /**
-   * Look for author by incoming id. If returned Author is null, throw 404.
-   *
-   * @param id ID of author to look for
-   */
-  private Author findSafely(int id) {
-    return authorDAO.findById(id).orElseThrow(() -> new NotFoundException("No author by id " + id));
-  }
-  
+ 
 
   /**
    * Verifies the incoming user is 'admin'.
