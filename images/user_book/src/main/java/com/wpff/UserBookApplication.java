@@ -16,6 +16,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
+import com.wpff.common.drop.filter.TokenRequiredFeature;
 import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
@@ -24,7 +25,6 @@ import com.wpff.db.TagDAO;
 import com.wpff.db.TagMappingDAO;
 import com.wpff.db.UserBookDAO;
 import com.wpff.db.UserDAO;
-import com.wpff.filter.TokenRequiredFeature;
 import com.wpff.resources.UserBookHelper;
 // Resources
 import com.wpff.resources.UserBookResource;

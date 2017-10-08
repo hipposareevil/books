@@ -54,6 +54,13 @@
           <artifactId>commons-beanutils</artifactId>
           <version>1.9.3</version>
         </dependency>
+
+        <!-- wpff common -->
+        <dependency>
+          <groupId>com.wpff.common</groupId>
+          <artifactId>mybooks-common</artifactId>
+          <version>1.0</version>
+        </dependency>
         
         <!-- For hibernate -->
         <dependency>

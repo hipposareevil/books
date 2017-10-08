@@ -22,6 +22,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import com.wpff.common.drop.filter.TokenRequired;
+import com.wpff.common.result.ResultWrapper;
+import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.FullUserBook;
 import com.wpff.core.PostUserBook;
@@ -30,7 +33,6 @@ import com.wpff.core.TagMapping;
 import com.wpff.db.TagDAO;
 import com.wpff.db.UserBookDAO;
 import com.wpff.db.UserDAO;
-import com.wpff.filter.TokenRequired;
 
 import io.dropwizard.jersey.params.IntParam;
 // Swagger
@@ -108,8 +110,10 @@ public class UserBookResource {
 	@DELETE
 	@Path("/{user_id}/{user_book_id}")
 	@TokenRequired
-	public Response deleteUserBook(@Context SecurityContext context, @ApiParam(value = "ID of user.",
-			required = false) @PathParam("user_id") IntParam userId,
+	public Response deleteUserBook(@Context SecurityContext context, 
+	    @ApiParam(value = "ID of user.", required = false) 
+     	@PathParam("user_id") 
+	    IntParam userId,
 
 			@ApiParam(value = "ID of userBook.", required = false) @PathParam("user_book_id") IntParam userBookId,
 
@@ -146,8 +150,11 @@ public class UserBookResource {
 	@GET
 	@Path("/{user_id}/{user_book_id}")
 	@TokenRequired
-	public FullUserBook getUserBook(@Context SecurityContext context, @ApiParam(value = "ID of user.",
-			required = false) @PathParam("user_id") IntParam userId,
+	public FullUserBook getUserBook(
+	    @Context SecurityContext context, 
+	    @ApiParam(value = "ID of user.", 	required = false) 
+	    @PathParam("user_id") 
+	    IntParam userId,
 
 			@ApiParam(value = "ID of userBook.", required = false) @PathParam("user_book_id") IntParam userBookId,
 
@@ -190,13 +197,29 @@ public class UserBookResource {
 	@GET
 	@Path("/{user_id}")
 	@TokenRequired
-	public List<FullUserBook> getUserBooks(@Context SecurityContext context, @ApiParam(value = "ID of user.",
-			required = false) @PathParam("user_id") IntParam userId,
+	public ResultWrapper<FullUserBook> getUserBooks(
+	    @Context SecurityContext context, 
+	    @ApiParam(value = "ID of user.", required = false) 
+	    @PathParam("user_id") 
+	    IntParam userId,
 
 			@ApiParam(value = "List of tags of books to retrieve. Only user books that have these tags will be returned",
-					required = false) @QueryParam("tag") List<String> tagQuery,
+					required = false)
+      @QueryParam("tag") List<String> 
+	    tagQuery,
+	    
+      @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
+      @QueryParam("start") 
+      Integer start,
 
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+      @ApiParam(value = "size of the returned data segment.", required = false) 
+			@QueryParam("segmentSize") 
+			Integer segmentSize,
+	    
+
+			@ApiParam(value = "Bearer authorization", required = true) 
+	    @HeaderParam(value = "Authorization") 
+	    String authDummy) {
 		// Start
 		try {
 			// Verify the username matches the userid or is 'admin'
@@ -205,17 +228,15 @@ public class UserBookResource {
 			// Ok to get books
 			List<FullUserBook> userBooks = ubHelper.getUserBooksForUser(userId.get());
 
-			// If tagQuery is non null, filter out tags
-			if (tagQuery.isEmpty()) {
-				// Return all books
-				return userBooks;
-			} else {
-				// Filter out books by tag. If the books tags match any in the query, keep
-				// them
-				userBooks = userBooks.stream().filter(t -> !Collections.disjoint(t.getTags(), tagQuery)).collect(Collectors.toList());
-			}
+      // If tagQuery is non null, filter out tags
+      if (! tagQuery.isEmpty()) {
+        // Filter out books by tag. If the books tags match any in the query, keep them
+        userBooks = userBooks.stream().filter(t -> !Collections.disjoint(t.getTags(), tagQuery)).collect(
+            Collectors.toList());
+      }
 
-			return userBooks;
+      ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(userBooks, start, segmentSize);
+      return result;
 
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
 			throw new WebApplicationException(
@@ -243,9 +264,11 @@ public class UserBookResource {
 	 * @return The newly created user
 	 */
 	@ApiOperation(value = "Create new userbook",
-			notes = "Create new userbook in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
-	@ApiResponses(value = { @ApiResponse(code = 409, message = "Userbook already exists in database."), @ApiResponse(code = 200,
-			response = FullUserBook.class, message = "Userbook successfully added.") })
+			notes = "Create new userbook in database. Requires authentication token in header with key AUTHORIZATION. "
+			    + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
+	@ApiResponses(value = { 
+	    @ApiResponse(code = 409, message = "Userbook already exists in database."), 
+	    @ApiResponse(code = 200, response = FullUserBook.class, message = "Userbook successfully added.") })
 	@POST
 	@TokenRequired
 	@Path("/{user_id}")
@@ -312,7 +335,6 @@ public class UserBookResource {
 				System.out.println("Created new tag mapping: " + mapping);
 			}
 
-			System.out.println("");
 
 			//////////////////
 			// Marshall back from database
