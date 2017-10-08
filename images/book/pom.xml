@@ -52,6 +52,13 @@
           <version>1.0.0-1</version>
         </dependency>
 
+        <!-- wpff common -->
+        <dependency>
+          <groupId>com.wpff.common</groupId>
+          <artifactId>mybooks-common</artifactId>
+          <version>1.0</version>
+        </dependency>
+
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>

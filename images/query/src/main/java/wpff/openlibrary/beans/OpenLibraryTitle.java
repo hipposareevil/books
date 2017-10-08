@@ -136,17 +136,7 @@ public class OpenLibraryTitle implements Comparable {
 		this.isbn = isbn;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "OpenLibraryTitle [title_suggest=" + title_suggest + ", cover_i=" + cover_i + ", author_key="
-				+ author_key + ", author_name=" + author_name + ", subject=" + subject + ", key=" + key
-				+ ", publish_year=" + publish_year + ", first_publish_year=" + first_publish_year + ", isbn="
-				+ isbn + ", edition_key=" + edition_key + "]";
-	}
-  
+
     
   @Override
   public int compareTo(Object o) {
@@ -158,6 +148,36 @@ public class OpenLibraryTitle implements Comparable {
         .append(this.isbn, other.isbn)
         .append(this.publish_year, other.publish_year)
         .toComparison();
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("OpenLibraryTitle [title_suggest=");
+    builder.append(title_suggest);
+    builder.append(", cover_i=");
+    builder.append(cover_i);
+    builder.append(", author_key=");
+    builder.append(author_key);
+    builder.append(", author_name=");
+    builder.append(author_name);
+    builder.append(", subject=");
+    builder.append(subject);
+    builder.append(", key=");
+    builder.append(key);
+    builder.append(", publish_year=");
+    builder.append(publish_year);
+    builder.append(", first_publish_year=");
+    builder.append(first_publish_year);
+    builder.append(", isbn=");
+    builder.append(isbn);
+    builder.append(", edition_key=");
+    builder.append(edition_key);
+    builder.append("]");
+    return builder.toString();
   }
 
 }

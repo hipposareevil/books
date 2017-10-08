@@ -1,6 +1,5 @@
 package com.wpff.resources;
 
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
@@ -24,8 +23,10 @@ import javax.ws.rs.core.SecurityContext;
 // utils
 import org.apache.commons.beanutils.BeanUtils;
 
+import com.wpff.common.drop.filter.TokenRequired;
+import com.wpff.common.result.ResultWrapper;
+import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.core.Author;
-import com.wpff.filter.TokenRequired;
 import com.wpff.query.AuthorQuery;
 import com.wpff.result.AuthorResult;
 
@@ -56,9 +57,12 @@ public class AuthorResource {
   /**
    * Return a single author, by id.
    *
-   * @param authorId ID of author
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
-   * @return Author 
+   * @param authorId
+   *          ID of author
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return Author
    */
   @ApiOperation(
     value="Get author by ID.",
@@ -70,9 +74,11 @@ public class AuthorResource {
   @TokenRequired
   public AuthorResult getAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = false)
-    @PathParam("id") IntParam authorId,
+    @PathParam("id") 
+    IntParam authorId,
     @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
+    @HeaderParam(value="Authorization")
+    String authDummy
                           ) {
     Author authorInDb = this.authorHelper.findById(authorId.get());
     return convertToBean(authorInDb);
@@ -81,11 +87,19 @@ public class AuthorResource {
   /**
    * Get list authors.
    *
-   * @param authorNameQuery Name of author, or partial name, that is used to match against the database.
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @param start
+   *          Start index of data segment
+   * @param segmentSize
+   *          Size of data segment
+   * @param authorNameQuery
+   *          Name of author, or partial name, that is used to match against the
+   *          database.
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
    * 
-   * @return list of matching Author(s). When query is empty, this will be
-   * all author
+   * @return list of matching Author(s). When query is empty, this will be all
+   *         author
    */
   @ApiOperation(
     value="Get authors via optional 'name' query param.",
@@ -94,11 +108,20 @@ public class AuthorResource {
                 )
   @GET
   @TokenRequired
-  public List<AuthorResult> getAuthor(
-    @ApiParam(value = "Name or partial name of author to retrieve.", required = false)
-    @QueryParam("name") String authorNameQuery,
-    @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
+  public ResultWrapper<AuthorResult> getAuthor(
+      @ApiParam(value = "Name or partial name of author to retrieve.", required = false)
+      @QueryParam("name") String authorNameQuery,
+    
+      @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
+      @QueryParam("start") 
+      Integer start,
+
+      @ApiParam(value = "size of the returned data segment.", required = false) 
+			@QueryParam("segmentSize") 
+			Integer segmentSize,
+
+      @ApiParam(value="Bearer authorization", required=true)
+      @HeaderParam(value="Authorization") String authDummy
                                 ) {
     // Start
     
@@ -111,22 +134,31 @@ public class AuthorResource {
     }
     
     // Convert list of Authors (DB) to AuthorResults (bean)
-    List<AuthorResult> results = authors.
+    List<AuthorResult> authorList = authors.
         stream().
         sorted().
         map( x -> this.convertToBean(x)).
         collect(Collectors.toList());
     
-    return results;
+    System.out.println("author.get: start: " + start);
+        System.out.println("author.get: length: " + segmentSize);
+        
+    ResultWrapper<AuthorResult> result = ResultWrapperUtil.createWrapper(authorList, start, segmentSize);
+    
+    return result;
   }
 
 
   /**
    * Create a new author in the DB.
    *
-   * @param authorBean Author to add
-   * @param context security context (INJECTED via TokenFilter)
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @param authorBean
+   *          Author to add
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
    * @return newly created Author
    */
   @ApiOperation(
@@ -178,8 +210,9 @@ public class AuthorResource {
 
   /**
    * Helper to convert a list into a csv of those values
+   * 
    * @param values
-   * @return
+   * @return the list of values as a CSV string
    */
   static String convertListToCsv(List<String> values) {
       String csvString = "";
@@ -194,11 +227,16 @@ public class AuthorResource {
   /**
    * Deletes a author by ID
    *
-   * @param authorId ID of author
-   * @param context security context (INJECTED via TokenFilter)
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @param authorId
+   *          ID of author
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
    * 
-   * @return Response denoting if the operation was successful (202) or failed (404)
+   * @return Response denoting if the operation was successful (202) or failed
+   *         (404)
    */
   @ApiOperation(
     value="Delete author by ID.",
@@ -238,7 +276,8 @@ public class AuthorResource {
   /**
    * Convert an Author from the DB into a AuthorResult for return to the caller
    * 
-   * @param dbAuthor Author in DB
+   * @param dbAuthor
+   *          Author in DB
    * @return Author bean
    */
   private AuthorResult convertToBean(Author dbAuthor) {

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 ####################
 # Common buildfile that can build maven or gradle builds.
@@ -27,14 +27,13 @@ initialize_variables() {
 # 1- command to run
 #########
 _maven() {
-    command=$1
-    
+    command=$@
+
   # See if mvn is already installed
     which mvn > /dev/null
     if [ $? -eq 0 ]; then
         echo "[[Using local maven]]"
-        (cd $our_directory; mvn "$command")
-        build_result=$?
+        (cd $our_directory; mvn $command)
     else
         echo "[[Running maven via docker]]"
         ###
@@ -50,7 +49,7 @@ _maven() {
                maven:3.3.9-jdk-8-alpine \
                mvn \
                -Dmaven.repo.local=/opt/.m2/ \
-               "$command"
+               $command
         build_result=$?
     fi
     # return result of build
@@ -65,6 +64,20 @@ build_maven() {
     _maven "package"
     return $?
 }
+
+#############
+# Load our mybooks_common
+#
+#############
+load_common_jars() {
+    echo "Loading mybooks-common into project"
+    _maven install:install-file -Dfile=${root}/mybooks_common/repos/mybooks_common-1.0.jar -DgroupId=com.wpff.common -DartifactId=mybooks-common -Dversion=1.0 -Dpackaging=jar
+    if [ $? -ne 0 ]; then
+        echo "Unable to load mybooks_common.jar into project '$project'"
+        exit 1
+    fi       
+}
+
 
 #############
 # Clean maven
@@ -170,6 +183,7 @@ build-service::build() {
     local then=$(date +%s)
 
     if [ -e $our_directory/pom.xml ]; then
+        load_common_jars
         build_maven
     elif [ -e $our_directory/build.gradle ]; then
         build_gradle

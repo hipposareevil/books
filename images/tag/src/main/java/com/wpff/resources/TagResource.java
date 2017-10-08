@@ -12,6 +12,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -21,10 +22,12 @@ import javax.ws.rs.core.SecurityContext;
 // utils
 import org.apache.commons.beanutils.BeanUtils;
 
+import com.wpff.common.drop.filter.TokenRequired;
+import com.wpff.common.result.ResultWrapper;
+import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.core.PostTag;
 import com.wpff.core.Tag;
 import com.wpff.db.TagDAO;
-import com.wpff.filter.TokenRequired;
 
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
@@ -45,9 +48,6 @@ import redis.clients.jedis.Jedis;
 @Consumes(MediaType.APPLICATION_JSON)
 public class TagResource {
 
-	// Static Bearer text
-	private static String BEARER = "Bearer";
-
 	/**
 	 * DAO used to get a Tag.
 	 */
@@ -64,25 +64,49 @@ public class TagResource {
 	}
 
 	/**
-	 * Return all tags in the database
-	 *
-	 * @param context
-	 *            security context (INJECTED via TokenFilter)
-	 * @param authDummy
-	 *            Dummy authorization string that is solely used for Swagger
-	 *            description.
-	 * @return List of tags
-	 */
-	@ApiOperation(value = "Get list of all tags.", notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
+   * Return all tags in the database
+   *
+   * @param start
+   *          Start index of data segment
+   * @param segmentSize
+   *          Size of data segment
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return List of tags
+   */
+	@ApiOperation(
+	    value = "Get list of all tags.", 
+	    notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+	    )
 	@GET
 	@UnitOfWork
 	@TokenRequired
-	public List<Tag> getTags(
-			@Context SecurityContext context,
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+	public ResultWrapper<Tag> getTags(
+	    @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
+			@QueryParam("start") 
+			Integer start,
+
+	    @ApiParam(value = "size of the returned data segment.", required = false) 
+			@QueryParam("segmentSize") 
+			Integer segmentSize,
+
+			@Context 
+			SecurityContext context,
+			
+			@ApiParam(value = "Bearer authorization", required = true) 
+			@HeaderParam(value = "Authorization") 
+	    String authDummy) {
+	  // Start
 		List<Tag> tags = tagDAO.findAll();
 
-		return tags;
+		System.out.println("Get tags.  start: " + start);
+		System.out.println("Get tags.  size: " + segmentSize);
+		
+		ResultWrapper<Tag> result = ResultWrapperUtil.createWrapper(tags, start, segmentSize);
+		return result;
 	}
 
 	/**
@@ -97,15 +121,24 @@ public class TagResource {
 	 *            description.
 	 * @return Tag
 	 */
-	@ApiOperation(value = "Get single tag.", notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
+	@ApiOperation(
+	    value = "Get single tag.", 
+	    notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+	    )
 	@GET
 	@Path("/{id}")
 	@UnitOfWork
 	@TokenRequired
 	public Tag getTag(
 			@Context SecurityContext context,
-			@ApiParam(value = "ID of tag to retrieve.", required = false) @PathParam("id") IntParam tagId,
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+			@ApiParam(value = "ID of tag to retrieve.", required = false) 
+			@PathParam("id") 
+			IntParam tagId,
+			
+			@ApiParam(value = "Bearer authorization", required = true) 
+			@HeaderParam(value = "Authorization") 
+			String authDummy) {
+	  // Start
 		return findSafely(tagId.get());
 	}
 
@@ -123,15 +156,24 @@ public class TagResource {
 	 * @return Response denoting if the operation was successful (202) or failed
 	 *         (404)
 	 */
-	@ApiOperation(value = "Delete tag from database", notes = "Create new user in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. ")
+	@ApiOperation(
+	    value = "Delete tag from database", 
+	    notes = "Create new user in database. Requires authentication token in header with key AUTHORIZATION. "
+	        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. "
+	    )
 	@DELETE
 	@Path("/{id}")
 	@UnitOfWork
 	@TokenRequired
 	public Response delete(
-			@ApiParam(value = "Name of tag to delete.", required = true) @PathParam("id") Integer tagId,
+			@ApiParam(value = "Name of tag to delete.", required = true) 
+			@PathParam("id") 
+			Integer tagId,
+			
 			@Context SecurityContext context,
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+			@ApiParam(value = "Bearer authorization", required = true) 
+			@HeaderParam(value = "Authorization") 
+			String authDummy) {
 		// Start
 		verifyAdminUser(context);
 
@@ -159,16 +201,23 @@ public class TagResource {
 	 * @return Response denoting if the operation was successful (202) or failed
 	 *         (404)
 	 */
-	@ApiOperation(value = "Update tag in the database", notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. ")
+	@ApiOperation(
+	    value = "Update tag in the database", 
+	    notes = "Requires authentication token in header with key AUTHORIZATION. "
+	        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. "
+	    )
 	@PUT
 	@Path("/{id}")
 	@UnitOfWork
 	@TokenRequired
 	public Response update(
-			@PathParam("id") Integer tagId,
+			@PathParam("id") 
+			Integer tagId,
 			PostTag tagBean,
 			@Context SecurityContext context,
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+			@ApiParam(value = "Bearer authorization", required = true) 
+			@HeaderParam(value = "Authorization") 
+			String authDummy) {
 		try {
 			// Start
 			verifyAdminUser(context);
@@ -216,15 +265,22 @@ public class TagResource {
 	 *            description.
 	 * @return The newly created tag
 	 */
-	@ApiOperation(value = "Create new tag", notes = "Create new tag in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.", response = Tag.class)
+	@ApiOperation(
+	    value = "Create new tag", 
+	    notes = "Create new tag in database. Requires authentication token in header with key AUTHORIZATION. "
+	        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.", response = Tag.class
+	        )
 	@ApiResponse(code = 409, message = "Duplicate tag")
 	@POST
 	@UnitOfWork
 	@TokenRequired
 	public Tag createTag(
-			@ApiParam(value = "Tag information.", required = true) PostTag tagBean,
+			@ApiParam(value = "Tag information.", required = true) 
+			PostTag tagBean,
 			@Context Jedis jedis,
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+			@ApiParam(value = "Bearer authorization", required = true) 
+			@HeaderParam(value = "Authorization") 
+			String authDummy) {
 		// Check if tag already exists
 
 		// tagDAO.findByName looks for exact match
@@ -259,7 +315,6 @@ public class TagResource {
 	 * Look for Tag by incoming id. If returned Tag is null, throw Not Found (404).
 	 */
 	private Tag findSafely(int id) {
-		System.out.println("find safely by id: " + id + " :");
 		return this.tagDAO.findById(id).orElseThrow(() -> new NotFoundException("No tag by id '" + id + "'"));
 	}
 

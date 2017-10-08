@@ -1,4 +1,4 @@
-package com.wpff.auth;
+package com.wpff.common.auth;
 
 
 import java.io.IOException;
@@ -8,8 +8,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.Response;
 
 // Jedis
 import redis.clients.jedis.Jedis;
@@ -74,8 +74,8 @@ public class TokenFilter implements ContainerRequestFilter {
     // Get username and group from Jedis.
     String redisHashName = "user:" + token;
     
-    String username= jedis.hget(redisHashName, "name");
-    String group = jedis.hget(redisHashName, "group");
+    final String username= jedis.hget(redisHashName, "name");
+    final String group = jedis.hget(redisHashName, "group");
 
     if ((username == null) || (username.isEmpty())) {
       throw new WebApplicationException(

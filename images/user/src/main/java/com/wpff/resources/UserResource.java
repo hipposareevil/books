@@ -14,6 +14,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -23,11 +24,13 @@ import javax.ws.rs.core.SecurityContext;
 // utils
 import org.apache.commons.beanutils.BeanUtils;
 
+import com.wpff.common.drop.filter.TokenRequired;
+import com.wpff.common.result.ResultWrapper;
+import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.core.PostUser;
 import com.wpff.core.User;
 import com.wpff.core.VisableUser;
 import com.wpff.db.UserDAO;
-import com.wpff.filter.TokenRequired;
 
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
@@ -38,8 +41,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 // Jedis
 import redis.clients.jedis.Jedis;
-
-
 
 /**
  * Resource at /user that manages users.
@@ -69,19 +70,22 @@ public class UserResource {
     this.userDAO = userDAO;
   }
 
-
-
   /**
    * Return a single user, by id.
    *
-   * @param context security context (INJECTED via TokenFilter)
-   * @param userId ID of user
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
-   * @return User 
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param userId
+   *          ID of user
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return User
    */
   @ApiOperation(
     value="Get user by ID.",
-    notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user."
+    notes="Requires authentication token in header with key AUTHORIZATION. "
+        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user."
                 )
   @GET
   @Path("/{id}")
@@ -90,7 +94,9 @@ public class UserResource {
   public User getUser(
     @Context SecurityContext context,
     @ApiParam(value = "ID of user to retrieve.", required = false)
-    @PathParam("id") IntParam userId,
+    @PathParam("id") 
+    IntParam userId,
+    
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                           ) {
@@ -105,19 +111,36 @@ public class UserResource {
   /**
    * Return all users in the database
    *
-   * @param context security context (INJECTED via TokenFilter)
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @param start
+   *          Start index of data segment
+   * @param segmentSize
+   *          Size of data segment
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
    * @return List of VisableUsers
    */
   @ApiOperation(
     value="Get list of all users.",
-    notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user."
+    notes="Requires authentication token in header with key AUTHORIZATION. "
+        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user."
                 )
   @GET
   @UnitOfWork
   @TokenRequired
-  public List<VisableUser> getUsers(
+  public ResultWrapper<VisableUser> getUsers(
     @Context SecurityContext context,
+    
+      @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
+      @QueryParam("start") 
+      Integer start,
+
+      @ApiParam(value = "size of the returned data segment.", required = false) 
+			@QueryParam("segmentSize") 
+			Integer segmentSize,
+
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                                ) {
@@ -128,9 +151,14 @@ public class UserResource {
     List<User> users = userDAO.findAll();
 
     // Convert each User into a VisableUser bean that just contains 'id' and 'name'
-    List<VisableUser> userList = users.stream().map(e -> new VisableUser(e.getName(), e.getUserGroup(), e.getId())).collect(Collectors.toList());
+    List<VisableUser> userList = users.
+        stream().
+        map(e -> new VisableUser(e.getName(), e.getUserGroup(), e.getId())).
+        collect(Collectors.toList());
     
-    return userList;
+    ResultWrapper<VisableUser> result = ResultWrapperUtil.createWrapper(userList, start, segmentSize);
+    
+    return result;
   }
 
 
@@ -140,15 +168,21 @@ public class UserResource {
    * Create a user in the database. This requires an authorization token to be
    * present in the headers.
    *
-   * @param userBean User to create in the database
-   * @param context security context (INJECTED via TokenFilter)
-   * @param jedis Jedis instance used to store token data. (INJECTED)
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @param userBean
+   *          User to create in the database
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param jedis
+   *          Jedis instance used to store token data. (INJECTED)
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
    * @return The newly created user
    */
   @ApiOperation(
     value = "Create new user",
-    notes = "Create new user in database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. "
+    notes = "Create new user in database. Requires authentication token in header with key AUTHORIZATION."
+        + " Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. "
                 )
   @ApiResponse(code = 409, message = "Duplicate user")
   @POST
@@ -157,10 +191,14 @@ public class UserResource {
   public User createUser(
     @ApiParam(value = "User information.", required = true) 
     PostUser userBean,
-    @Context Jedis jedis,
-        @Context SecurityContext context,
+    @Context 
+    Jedis jedis,
+    
+    @Context 
+    SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
+    @HeaderParam(value="Authorization") 
+    String authDummy
                          ) {
     // START
     verifyAdminUser(context);
@@ -191,18 +229,24 @@ public class UserResource {
 
 
   /**
-   * Update a specified user from the database.
-   * An update is only performed if one of the following is true:
-   * - Username from security is 'admin'
+   * Update a specified user from the database. An update is only performed if one
+   * of the following is true: - Username from security is 'admin'
    *
-   * @param userId ID of user update delete
-   * @param userBean User bean with data that is used to update the User in the database.
-   * @param context security context (INJECTED via TokenFilter)
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
-   * @return Response denoting if the operation was successful (202) or failed (404)
+   * @param userId
+   *          ID of user update delete
+   * @param userBean
+   *          User bean with data that is used to update the User in the database.
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return Response denoting if the operation was successful (202) or failed
+   *         (404)
    */
   @ApiOperation(value ="Update user in the database",
-                notes="Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. ")
+                notes="Requires authentication token in header with key AUTHORIZATION. "
+                    + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. ")
   @PUT
   @Path("/{id}")
   @UnitOfWork
@@ -211,7 +255,9 @@ public class UserResource {
     @ApiParam(value = "ID of user to update.", required = true)     
     @PathParam("id") Integer userId,
     User userBean,
+    
     @Context SecurityContext context,
+    
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                          ) {
@@ -267,14 +313,18 @@ public class UserResource {
 
 
   /**
-   * Delete a specified user from the database.
-   * A deletion is only performed if one of the following is true:
-   * - Username from security is 'admin'
+   * Delete a specified user from the database. A deletion is only performed if
+   * one of the following is true: - Username from security is 'admin'
    *
-   * @param userId ID of user to delete
-   * @param context security context (INJECTED via TokenFilter)
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
-   * @return Response denoting if the operation was successful (202) or failed (404)
+   * @param userId
+   *          ID of user to delete
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return Response denoting if the operation was successful (202) or failed
+   *         (404)
    */
   @ApiOperation(
     value ="Delete user from database",

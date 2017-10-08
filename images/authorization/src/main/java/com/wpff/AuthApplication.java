@@ -1,13 +1,10 @@
 package com.wpff;
 
-import javax.ws.rs.container.DynamicFeature;
-
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
 import com.wpff.core.User;
 import com.wpff.db.UserDAO;
-import com.wpff.filter.TokenRequiredFeature;
 // Resources
 import com.wpff.resources.AuthResource;
 
@@ -24,7 +21,6 @@ import redis.clients.jedis.Jedis;
 
 /**
  * Application for managing authentication
- *
  *
  */
 public class AuthApplication extends Application<AuthConfiguration> {
@@ -89,9 +85,6 @@ public class AuthApplication extends Application<AuthConfiguration> {
     // Register endpoints
     environment.jersey().register(new AuthResource(userDao));
 
-    // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired = new TokenRequiredFeature(jedis) ;
-    environment.jersey().register(tokenRequired);
   }
 
 

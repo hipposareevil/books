@@ -33,9 +33,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wpff.common.drop.filter.TokenRequired;
+import com.wpff.common.result.ResultWrapper;
+import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.core.Book;
 import com.wpff.db.BookDAO;
-import com.wpff.filter.TokenRequired;
 import com.wpff.query.BookQuery;
 import com.wpff.result.BookResult;
 
@@ -65,8 +67,11 @@ public class BookResource {
   /**
    * Get a single book, by id.
    *
-   * @param bookId ID of book
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @param bookId
+   *          ID of book
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
    * @return Book
    */
   @ApiOperation(
@@ -80,9 +85,11 @@ public class BookResource {
   @TokenRequired
   public BookResult getBook(
     @ApiParam(value = "ID of book to retrieve.", required = false)
-    @PathParam("id") IntParam bookId,
+    @PathParam("id") 
+    IntParam bookId,
     @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
+    @HeaderParam(value="Authorization") 
+    String authDummy
                         ) {
     return this.convertToBean(authDummy, findSafely(bookId.get()));
   }
@@ -92,11 +99,22 @@ public class BookResource {
   /**
    * Get list of books.
    *
-   * @param titleQuery [optional] Name of book, or partial name, that is used to match against the database.
-   * @param idQuery [optional] List of book ids.
-   * @param authorIdQuery [optional] List of author ids. 
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
-   * @return List of matching Books. When the params are empty, all books will be returned
+   * @param start
+   *          Start index of data segment
+   * @param segmentSize
+   *          Size of data segment
+   * @param titleQuery
+   *          [optional] Name of book, or partial name, that is used to match
+   *          against the database.
+   * @param idQuery
+   *          [optional] List of book ids.
+   * @param authorIdQuery
+   *          [optional] List of author ids.
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return List of matching Books. When the params are empty, all books will be
+   *         returned
    */
   @ApiOperation(value="Get books via optional 'title' query param or optional 'ids' query param. " + 
                 "The three query params may be used at the same time.",
@@ -107,7 +125,7 @@ public class BookResource {
   @GET
   @UnitOfWork
   @TokenRequired
-  public List<BookResult> getBook(
+  public ResultWrapper<BookResult> getBook(
     @ApiParam(value = "Title or partial title of book to retrieve.", required = false)
     @QueryParam("title") String titleQuery,
     
@@ -116,7 +134,15 @@ public class BookResource {
     
     @ApiParam(value = "List of Author IDs to get books for.", required = false)
     @QueryParam("authorId") List<Integer> authorIdQuery,
-    
+
+    @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
+    @QueryParam("start") 
+    Integer start,
+
+    @ApiParam(value = "size of the returned data segment.", required = false) 
+   	@QueryParam("segmentSize") 
+		Integer segmentSize,
+        
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
                             ) {
@@ -163,21 +189,28 @@ public class BookResource {
         map( x -> this.convertToBean(authDummy, x)).
         collect(Collectors.toList());
     
-    return bookList;
+    ResultWrapper<BookResult> result = ResultWrapperUtil.createWrapper(bookList, start, segmentSize);
+        
+    return result;
   }
 
 
   /**
    * Create a new book
    *
-   * @param bookBean Book data
-   * @param context security context (INJECTED via TokenFilter)
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @param bookBean
+   *          Book data
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
    * @return newly created Book
    */
   @ApiOperation(
     value = "Create new book.",
-    notes = "Creates new book. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
+    notes = "Creates new book. Requires authentication token in header with key AUTHORIZATION. "
+        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
     response = Book.class
                 )
   @POST
@@ -211,7 +244,7 @@ public class BookResource {
       BeanUtils.copyProperty(bookInDatabase, "year", bookBean.getFirstPublishedYear()); 
       
       // open library url is different too
-      BeanUtils.copyProperty(bookInDatabase, "ol_works", bookBean.getOpenlibraryWorkUrl());
+      BeanUtils.copyProperty(bookInDatabase, "olWorks", bookBean.getOpenlibraryWorkUrl());
       
       return this.convertToBean(authDummy, bookDAO.create(bookInDatabase));
     }
@@ -231,6 +264,7 @@ public class BookResource {
 
   /**
    * Helper to convert a list into a csv of those values
+   * 
    * @param values
    * @return
    */
@@ -254,7 +288,8 @@ public class BookResource {
    */
   @ApiOperation(
     value="Delete book by ID.",
-    notes="Delete book from database. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+    notes="Delete book from database. Requires authentication token in header with key AUTHORIZATION."
+        + " Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @DELETE
   @Path("/{id}")
@@ -262,10 +297,12 @@ public class BookResource {
   @TokenRequired
   public Response deleteBook(
     @ApiParam(value = "ID of book to retrieve.", required = true)
-    @PathParam("id") IntParam bookId,
+    @PathParam("id") 
+    IntParam bookId,
     @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
+    @HeaderParam(value="Authorization") 
+    String authDummy
                         ) {
     // Start
     try {

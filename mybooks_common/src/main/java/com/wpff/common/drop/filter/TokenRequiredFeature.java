@@ -1,11 +1,12 @@
-package com.wpff.filter;
+package com.wpff.common.drop.filter;
 
-import com.wpff.auth.TokenFilter;
 
 import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
+
+import com.wpff.common.auth.TokenFilter;
 
 import redis.clients.jedis.Jedis;
 

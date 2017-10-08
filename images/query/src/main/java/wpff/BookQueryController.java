@@ -13,13 +13,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+// wpff common
+import com.wpff.common.result.ResultWrapper;
+import com.wpff.common.result.ResultWrapperUtil;
+
 // Swagger
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import wpff.openlibrary.OpenLibraryHelper;
 import wpff.openlibrary.OpenLibraryUrlConverter;
 import wpff.openlibrary.OpenLibraryUrlConverter.ImageSize;
@@ -34,7 +36,7 @@ import wpff.result.QueryTitleResult;
       description="Queries openlibrary.org for books")
 @RequestMapping("/query")
 @RestController
-public class BookQueryController {
+public class BookQueryController<T> {
 	
 	
 	////////////////////////////////////////////////////////
@@ -42,25 +44,48 @@ public class BookQueryController {
 	// Open Library calls
 	// 
 
-	/**
-	 * /query/author endpoint.  Will make query to OpenLibrary.org.
-	 * @param authorQuery
-	 * Name (or partial name) of author
-	 * @return List of matching Authors
-	 * @throws UnsupportedEncodingException
-	 * @throws InvocationTargetException 
-	 * @throws IllegalAccessException 
-	 */
+  /**
+   * /query/author endpoint. Will make query to OpenLibrary.org.
+   * 
+   * @param authorQuery
+   *          Name (or partial name) of author
+   * @return List of matching Authors
+   * @throws UnsupportedEncodingException
+   * @throws InvocationTargetException
+   * @throws IllegalAccessException
+   */
 	@ApiOperation(value = "/author", nickname = "query author",
 			notes = "Query openlibrary.org for authors. Returns list of authors.")
-	@ApiImplicitParams({ @ApiImplicitParam(name = "author", value = "Author's name", required = false,
-			dataType = "string", paramType = "query") })
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Success", response = QueryAuthorResult.class, responseContainer="List") 
-			})
-	@RequestMapping(method = RequestMethod.GET, path = "/author", produces = "application/json")
-	public List<QueryAuthorResult> queryForAuthor(@RequestParam(value = "author") String authorQuery)
-			throws UnsupportedEncodingException, IllegalAccessException, InvocationTargetException {
+	@ApiImplicitParams(
+	    {   
+	   @ApiImplicitParam(
+	       name = "author", 
+	       value = "Author's name", 
+	       required = false,
+			   dataType = "string", 
+			   paramType = "query"),
+	    @ApiImplicitParam(
+	       name = "start", 
+	       value = "Where to start the returned data segment from the full result",
+	       required = false,
+			   dataType = "int", 
+			   paramType = "query"),
+	     @ApiImplicitParam(
+	       name = "segmentSize", 
+	       value = "Size of the returned data segment.",
+	       required = false,
+			   dataType = "int",
+			   paramType = "query")
+	  }
+	)
+	@RequestMapping(method = RequestMethod.GET, path = "/author", produces = "application/json")	
+	public ResultWrapper<QueryAuthorResult> queryForAuthor(
+	    @RequestParam(value = "author") String authorQuery,
+  	    @RequestParam(value = "start", required=false) Integer start,
+  	    @RequestParam(value = "segmentSize", required=false) Integer segmentSize
+	    )
+			throws UnsupportedEncodingException, IllegalAccessException, InvocationTargetException 
+	{
 		// Begin
 		List<OpenLibraryAuthor> authors = OpenLibraryHelper.queryForAuthors(authorQuery);
 		if (authors.size() == 0) {
@@ -70,14 +95,18 @@ public class BookQueryController {
 		
 		// Convert to AuthorResult. This is done as the OpenLibraryAuthor has strange
 		// field names due to the JSON returned from openlibrary.org
-    List<QueryAuthorResult> results = authors.
+    List<QueryAuthorResult> authorList= authors.
         stream().
         sorted().
         map( x -> this.convertToResult(x)).
         collect(Collectors.toList());
-
+    
+    // create wrapper
+    ResultWrapper<QueryAuthorResult> results = ResultWrapperUtil.createWrapper(authorList, start, segmentSize);
+        
     return results;
 	}
+	
 
 
 	/**
@@ -95,35 +124,52 @@ public class BookQueryController {
 	@ApiOperation(value = "/book", nickname = "query book titles",
                 notes = "Query openlibrary for book titles. Results are sorted by the number of ISBNs per book."
                 + " The first titles in the resulting list will be the ones with more associated ISBNS")
-	@ApiImplicitParams({
-      @ApiImplicitParam(name = "author", value = "Author's name", required = false,
+	@ApiImplicitParams(
+	    {
+    @ApiImplicitParam(name = "author", value = "Author's name", required = false,
                         dataType = "string", paramType = "query"),
-      @ApiImplicitParam(name = "title", value = "Book Title", required = false,
+    @ApiImplicitParam(name = "title", value = "Book Title", required = false,
                         dataType = "string", paramType = "query"),
-      @ApiImplicitParam(name = "isbn", value = "Book ISBN", required = false,
-                        dataType = "string", paramType = "query") 
+    @ApiImplicitParam(name = "isbn", value = "Book ISBN", required = false,
+                        dataType = "string", paramType = "query"),
+   @ApiImplicitParam(
+	       name = "start", 
+	       value = "Where to start the returned data segment from the full result",
+	       required = false,
+			   dataType = "int", 
+			   paramType = "query"),
+	     @ApiImplicitParam(
+	       name = "segmentSize", 
+	       value = "Size of the returned data segment.",
+	       required = false,
+			   dataType = "int",
+			   paramType = "query")      
           })
-  @ApiResponses(value = {
-         @ApiResponse(code = 200, message = "Success", response = QueryTitleResult.class, responseContainer="List")  
-                   })
 	@RequestMapping(method = RequestMethod.GET, path = "/book", produces = "application/json")
-	public List<QueryTitleResult> queryForTitles(
+	public ResultWrapper<QueryTitleResult> queryForTitles(
     @RequestParam(value = "author", required=false) String author, 
     @RequestParam(value = "title", required=false) String title,
-    @RequestParam(value = "isbn", required=false) String isbn) throws IOException {
+    @RequestParam(value = "isbn", required=false) String isbn,
+    @RequestParam(value = "start", required=false) Integer start, 
+  	  @RequestParam(value = "segmentSize", required=false) Integer segmentSize 
+    ) throws IOException {
 	  System.out.println("Got query for titles: " + author + ":" + title + ":" + isbn);
 		// Begin
 		List<OpenLibraryTitle> titles = OpenLibraryHelper.queryForTitles(author, title, isbn);
 
     // Convert
-    List<QueryTitleResult> results = titles.
+    List<QueryTitleResult> bookList = titles.
         stream().
         sorted().
         map( x -> this.convertToResult(x)).
         collect(Collectors.toList());
     
     // Sort the list of titles by the # of isbns
-    Collections.sort(results);
+    Collections.sort(bookList);
+    
+  // create wrapper
+    ResultWrapper<QueryTitleResult> results = ResultWrapperUtil.createWrapper(bookList, start, segmentSize);
+        
     return results;
 	}
 	
@@ -132,6 +178,10 @@ public class BookQueryController {
 	//
 	// Private methods
 	//
+	
+	
+
+
 	
 	/**
 	 * Convert an OpenLibrary object to normal bean
@@ -175,6 +225,9 @@ public class BookQueryController {
 	private QueryTitleResult convertToResult(OpenLibraryTitle openLibraryTitle)  {
 		QueryTitleResult newResult = new QueryTitleResult();
 
+		System.out.println("converting: " + openLibraryTitle);
+		
+		
 		newResult.setTitle(openLibraryTitle.getTitle_suggest());
 		
 		// Set images for book
@@ -199,6 +252,8 @@ public class BookQueryController {
 		newResult.setIsbns(openLibraryTitle.getIsbn());
 		newResult.setOpenLibraryKeys(openLibraryTitle.getEdition_key());
 
+		System.out.println("converted to: " + newResult);
+		
 		return newResult;
 	}
 

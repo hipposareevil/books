@@ -1,0 +1,42 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+sourceCompatibility = 1.7
+version = '1.0'
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'mybooks.common',
+        'Implementation-Version': version,
+        'groupId': 10
+    }
+}
+
+
+clean.doFirst {
+    delete "${rootDir}/repos"
+}
+
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+  // https://mvnrepository.com/artifact/redis.clients/jedis
+  compile group: 'redis.clients', name: 'jedis', version: '1.5.0'
+
+// https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api
+compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0'
+
+
+
+}

@@ -1,34 +1,25 @@
 package com.wpff;
 
-import io.dropwizard.Application;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-
-// swagger
-import io.federecio.dropwizard.swagger.*;
-
-// hibernate
-import io.dropwizard.Application;
-import io.dropwizard.db.DataSourceFactory;
-import io.dropwizard.hibernate.HibernateBundle;
-import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.views.ViewBundle;
-
+import javax.ws.rs.container.DynamicFeature;
 
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
-import redis.clients.jedis.Jedis;
-
-import javax.ws.rs.container.DynamicFeature;
-
-// Resources
-import com.wpff.resources.TagResource;
+import com.wpff.common.drop.filter.TokenRequiredFeature;
 import com.wpff.core.Tag;
 import com.wpff.db.TagDAO;
-import com.wpff.filter.TokenRequiredFeature;
+// Resources
+import com.wpff.resources.TagResource;
+
+import io.dropwizard.Application;
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+// swagger
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import redis.clients.jedis.Jedis;
 
 
 /**

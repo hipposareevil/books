@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
+import com.wpff.common.drop.filter.TokenRequiredFeature;
 import com.wpff.core.Author;
 // Resources
 import com.wpff.db.AuthorDAO;
-import com.wpff.filter.TokenRequiredFeature;
 import com.wpff.resources.AuthorHelper;
 import com.wpff.resources.AuthorResource;
 

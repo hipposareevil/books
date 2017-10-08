@@ -270,5 +270,39 @@ public class QueryTitleResult implements Comparable {
     this.imageLarge = imageLarge;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("QueryTitleResult [title=");
+    builder.append(title);
+    builder.append(", imageSmall=");
+    builder.append(imageSmall);
+    builder.append(", imageMedium=");
+    builder.append(imageMedium);
+    builder.append(", imageLarge=");
+    builder.append(imageLarge);
+    builder.append(", subjects=");
+    builder.append(subjects);
+    builder.append(", authorKey=");
+    builder.append(authorKey);
+    builder.append(", authorName=");
+    builder.append(authorName);
+    builder.append(", description=");
+    builder.append(description);
+    builder.append(", openlibraryWorkUrl=");
+    builder.append(openlibraryWorkUrl);
+    builder.append(", firstPublishedYear=");
+    builder.append(firstPublishedYear);
+    builder.append(", isbns=");
+    builder.append(isbns);
+    builder.append(", openLibraryKeys=");
+    builder.append(openLibraryKeys);
+    builder.append("]");
+    return builder.toString();
+  }
+
 	
 }
