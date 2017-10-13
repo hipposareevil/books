@@ -85,6 +85,14 @@ build() {
     ####
     # build all projects and their docker images
 
+    # build common
+    mybooks_common/build.sh
+    if [ $? -ne 0 ]; then
+        echo "Unable to build mybooks_common - exiting!"
+        exit 1
+    fi
+    
+
     # get all build.sh files
     #projects=$(find $PWD -maxdepth 2 -mindepth 2 -type f -name "build.sh")
     projects=$(ls images/*/build.sh)
@@ -102,7 +110,7 @@ build() {
         echo "  Building project '$project'"
         $project/build.sh
         if [ $? -ne 0 ]; then
-            echo "Unable to build $project, exiting"
+            echo "Unable to build $project, exiting."
             exit 1
         fi
 
@@ -170,7 +178,7 @@ main() {
     for arg in $@
     do
         case $arg in
-            "-help"|"--help")
+            "-h"|"--help")
 	        usage
 	        exit 0
 	        ;;
