@@ -229,6 +229,12 @@ public class BookResource {
        // Verify context's group is admin.
       verifyAdminUser(context);
       
+      // See if book already exists, by title & author id
+      boolean doesBookExist = checkIfBookExists(bookBean);
+      if (doesBookExist) {
+         throw new WebApplicationException("Book '" + bookBean.getTitle() + "' already exists.", Response.Status.CONFLICT);
+      }
+      
       // Make new Book from bookBean (which is a PostBook)
       Book bookInDatabase = new Book();
       // copy(destination, source)
@@ -262,21 +268,6 @@ public class BookResource {
     }
   }
 
-  /**
-   * Helper to convert a list into a csv of those values
-   * 
-   * @param values
-   * @return
-   */
-  static String convertListToCsv(List<String> values) {
-      String csvString = "";
-      for (String s : values) {
-        csvString += s + ",";
-      }
-      // trim last comma
-      csvString = csvString.substring(0, csvString.length());
-      return csvString;
-  }
 
   /**
    * Deletes a book by ID
@@ -325,6 +316,45 @@ public class BookResource {
   /** Helper methods **/
   /************************************************************************/
 
+  
+  /**
+   * Check if the incoming book via POST already exists. This will check against
+   * existing books by the authorId and title
+   * 
+   * @param bookBean
+   *          Bean to create new book
+   * @return True if book already exists, false otherwise.
+   */
+  private boolean checkIfBookExists(BookQuery bookBean) {
+    // Existing books by name
+    Set<Book> bookSet = new TreeSet<Book>();
+    bookSet.addAll(bookDAO.findByName(bookBean.getTitle()));
+    
+    for (Book current : bookSet) {
+      if (current.getAuthorId() == bookBean.getAuthorId()) {
+        return true;
+      }
+    }
+            
+    return false;
+  }
+
+  /**
+   * Helper to convert a list into a csv of those values
+   * 
+   * @param values
+   * @return
+   */
+  static String convertListToCsv(List<String> values) {
+      String csvString = "";
+      for (String s : values) {
+        csvString += s + ",";
+      }
+      // trim last comma
+      csvString = csvString.substring(0, csvString.length());
+      return csvString;
+  }
+  
   /**
    * Convert a Book from the DB into a BookResult for return to caller
    * 

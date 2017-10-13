@@ -175,6 +175,10 @@ public class AuthorResource {
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
       ) {
+    if (authorBean == null) {
+      throw new WebApplicationException("No data payload received.", Response.Status.BAD_REQUEST);
+    }
+    
     // START
     verifyAdminUser(context);
       

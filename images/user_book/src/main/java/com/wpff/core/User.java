@@ -49,10 +49,9 @@ public class User {
   /**
    * User's group
    */
-  @Column(name = "group", nullable = false)
+  @Column(name = "user_group", nullable = false)
   private String group;
-  
-    
+      
 
   /**
    * Data for the user. May be empty

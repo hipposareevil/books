@@ -19,7 +19,7 @@ import io.dropwizard.setup.Environment;
 // swagger
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 
 /**
@@ -79,8 +79,7 @@ public class UserApplication extends Application<UserConfiguration> {
   public void run(final UserConfiguration configuration,
                   final Environment environment) {
     // Set up Jedis. Currently JedisFactory doesn't inject into a filter, just Resources.
-    // TODO: look at Guice.
-    Jedis jedis = configuration.getJedisFactory().build(environment).getResource();
+    JedisPool jedisPool = configuration.getJedisFactory().build(environment);
 
     // User DAO 
     final UserDAO userDao = new UserDAO(hibernateBundle.getSessionFactory());
@@ -89,7 +88,7 @@ public class UserApplication extends Application<UserConfiguration> {
     environment.jersey().register(new UserResource(userDao));
 
     // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired =new TokenRequiredFeature(jedis) ;
+    DynamicFeature tokenRequired =new TokenRequiredFeature(jedisPool) ;
     environment.jersey().register(tokenRequired);
   }
 

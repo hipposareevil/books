@@ -8,11 +8,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
-// Jedis
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 /**
  * This is a container request filter that checks for an Authorization header
@@ -30,19 +30,18 @@ public class TokenFilter implements ContainerRequestFilter {
   private static String BEARER = "Bearer";
 
   /**
-   * Jedis instance used in the filter method to see if the token matches a user.
+   * JedisPool used in the filter method to see if the token matches a user.
    */
-  private Jedis jedis;
+  private JedisPool jedisPool;
 
   /**
-   * Create new request filter. Currently takes a jedis instance, will be replaced
-   * with guice injection later.
+   * Create new request filter. Currently takes a jedis pool.
    * 
-   * @param jedis
-   *          Jedis instance
+   * @param jedisPool
+   *          Jedis pool
    */
-  public TokenFilter(Jedis jedis) {
-    this.jedis = jedis;
+  public TokenFilter(JedisPool jedisPool) {
+    this.jedisPool = jedisPool;
   }
 
   /**
@@ -74,48 +73,56 @@ public class TokenFilter implements ContainerRequestFilter {
     // Get username and group from Jedis.
     String redisHashName = "user:" + token;
     
-    final String username= jedis.hget(redisHashName, "name");
-    final String group = jedis.hget(redisHashName, "group");
+    // Get jedis from pool
+    Jedis jedis = null;
+    try {
+      jedis = this.jedisPool.getResource();
+      final String username = jedis.hget(redisHashName, "name");
+      final String group = jedis.hget(redisHashName, "group");
 
-    if ((username == null) || (username.isEmpty())) {
-      throw new WebApplicationException(
-          "Must supply valid Authorization header. Authenticate at /auth/token",
-          Response.Status.UNAUTHORIZED);
-    }
-
-    // Override the security context by giving it a new UserPrincipal
-    // that will container the username we got from our DB
-    requestContext.setSecurityContext(new SecurityContext() {
-      @Override
-      public Principal getUserPrincipal() {
-        return new Principal() {
-          @Override
-          public String getName() {
-            return username;
-          }
-        };
+      if ((username == null) || (username.isEmpty())) {
+        throw new WebApplicationException(
+            "Must supply valid Authorization header. Authenticate at /auth/token",
+            Response.Status.UNAUTHORIZED);
       }
 
-      @Override
-      public boolean isUserInRole(String role) {
-        if (role.equals(group)) {
-          return true;
+      // Override the security context by giving it a new UserPrincipal
+      // that will container the username we got from our DB
+      requestContext.setSecurityContext(new SecurityContext() {
+        @Override
+        public Principal getUserPrincipal() {
+          return new Principal() {
+            @Override
+            public String getName() {
+              return username;
+            }
+          };
         }
-        else {
+
+        @Override
+        public boolean isUserInRole(String role) {
+          if (role.equals(group)) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+
+        @Override
+        public boolean isSecure() {
           return false;
         }
-      }
 
-      @Override
-      public boolean isSecure() {
-        return false;
+        @Override
+        public String getAuthenticationScheme() {
+          return null;
+        }
+      });
+    } finally {
+      if (jedis != null) {
+        this.jedisPool.returnResource(jedis);
       }
-
-      @Override
-      public String getAuthenticationScheme() {
-        return null;
-      }
-    });
+    }
   }
 
 }

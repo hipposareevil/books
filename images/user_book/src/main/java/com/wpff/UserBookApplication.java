@@ -38,7 +38,7 @@ import io.dropwizard.setup.Environment;
 // swagger
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 /**
  * Application for managing tags
@@ -93,10 +93,8 @@ public class UserBookApplication extends Application<UserBookConfiguration> {
 
 	@Override
 	public void run(final UserBookConfiguration configuration, final Environment environment) {
-		// Set up Jedis. Currently JedisFactory doesn't inject into a filter, just
-		// Resources.
-		// TODO: look at Guice.
-		Jedis jedis = configuration.getJedisFactory().build(environment).getResource();
+    // Set up Jedis. Currently JedisFactory doesn't inject into a filter, just Resources.
+    JedisPool jedisPool = configuration.getJedisFactory().build(environment);
 
 		java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
 
@@ -122,7 +120,7 @@ public class UserBookApplication extends Application<UserBookConfiguration> {
 		environment.jersey().register(new WebAppExceptionMapper());
 
 		// Add a container request filter for securing webservice endpoints.
-		DynamicFeature tokenRequired = new TokenRequiredFeature(jedis);
+		DynamicFeature tokenRequired = new TokenRequiredFeature(jedisPool);
 		environment.jersey().register(tokenRequired);
 	}
 }
@@ -174,6 +172,7 @@ class PersistenceExceptionMapper implements ExceptionMapper<PersistenceException
 					})
 					.build();
 		}
+		e.printStackTrace();
 
 		// Create a JSON response with the provided hashmap
 		return Response.status(500)

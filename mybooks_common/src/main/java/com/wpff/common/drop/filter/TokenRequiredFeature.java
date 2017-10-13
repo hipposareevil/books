@@ -8,7 +8,7 @@ import javax.ws.rs.ext.Provider;
 
 import com.wpff.common.auth.TokenFilter;
 
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 
 /**
@@ -23,7 +23,7 @@ public class TokenRequiredFeature implements DynamicFeature {
  /**
    * Jedis (redis) entrypoint
    */
-  private Jedis jedis;
+  private JedisPool jedisPool;
 
 
   /**
@@ -31,14 +31,14 @@ public class TokenRequiredFeature implements DynamicFeature {
    *
    * @param jedis Jedis instance used by the TokenFilter 
    */
-  public TokenRequiredFeature(Jedis jedis) {
-    this.jedis = jedis;
+  public TokenRequiredFeature(JedisPool jedisPool) {
+    this.jedisPool = jedisPool;
   }
 
     @Override
     public void configure(ResourceInfo resourceInfo, FeatureContext context) {
         if (resourceInfo.getResourceMethod().getAnnotation(TokenRequired.class) != null) {
-          TokenFilter newFilter = new TokenFilter(this.jedis);
+          TokenFilter newFilter = new TokenFilter(this.jedisPool);
           context.register(newFilter);
         }
     }

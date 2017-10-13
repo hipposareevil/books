@@ -24,7 +24,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 /**
  * Application for managing authors.
@@ -100,8 +100,7 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
   public void run(final AuthorConfiguration configuration, final Environment environment) {
     // Set up Jedis. Currently JedisFactory doesn't inject into a filter, just
     // Resources.
-    // TODO: look at Guice.
-    Jedis jedis = configuration.getJedisFactory().build(environment).getResource();
+    JedisPool jedisPool = configuration.getJedisFactory().build(environment);
 
     // author rest endpoint
     final AuthorDAO authorDao = new AuthorDAO(hibernateBundle.getSessionFactory());
@@ -115,7 +114,7 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
     environment.jersey().register(new AuthorResource(authorHelper));
 
     // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired = new TokenRequiredFeature(jedis);
+    DynamicFeature tokenRequired = new TokenRequiredFeature(jedisPool);
     environment.jersey().register(tokenRequired);
   }
 

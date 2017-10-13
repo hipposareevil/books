@@ -22,7 +22,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 /**
  * Application to serve the book web service
@@ -98,15 +98,14 @@ public class BookApplication extends Application<BookConfiguration> {
     public void run(final BookConfiguration configuration,
                     final Environment environment) {
     // Set up Jedis. Currently JedisFactory doesn't inject into a filter, just Resources.
-    // TODO: look at Guice.
-    Jedis jedis = configuration.getJedisFactory().build(environment).getResource();
+    JedisPool jedisPool = configuration.getJedisFactory().build(environment);
 
     // book rest endpoint
     final BookDAO dao = new BookDAO(hibernateBundle.getSessionFactory());
     environment.jersey().register(new BookResource(dao));
 
     // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired = new TokenRequiredFeature(jedis) ;
+    DynamicFeature tokenRequired = new TokenRequiredFeature(jedisPool) ;
     environment.jersey().register(tokenRequired);
 
   }
