@@ -111,7 +111,7 @@ public class UserBookApplication extends Application<UserBookConfiguration> {
 				new   Object[] { userBookDao, userDao, tagDao, tagMapDao });
 
 		// Register endpoints
-		environment.jersey().register(new UserBookResource(userDao, tagDao, userBookDao, ubHelper));
+		environment.jersey().register(new UserBookResource(ubHelper));
 
 		// mapper for customized PersistenceException
 		environment.jersey().register(new PersistenceExceptionMapper());

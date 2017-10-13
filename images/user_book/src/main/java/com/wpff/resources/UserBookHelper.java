@@ -86,6 +86,38 @@ public class UserBookHelper {
 		// Create user book in DB
 		return this.userBookDAO.create(userBookToCreate);
 	}
+	
+	
+  /**
+   * Update a UserBook in the database
+   * 
+   * @param userBookBean
+   *          Bean with new data
+   * @param userBookId
+   *          ID of user book
+   * @return
+   * @throws IllegalAccessException
+   * @throws IllegalArgumentException
+   * @throws InvocationTargetException
+   */
+  @UnitOfWork
+  DatabaseUserBook updateUserBook(PostUserBook userBookBean, int userBookId) throws IllegalAccessException,
+      IllegalArgumentException, InvocationTargetException {
+    // Grab existing user book
+    DatabaseUserBook userBookToUpdate = this.userBookDAO.findById(userBookId).orElseThrow(
+        () -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
+
+    // Copy non null values over
+    BeanUtils.copyProperty(userBookToUpdate, "data", userBookBean.getData());
+    if (userBookBean.getRating() != null) {
+      BeanUtils.copyProperty(userBookToUpdate, "rating", userBookBean.getRating());
+    }
+
+    // Update book in DB
+    this.userBookDAO.update(userBookToUpdate);
+
+    return userBookToUpdate;
+  }
 
 	/**
 	 * Get list of UserBooks for the requested User id
@@ -111,30 +143,13 @@ public class UserBookHelper {
 			// Add tags from tagmapping table
 			addTagsToUserBook(bookToReturn);
 
+			// add UserBook to list
 			userBooks.add(bookToReturn);
 		}
 
 		return userBooks;
 	}
 
-	/**
-	 * Delete a user book. It is assumed the caller of this function has already
-	 * verified the user IDs match up to the owner of this user book.
-	 * 
-	 * @param userBookId
-	 *            ID of user_book to delete
-	 */
-	@UnitOfWork
-	void deleteUserBookById(int userBookId) {
-		// Get book in db
-		DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
-				() -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
-
-		this.userBookDAO.delete(bookInDb);
-
-		// Delete tag mappings from tagmapping table
-		this.tagMappingDAO.deleteTagMappingByUserBookId(userBookId);
-	}
 
 	/**
 	 * Get UserBook from database. This will contain the UserBooks tags
@@ -164,36 +179,27 @@ public class UserBookHelper {
 		return bookToReturn;
 	}
 
+
 	/**
-	 * Add tags from database to userbook
-	 *
+	 * Delete a user book. It is assumed the caller of this function has already
+	 * verified the user IDs match up to the owner of this user book.
+	 * 
+	 * @param userBookId
+	 *            ID of user_book to delete
 	 */
-	private void addTagsToUserBook(FullUserBook userBook) {
-		System.out.println("Adding tags to userbook:" + userBook);
+	@UnitOfWork
+	void deleteUserBookById(int userBookId) {
+		// Get book in db
+		DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
+				() -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
 
-		// Get tag mappings for user book
-		List<TagMapping> tagMappings = this.tagMappingDAO.findTagMappings(userBook.getUserBookId());
+		this.userBookDAO.delete(bookInDb);
 
-		// Get tag IDs for the user book
-		List<Integer> tagIds = tagMappings.stream().map(TagMapping::getTagId).collect(Collectors.toList());
-
-		System.out.println("TAGIDS: " + Arrays.toString(tagIds.toArray()));
-
-		// Get all tags in database and convert into a map keyed by tagID
-		Map<String, Tag> allTags = this.tagDAO.findAll();
-		Map<Integer, Tag> tagsIndexById = allTags.values().stream().collect(Collectors.toMap(Tag::getId, p -> p));
-
-		// Correlate tag ids from tagMappings into tag names
-		List<String> tagNames = tagIds.stream().map(e -> tagsIndexById.get(e).getName()).collect(Collectors.toList());
-		System.out.println("TAG names: " + Arrays.toString(tagNames.toArray()));
-
-		for (String x : tagNames) {
-			System.out.println("Assigning tag " + x + " to userbook: " + userBook);
-		}
-
-		userBook.setTags(tagNames);
+		// Delete tag mappings from tagmapping table
+		this.tagMappingDAO.deleteTagMappingByUserBookId(userBookId);
 	}
 
+	
 	/**
 	 * Get map of Tags from database
 	 *
@@ -215,6 +221,17 @@ public class UserBookHelper {
 	@UnitOfWork
 	TagMapping createTagMapping(TagMapping tagMapping) {
 		return this.tagMappingDAO.addTagMapingEntry(tagMapping);
+	}
+
+  /**
+   * Delete all tags for a specific user book.
+   * 
+   * @param userBookId
+   *          ID of user book
+   */
+  @UnitOfWork
+  void deleteTagMappingsForUserBook(int userBookId) {
+    this.tagMappingDAO.deleteTagMappingByUserBookId(userBookId);
 	}
 
 	/**
@@ -274,6 +291,37 @@ public class UserBookHelper {
 					"Must be logged in as user with id '" + userFromId.getName() + "' or as as a member of the 'admin' user group to access this resource.",
 					Response.Status.UNAUTHORIZED);
 		}
+	}
+	
+	
+	/**
+	 * Add tags from database to userbook
+	 *
+	 */
+	private void addTagsToUserBook(FullUserBook userBook) {
+		System.out.println("Adding tags to userbook:" + userBook);
+
+		// Get tag mappings for user book
+		List<TagMapping> tagMappings = this.tagMappingDAO.findTagMappings(userBook.getUserBookId());
+
+		// Get tag IDs for the user book
+		List<Integer> tagIds = tagMappings.stream().map(TagMapping::getTagId).collect(Collectors.toList());
+
+		System.out.println("TAGIDS: " + Arrays.toString(tagIds.toArray()));
+
+		// Get all tags in database and convert into a map keyed by tagID
+		Map<String, Tag> allTags = this.tagDAO.findAll();
+		Map<Integer, Tag> tagsIndexById = allTags.values().stream().collect(Collectors.toMap(Tag::getId, p -> p));
+
+		// Correlate tag ids from tagMappings into tag names
+		List<String> tagNames = tagIds.stream().map(e -> tagsIndexById.get(e).getName()).collect(Collectors.toList());
+		System.out.println("TAG names: " + Arrays.toString(tagNames.toArray()));
+
+		for (String x : tagNames) {
+			System.out.println("Assigning tag " + x + " to userbook: " + userBook);
+		}
+
+		userBook.setTags(tagNames);
 	}
 
 }

@@ -14,7 +14,7 @@ public class PostUserBook {
 
 	protected int bookId;
 
-	protected boolean rating;
+	protected Boolean rating;
 
 	protected String data;
 
@@ -47,11 +47,11 @@ public class PostUserBook {
 		return data;
 	}
 
-	public void setRating(boolean rating) {
+	public void setRating(Boolean rating) {
 		this.rating = rating;
 	}
 
-	public boolean getRating() {
+	public Boolean getRating() {
 		return rating;
 	}
 

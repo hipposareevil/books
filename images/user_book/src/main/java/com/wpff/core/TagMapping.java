@@ -23,7 +23,7 @@ import javax.persistence.Table;
 				    query = "DELETE FROM TagMapping u WHERE u.user_book_id = :user_book_id") 
 	    })
 /**
- * TagMap class
+ * Class to map a UserBook to a set of Tags.  Uses the 'tagmapping' table.
  */
 public class TagMapping implements java.io.Serializable {
 
