@@ -12,7 +12,7 @@ database:
   url: jdbc:mysql://books_db:3306/booksdatabase
 
   # the maximum amount of time to wait on an empty pool before throwing an exception
-  maxWaitForConnection: 1s
+  maxWaitForConnection: 10s
 
   # the SQL query to run when validating a connection's liveness
   validationQuery: "/* MyApplication Health Check */ SELECT 1"

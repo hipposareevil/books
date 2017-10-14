@@ -97,8 +97,6 @@ public class UserBookResource {
 		// Verify the username matches the userid or is 'admin'
 		ubHelper.verifyUserIdHasAccess(context, userId.get());
 
-		System.out.println("UBR: getUserBook for user " + userId.get() + ", userbookid: " + userBookId.get());
-
 		ubHelper.deleteUserBookById(userBookId.get());
 
 		return Response.ok().build();
@@ -138,8 +136,6 @@ public class UserBookResource {
 
 			// Verify the username matches the userid or is 'admin'
 			ubHelper.verifyUserIdHasAccess(context, userId.get());
-
-			System.out.println("UBR: getUserBook for user " + userId.get() + ", userbookid: " + userBookId.get());
 
 			return ubHelper.getUserBookById(userBookId.get());
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
@@ -265,6 +261,9 @@ public class UserBookResource {
 			// Save to database
 
 			// This creates a new UserBook in the database without any tags
+			if (userBookBean.getRating() == null) {
+			  userBookBean.setRating(true);
+			}
 			DatabaseUserBook newUserBook = ubHelper.createUserBook(userBookBean, userId);
 			System.out.println("Created userbook in DB: " + newUserBook);
 
@@ -273,43 +272,46 @@ public class UserBookResource {
 
 			// Get tags from the incoming bean.
 			List<String> incomingTags = userBookBean.getTags();
+      if (incomingTags != null) {
+        // 1- get IDs for all matching tags in the database
+        Map<String, Tag> tagsInDbMap = ubHelper.getAllTags();
 
-			// 1- get IDs for all matching tags in the database
-			Map<String, Tag> tagsInDbMap = ubHelper.getAllTags();
+        // Iterate over tagsInDbMap values and for each entry,
+        // if it is contained in 'incomingTags', add it to the list.
+        List<Tag> matchingTags = tagsInDbMap.values()
+            .stream()
+            .filter(t -> incomingTags.contains(t.getName()))
+            .collect(Collectors.toList());
 
-			// Iterate over tagsInDbMap values and for each entry,
-			// if it is contained in 'incomingTags', add it to the list.
-			List<Tag> matchingTags = tagsInDbMap.values().stream().filter(t -> incomingTags.contains(t.getName())).collect(
-					Collectors.toList());
+        for (Tag x : matchingTags) {
+          System.out.println("got matching tag: " + x);
+        }
 
-			for (Tag x : matchingTags) {
-				System.out.println("got matching tag: " + x);
-			}
+        List<Tag> allTags = new ArrayList<Tag>(matchingTags);
 
-			List<Tag> allTags = new ArrayList<Tag>(matchingTags);
+        // 2- Create Tags in DB for tags that don't exist
+        Tag newTag = null;
+        for (String desiredTag : incomingTags) {
+          if (!tagsInDbMap.containsKey(desiredTag)) {
+            System.out.println("We are missing tag " + desiredTag + " in database");
 
-			// 2- Create Tags in DB for tags that don't exist
-			Tag newTag = null;
-			for (String desiredTag : incomingTags) {
-				if (!tagsInDbMap.containsKey(desiredTag)) {
-					System.out.println("We are missing tag " + desiredTag + " in database");
+            newTag = ubHelper.createTag(desiredTag);
+            allTags.add(newTag);
+            System.out.println("NEW TAG: " + newTag);
+          }
+        }
 
-					newTag = ubHelper.createTag(desiredTag);
-					allTags.add(newTag);
-					System.out.println("NEW TAG: " + newTag);
-				}
-			}
+        System.out.println("");
+        // 3- for each desired tag add an entry into the tagmap
+        for (Tag tag : allTags) {
+          System.out.println("Looking at tag: " + tag);
 
-			System.out.println("");
-			// 3- for each desired tag add an entry into the tagmap
-			for (Tag tag : allTags) {
-				System.out.println("Looking at tag: " + tag);
+          // Make tag mapping [userBookId, tagId]
+          TagMapping mapping = new TagMapping(newUserBook.getUserBookId(), tag.getId());
 
-				// Make tag mapping [userBookId, tagId]
-				TagMapping mapping = new TagMapping(newUserBook.getUserBookId(), tag.getId());
-
-				ubHelper.createTagMapping(mapping);
-				System.out.println("Created new tag mapping: " + mapping);
+          ubHelper.createTagMapping(mapping);
+          System.out.println("Created new tag mapping: " + mapping);
+        }
 			}
 
 
@@ -375,60 +377,52 @@ public class UserBookResource {
 
 			//////////////////
 			// Get existing userbook from database
-      DatabaseUserBook existingUserBook = ubHelper.updateUserBook(userBookBean, userBookId.get());
-
-      // Update with any non null values from userBookBean
-      System.out.println("PUT: rating: " + userBookBean.getRating());
-      System.out.println("PUT: tags: " + userBookBean.getTags());
-      System.out.println("PUT: data: " + userBookBean.getData());
-
-      ////////////////
-			// Set up tags in tagmap
+      ubHelper.updateUserBook(userBookBean, userBookId.get());
       
-      // Clear out tags for existing userbook
-      ubHelper.deleteTagMappingsForUserBook(userBookId.get());
+      List<String> tags = userBookBean.getTags();
+      System.out.println("TAGS: " + tags);
       
-			// Get tags from the incoming bean.
-			List<String> incomingTags = userBookBean.getTags();
+      if (tags != null) {
+        ////////////////
+        // Set up tags in tagmap
 
-			// 1- get IDs for all matching tags in the database
-			Map<String, Tag> tagsInDbMap = ubHelper.getAllTags();
+        // Clear out tags for existing userbook
+        ubHelper.deleteTagMappingsForUserBook(userBookId.get());
 
-			// Iterate over tagsInDbMap values and for each entry,
-			// if it is contained in 'incomingTags', add it to the list matchingTags.
-			List<Tag> matchingTags = tagsInDbMap.values().stream().filter(t -> incomingTags.contains(t.getName())).collect(
+        // Get tags from the incoming bean
+        List<String> incomingTags = userBookBean.getTags();
+
+        // 1- get IDs for all matching tags in the database
+        Map<String, Tag> tagsInDbMap = ubHelper.getAllTags();
+
+        // Iterate over tagsInDbMap values and for each entry,
+        // if it is contained in 'incomingTags', add it to the list matchingTags.
+        List<Tag> matchingTags = tagsInDbMap.
+			    values().
+			    stream().
+			    filter(t -> incomingTags.contains(t.getName())).collect(
 					Collectors.toList());
 
-			for (Tag x : matchingTags) {
-				System.out.println("got matching tag: " + x);
-			}
+        List<Tag> allTags = new ArrayList<Tag>(matchingTags);
 
-			List<Tag> allTags = new ArrayList<Tag>(matchingTags);
+        // 2- Create Tags in DB for tags that don't exist
+        Tag newTag = null;
+        for (String desiredTag : incomingTags) {
+          if (!tagsInDbMap.containsKey(desiredTag)) {
+            newTag = ubHelper.createTag(desiredTag);
+            allTags.add(newTag);
+            System.out.println("NEW TAG: " + newTag);
+          }
+        }
 
-			// 2- Create Tags in DB for tags that don't exist
-			Tag newTag = null;
-			for (String desiredTag : incomingTags) {
-				if (!tagsInDbMap.containsKey(desiredTag)) {
-					System.out.println("We are missing tag " + desiredTag + " in database");
+        // 3- for each desired tag add an entry into the tagmap
+        for (Tag tag : allTags) {
+          // Make tag mapping [userBookId, tagId]
+          TagMapping mapping = new TagMapping(userBookId.get(), tag.getId());
 
-					newTag = ubHelper.createTag(desiredTag);
-					allTags.add(newTag);
-					System.out.println("NEW TAG: " + newTag);
-				}
-			}
-
-			System.out.println("");
-			// 3- for each desired tag add an entry into the tagmap
-			for (Tag tag : allTags) {
-				System.out.println("Looking at tag: " + tag);
-
-				// Make tag mapping [userBookId, tagId]
-				TagMapping mapping = new TagMapping(userBookId.get(), tag.getId());
-
-				ubHelper.createTagMapping(mapping);
-				System.out.println("Created new tag mapping: " + mapping);
-			}
-
+          ubHelper.createTagMapping(mapping);
+        }
+      }
 
 			//////////////////
 			// Marshall back from database

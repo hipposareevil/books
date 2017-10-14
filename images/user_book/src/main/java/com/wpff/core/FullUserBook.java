@@ -22,7 +22,10 @@ public class FullUserBook extends PostUserBook {
 		string.append(", userId=" + userId);
 		string.append(", bookId=" + super.bookId);
 		string.append(", rating=" + super.rating);
+		if (tags != null)
 		string.append(", tags=" + Arrays.toString(tags.toArray()));
+		else 
+		  string.append(", tags=null");
 		string.append("]");
 
 		return string.toString();

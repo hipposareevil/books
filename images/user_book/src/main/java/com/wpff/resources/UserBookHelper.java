@@ -76,7 +76,7 @@ public class UserBookHelper {
 			InvocationTargetException {
 		// Create transient UserBook
 		DatabaseUserBook userBookToCreate = new DatabaseUserBook();
-
+		
 		// Copy over bean values - copy(destination, source)
 		BeanUtils.copyProperties(userBookToCreate, userBookBean);
 

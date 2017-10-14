@@ -1,6 +1,5 @@
 package com.wpff.core;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,7 +17,7 @@ public class PostUserBook {
 
 	protected String data;
 
-	protected List<String> tags = new ArrayList<String>();
+	protected List<String> tags = null;
 
 	public String toString() {
 		StringBuilder string = new StringBuilder();
@@ -56,10 +55,14 @@ public class PostUserBook {
 	}
 
 	public void setTags(List<String> tags) {
-		this.tags = new ArrayList<String>(tags);
+		this.tags = tags;
 	}
 
+	/**
+	 * May return null to signal no tags
+	 * @return
+	 */
 	public List<String> getTags() {
-		return new ArrayList<String>(this.tags);
+	  return this.tags;
 	}
 }
