@@ -11,7 +11,8 @@
  */
 
 // URL of API
-const API_URL = 'http://localhost:8080/'
+const HOSTNAME = location.hostname
+const API_URL = 'http://' + HOSTNAME + ':8080/'
 // URL of token generation
 const LOGIN_URL = API_URL + 'authorize/token'
 // URL of validate token

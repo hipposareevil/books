@@ -14,8 +14,8 @@
 
     <div class="columns">
       <!-- left side column with tag filters -->
-      <div class="column is-1 is-narrow"
-           style="border-right: solid lightgray 1px;">
+      <div class="column"
+           style="width: 10%; border-right: solid lightgray 1px;">
 
         <aside class="menu">
           <p class="menu-label is-size-5 has-text-dark"
@@ -223,7 +223,6 @@
        * Set the tag filter
        */
       setTagFilter (newfilter) {
-        console.log('Set tag filter to>' + newfilter + '<')
         if (this.ViewState.tagFilter === newfilter) {
           // Reset tag filter to empty
           this.ViewState.tagFilter = ''

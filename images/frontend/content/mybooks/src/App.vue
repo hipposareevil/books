@@ -1,5 +1,6 @@
 <template>
   <div>
+
     <login @dunsaved="loginCalled" 
            @duncanceled="cancelCalled" 
            :active="doLoginModal" ></login>

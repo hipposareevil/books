@@ -5,7 +5,8 @@
 import Auth from '../auth'
 
 // URL of API
-const API_URL = 'http://localhost:8080'
+const HOSTNAME = location.hostname
+const API_URL = 'http://' + HOSTNAME + ':8080/'
 
 export default {
   /**
