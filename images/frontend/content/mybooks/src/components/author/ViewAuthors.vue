@@ -5,6 +5,7 @@
     <!-- Header for filter, search, list vs grid -->
     <ViewHeader theThing="Authors"
                 :numberOfThings="lengthOfViewableAuthors"
+                :showAsList="ViewState.viewAsList"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
@@ -12,7 +13,7 @@
                 >
     </ViewHeader>
 
-    <authorslist v-if="viewAsList" 
+    <authorslist v-if="ViewState.viewAsList" 
                  :authors="authorList"></authorslist>
     <authorsgrid v-else 
                  :authors="authorList"></authorsgrid>
@@ -49,8 +50,6 @@
     // Data for this component
     data () {
       return {
-        // flag to determine if we present as list or grid
-        viewAsList: true,
         // string to search/query authors on
         searchAuthorString: '',
         // string to filter on
@@ -73,6 +72,14 @@
           end: -1,
           // Total number of datum to get
           totalNumData: 0
+        },
+        /**
+         * Current state of the view
+         */
+        ViewState: {
+          valid: 'yes',
+          // flag to determine if we present as list or grid
+          viewAsList: true
         }
       }
     },
@@ -81,10 +88,16 @@
      *
      */
     mounted: function () {
-      // get authros from store
+      // get authors from store
       let temp = this.$store.state.allAuthors
       if (temp && temp.AuthorsJson) {
         this.AllData = temp
+      }
+
+      // Get list/grid status
+      temp = this.$store.state.authorsView
+      if (temp && temp.valid) {
+        this.ViewState = temp
       }
     },
     /**
@@ -134,13 +147,15 @@
        * Show the grid view
        */
       showGrid () {
-        this.viewAsList = false
+        this.ViewState.viewAsList = false
+        this.$store.commit('setAuthorsView', this.ViewState)
       },
       /**
        * Show the list view
        */
       showList () {
-        this.viewAsList = true
+        this.ViewState.viewAsList = true
+        this.$store.commit('setAuthorsView', this.ViewState)
       },
       /**
        * The search string has been updated

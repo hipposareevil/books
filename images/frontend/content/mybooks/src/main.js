@@ -17,9 +17,12 @@ window.Event = new Vue()
 // Access via "this.$store.state.count"
 const store = new Vuex.Store({
   state: {
-    allBooks: [],
-    allAuthors: [],
-    userBooks: {}
+    allBooks: {},
+    booksView: {},
+    allAuthors: {},
+    authorsView: {},
+    userBooks: {},
+    userBooksView: {}
   },
   mutations: {
     // The currently loaded set of 'books'
@@ -28,17 +31,32 @@ const store = new Vuex.Store({
     setAllBooks (state, newBooks) {
       state.allBooks = newBooks
     },
+    // Set the view options for the BookView
+    // This includes grid vs list, etc
+    setBooksView (state, view) {
+      state.booksView = view
+    },
     // The currently loaded set of 'authors'
     // Note this is an object containing the authors JSON and
     // state of the query (start, length, total, end)
     setAllAuthors (state, newAuthors) {
       state.allAuthors = newAuthors
     },
+    // Set the view options for the AuthorView
+    // This includes grid vs list, etc
+    setAuthorsView (state, view) {
+      state.authorsView = view
+    },
     // The currently loaded set of 'user books'
     // Note this is an object containing the userbooks JSON and
     // state of the query (start, length, total, end)
     setUserBooks (state, newUserBooks) {
       state.userBooks = newUserBooks
+    },
+    // Set the view options for the UserBooksVue
+    // This includes grid vs list, etc
+    setUserBooksView (state, view) {
+      state.userBooksView = view
     }
   }
 })

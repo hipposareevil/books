@@ -5,6 +5,7 @@
     <!-- Header for filter, search, list vs grid -->
     <ViewHeader theThing="Books"
                 :numberOfThings="lengthOfViewableBooks"
+                :showAsList="ViewState.viewAsList"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
@@ -13,7 +14,7 @@
     </ViewHeader>
 
     <!-- when 'books' changes, a watcher in bookslist and booksgrid updates their view -->
-    <bookslist v-if="viewAsList"
+    <bookslist v-if="ViewState.viewAsList"
                :books="bookList"></bookslist>
     <booksgrid v-else
                :books="bookList"></booksgrid>
@@ -55,8 +56,6 @@
     // Data for this component
     data () {
       return {
-        // flag to determine if we present as list or grid
-        viewAsList: true,
         // string to filter books on
         filterBookString: '',
         // string to search/query books on
@@ -81,8 +80,15 @@
           end: -1,
           // Total number of datum to get
           totalNumData: 0
+        },
+        /**
+         * Current state of the view
+         */
+        ViewState: {
+          valid: 'yes',
+          // flag to determine if we present as list or grid
+          viewAsList: true
         }
-
       }
     },
     /**
@@ -95,6 +101,13 @@
       if (temp && temp.BooksJson) {
         this.AllData = temp
       }
+
+      // Get list/grid status
+      temp = this.$store.state.booksView
+      if (temp && temp.valid) {
+        this.ViewState = temp
+      }
+
       Event.$on('updatedb.book.409', (eventmessage) => this.conflictError(eventmessage))
       Event.$on('updatedb.user_book.409', (eventmessage) => this.conflictError(eventmessage))
     },
@@ -146,13 +159,15 @@
        * Show the grid view
        */
       showGrid () {
-        this.viewAsList = false
+        this.ViewState.viewAsList = false
+        this.$store.commit('setBooksView', this.ViewState)
       },
       /**
        * Show the list view
        */
       showList () {
-        this.viewAsList = true
+        this.ViewState.viewAsList = true
+        this.$store.commit('setBooksView', this.ViewState)
       },
       /**
        * The search string has been updated

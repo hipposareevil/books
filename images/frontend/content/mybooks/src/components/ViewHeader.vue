@@ -87,7 +87,7 @@
    */
   export default {
     // Props for this component
-    props: [ 'theThing', 'numberOfThings' ],
+    props: [ 'theThing', 'numberOfThings', 'showAsList' ],
     // Data for this component
     data () {
       return {
@@ -96,7 +96,7 @@
         // String to filter on
         filterString: '',
         // when true, view as list
-        showList: true
+        showList: this.showAsList
       }
     },
     methods: {
@@ -122,7 +122,13 @@
         return 'Search ' + this.theThing
       }
     },
+   /**
+    * What strings to watch for
+    */
     watch: {
+      showAsList: function (val, oldVal) {
+        this.showList = val
+      },
       filterString: function (val, oldVal) {
         this.$emit('filterString', val)
       },

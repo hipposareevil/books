@@ -4,6 +4,7 @@
     <!-- Header for filter, search, list vs grid -->
     <ViewHeader theThing="My Books"
                 :numberOfThings="getCurrentLength"
+                :showAsList="ViewState.viewAsList"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
@@ -42,14 +43,14 @@
       <!-- right side with books -->
       <div class="column is-11">
         <!-- when 'books' changes, a watcher in bookslist and booksgrid updates their view -->
-        <ShelfAsList v-if="viewAsList"
+        <ShelfAsList v-if="ViewState.viewAsList"
                      v-bind:filter="filterBookString"
-                     v-bind:tagFilter="tagFilter"
+                     v-bind:tagFilter="ViewState.tagFilter"
                      v-bind:allTags="TagJson"
                      :userBooks="AllData.UserBooksJson"></ShelfAsList>
         <ShelfAsGrid v-else
                      v-bind:filter="filterBookString"
-                     v-bind:tagFilter="tagFilter"
+                     v-bind:tagFilter="ViewState.tagFilter"
                      v-bind:allTags="TagJson"
                      :userBooks="AllData.UserBooksJson"></ShelfAsGrid>
 
@@ -93,14 +94,10 @@
       return {
         // Error message
         errorMessage: '',
-        // flag to determine if we present as list or grid
-        viewAsList: true,
         // string to filter books on
         filterBookString: '',
         // string to search/query books on
         searchBookString: '',
-        // currently selected 'tag' filter
-        tagFilter: '',
         // tags from server
         TagJson: [],
         /**
@@ -119,6 +116,16 @@
           end: -1,
           // Total number of datum to get
           totalNumData: 0
+        },
+        /**
+         * Current state of the view
+         */
+        ViewState: {
+          valid: 'yes',
+          // flag to determine if we present as list or grid
+          viewAsList: true,
+          // currently selected 'tag' filter
+          tagFilter: ''
         }
       }
     },
@@ -131,6 +138,12 @@
       let temp = this.$store.state.userBooks
       if (temp && temp.UserBooksJson) {
         this.AllData = temp
+      }
+
+      // Get list/grid status
+      temp = this.$store.state.userBooksView
+      if (temp && temp.valid) {
+        this.ViewState = temp
       }
 
       this.getTags()
@@ -210,18 +223,19 @@
        * Set the tag filter
        */
       setTagFilter (newfilter) {
-        if (this.tagFilter === newfilter) {
+        console.log('Set tag filter to>' + newfilter + '<')
+        if (this.ViewState.tagFilter === newfilter) {
           // Reset tag filter to empty
-          this.tagFilter = ''
+          this.ViewState.tagFilter = ''
         } else {
-          this.tagFilter = newfilter
+          this.ViewState.tagFilter = newfilter
         }
       },
       /**
        * Return true if the incoming tag is the same as the filter
        */
       isSelected (tag) {
-        if (tag.name === this.tagFilter) {
+        if (tag.name === this.ViewState.tagFilter) {
           return true
         } else {
           return false
@@ -231,13 +245,15 @@
        * Show the grid view
        */
       showGrid () {
-        this.viewAsList = false
+        this.ViewState.viewAsList = false
+        this.$store.commit('setUserBooksView', this.ViewState)
       },
       /**
        * Show the list view
        */
       showList () {
-        this.viewAsList = true
+        this.ViewState.viewAsList = true
+        this.$store.commit('setUserBooksView', this.ViewState)
       },
       /**
        * The search string has been updated
