@@ -55,8 +55,6 @@
     // Data for this component
     data () {
       return {
-        // data from ajax
-        BooksJson: [],
         // flag to determine if we present as list or grid
         viewAsList: true,
         // string to filter books on
@@ -65,16 +63,26 @@
         searchBookString: '',
         // animated message content
         messageToUser: '',
-        // Index of data to query for
-        dataStart: 0,
-        // Length of data to get
-        lengthToGet: 15,
-        // Current end of our data length
-        end: -1,
-        // Total number of datum to get
-        totalNumData: 0,
-        // # of authors being viewed
-        lengthOfViewableBooks: 0
+        // how many books are viewable
+        lengthOfViewableBooks: 0,
+        /**
+         * Contains the JSON for Books
+         * and the status of the infinite scrolling, e.g.
+         * the current state of querying the server for data.
+         */
+        AllData: {
+          // data from ajax
+          BooksJson: [],
+          // Index of data to query for
+          dataStart: 0,
+          // Length of data to get
+          lengthToGet: 15,
+          // Current end of our data length
+          end: -1,
+          // Total number of datum to get
+          totalNumData: 0
+        }
+
       }
     },
     /**
@@ -82,6 +90,11 @@
      * Add event listeners
      */
     mounted: function () {
+      // get books from store
+      let temp = this.$store.state.allBooks
+      if (temp && temp.BooksJson) {
+        this.AllData = temp
+      }
       Event.$on('updatedb.book.409', (eventmessage) => this.conflictError(eventmessage))
       Event.$on('updatedb.user_book.409', (eventmessage) => this.conflictError(eventmessage))
     },
@@ -94,33 +107,28 @@
        */
       infiniteHandler ($state) {
         let self = this
-        console.log('getBooks call: start: ' + self.dataStart + ', segmentSize/lengthToGet: ' + this.lengthToGet)
 
         const authString = Auth.getAuthHeader()
-        this.$axios.get('/book', { headers: { Authorization: authString }, params: { start: self.dataStart, segmentSize: self.lengthToGet } })
+        this.$axios.get('/book', { headers: { Authorization: authString }, params: { start: self.AllData.dataStart, segmentSize: self.AllData.lengthToGet } })
           .then((response) => {
             let incomingData = response.data.data
             let start = response.data.start
             let length = response.data.length
-            self.BooksJson = _.concat(self.BooksJson, incomingData)
+            self.AllData.BooksJson = _.concat(self.AllData.BooksJson, incomingData)
 
             $state.loaded()
 
             // Update our pointers (start, end, so on
-            self.totalNumData = response.data.totalFound
-            self.end = start + length
-            self.dataStart = start + self.lengthToGet
+            self.AllData.totalNumData = response.data.totalFound
+            self.AllData.end = start + length
+            self.AllData.dataStart = start + self.AllData.lengthToGet
 
-            console.log('NEW for book')
-            console.log('-----------------------------------')
-            console.log('length of new data: ' + response.data.length)
-            console.log('self.dataStart: ' + self.dataStart)
-            console.log('self.end: ' + self.end)
-            console.log('self.total: ' + self.totalNumData)
-            console.log('-----------------------------------')
-            if (self.end >= self.totalNumData) {
+            if (self.AllData.end >= self.AllData.totalNumData) {
               $state.complete()
             }
+
+            // save to $store
+            this.$store.commit('setAllBooks', self.AllData)
           })
           .catch(function (error) {
             $state.complete()
@@ -184,7 +192,7 @@
      */
     computed: {
       bookList: function () {
-        let result = this.BooksJson
+        let result = this.AllData.BooksJson
         this.lengthOfViewableBooks = result.length
 
         if (!this.filterBookString) {

@@ -3,6 +3,7 @@
 
     <!-- Header for filter, search, list vs grid -->
     <ViewHeader theThing="My Books"
+                :numberOfThings="getCurrentLength"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
@@ -45,16 +46,16 @@
                      v-bind:filter="filterBookString"
                      v-bind:tagFilter="tagFilter"
                      v-bind:allTags="TagJson"
-                     :userBooks="UserBooksJson"></ShelfAsList>
+                     :userBooks="AllData.UserBooksJson"></ShelfAsList>
         <ShelfAsGrid v-else
                      v-bind:filter="filterBookString"
                      v-bind:tagFilter="tagFilter"
                      v-bind:allTags="TagJson"
-                     :userBooks="UserBooksJson"></ShelfAsGrid>
+                     :userBooks="AllData.UserBooksJson"></ShelfAsGrid>
 
         <infinite-loading @infinite="infiniteHandler">
           <span slot="no-more">
-            -- end shelf ({{ end }})--
+            -- end shelf ({{ AllData.UserBooksJson.length }})--
           </span>
           <span slot="no-results">
             -- no results --
@@ -100,18 +101,25 @@
         searchBookString: '',
         // currently selected 'tag' filter
         tagFilter: '',
-        // data from ajax
-        UserBooksJson: [],
         // tags from server
         TagJson: [],
-        // Index of data to query for
-        dataStart: 0,
-        // Length of data to get
-        lengthToGet: 15,
-        // Current end of our data length
-        end: -1,
-        // Total number of datum to get
-        totalNumData: 0
+        /**
+         * Contains the JSON for User Books
+         * and the status of the infinite scrolling, e.g.
+         * the current state of querying the server for data.
+         */
+        AllData: {
+          // data from ajax
+          UserBooksJson: [],
+          // Index of data to query for
+          dataStart: 0,
+          // Length of data to get
+          lengthToGet: 15,
+          // Current end of our data length
+          end: -1,
+          // Total number of datum to get
+          totalNumData: 0
+        }
       }
     },
     /**
@@ -119,7 +127,21 @@
      *
      */
     mounted: function () {
+      // get user books from store
+      let temp = this.$store.state.userBooks
+      if (temp && temp.UserBooksJson) {
+        this.AllData = temp
+      }
+
       this.getTags()
+    },
+    /**
+     * Get length of the userbooks' json
+     */
+    computed: {
+      getCurrentLength: function () {
+        return this.AllData.UserBooksJson.length
+      }
     },
     /**
      * Methods
@@ -131,34 +153,28 @@
       infiniteHandler ($state) {
         let self = this
 
-        console.log('getUserBooks call: start: ' + self.dataStart + ', segmentSize/lengthToGet: ' + this.lengthToGet)
-
         let url = '/user_book/' + Auth.user.id
         const authString = Auth.getAuthHeader()
-        this.$axios.get(url, { headers: { Authorization: authString }, params: { start: self.dataStart, segmentSize: self.lengthToGet } })
+        this.$axios.get(url, { headers: { Authorization: authString }, params: { start: self.AllData.dataStart, segmentSize: self.AllData.lengthToGet } })
           .then((response) => {
             let incomingData = response.data.data
             let start = response.data.start
             let length = response.data.length
-            self.UserBooksJson = _.concat(self.UserBooksJson, incomingData)
+            // save list of user books
+            self.AllData.UserBooksJson = _.concat(self.AllData.UserBooksJson, incomingData)
 
             $state.loaded()
 
             // Update our pointers (start, end, so on
-            self.totalNumData = response.data.totalFound
-            self.end = start + length
-            self.dataStart = start + self.lengthToGet
+            self.AllData.totalNumData = response.data.totalFound
+            self.AllData.end = start + length
+            self.AllData.dataStart = start + self.AllData.lengthToGet
 
-            console.log('NEW for userbook')
-            console.log('-----------------------------------')
-            console.log('length of new data: ' + response.data.length)
-            console.log('self.dataStart: ' + self.dataStart)
-            console.log('self.end: ' + self.end)
-            console.log('self.total: ' + self.totalNumData)
-            console.log('-----------------------------------')
-            if (self.end >= self.totalNumData) {
+            if (self.AllData.end >= self.AllData.totalNumData) {
               $state.complete()
             }
+            // save to $store
+            this.$store.commit('setUserBooks', self.AllData)
           })
           .catch(function (error) {
             $state.complete()
@@ -167,7 +183,6 @@
                 Event.$emit('got401')
               }
             } else {
-              console.log('foooooooooo')
               console.log(error)
             }
           })

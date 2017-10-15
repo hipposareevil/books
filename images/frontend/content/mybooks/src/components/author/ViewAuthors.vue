@@ -49,24 +49,42 @@
     // Data for this component
     data () {
       return {
-        // data from ajax
-        AuthorsJson: [],
         // flag to determine if we present as list or grid
         viewAsList: true,
         // string to search/query authors on
         searchAuthorString: '',
         // string to filter on
         filterAuthorString: '',
-        // Index of data to query for
-        dataStart: 0,
-        // Length of data to get
-        lengthToGet: 15,
-        // Current end of our data length
-        end: -1,
-        // Total number of datum to get
-        totalNumData: 0,
-        // # of authors being viewed
-        lengthOfViewableAuthors: 0
+        // length of viewable authors
+        lengthOfViewableAuthors: 0,
+        /**
+         * Contains the JSON for Authors
+         * and the status of the infinite scrolling, e.g.
+         * the current state of querying the server for data.
+         */
+        AllData: {
+          // data from ajax
+          AuthorsJson: [],
+          // Index of data to query for
+          dataStart: 0,
+          // Length of data to get
+          lengthToGet: 15,
+          // Current end of our data length
+          end: -1,
+          // Total number of datum to get
+          totalNumData: 0
+        }
+      }
+    },
+    /**
+     * When mounted, get the stored data
+     *
+     */
+    mounted: function () {
+      // get authros from store
+      let temp = this.$store.state.allAuthors
+      if (temp && temp.AuthorsJson) {
+        this.AllData = temp
       }
     },
     /**
@@ -79,34 +97,27 @@
       infiniteHandler ($state) {
         let self = this
 
-        console.log('INFINITE')
-        console.log('getAuthors call: start: ' + self.dataStart + ', segmentSize/lengthToGet: ' + this.lengthToGet)
-
         const authString = Auth.getAuthHeader()
-        this.$axios.get('/author', { headers: { Authorization: authString }, params: { start: self.dataStart, segmentSize: self.lengthToGet } })
+        this.$axios.get('/author', { headers: { Authorization: authString }, params: { start: self.AllData.dataStart, segmentSize: self.AllData.lengthToGet } })
           .then((response) => {
             let incomingData = response.data.data
             let start = response.data.start
             let length = response.data.length
-            self.AuthorsJson = _.concat(self.AuthorsJson, incomingData)
+            self.AllData.AuthorsJson = _.concat(self.AllData.AuthorsJson, incomingData)
 
             $state.loaded()
 
             // Update our pointers (start, end, so on
-            self.totalNumData = response.data.totalFound
-            self.end = start + length
-            self.dataStart = start + self.lengthToGet
+            self.AllData.totalNumData = response.data.totalFound
+            self.AllData.end = start + length
+            self.AllData.dataStart = start + self.AllData.lengthToGet
 
-            console.log('NEW')
-            console.log('-----------------------------------')
-            console.log('length of new data: ' + response.data.length)
-            console.log('self.dataStart: ' + self.dataStart)
-            console.log('self.end: ' + self.end)
-            console.log('self.total: ' + self.totalNumData)
-            console.log('-----------------------------------')
-            if (self.end >= self.totalNumData) {
+            if (self.AllData.end >= self.AllData.totalNumData) {
               $state.complete()
             }
+
+            // save to $store
+            this.$store.commit('setAllAuthors', self.AllData)
           })
           .catch(function (error) {
             $state.complete()
@@ -115,7 +126,6 @@
                 Event.$emit('got401')
               }
             } else {
-              console.log('foooooooooo')
               console.log(error)
             }
           })
@@ -147,7 +157,7 @@
     },
     computed: {
       authorList: function () {
-        let result = this.AuthorsJson
+        let result = this.AllData.AuthorsJson
         this.lengthOfViewableAuthors = result.length
 
         if (!this.filterAuthorString) {
