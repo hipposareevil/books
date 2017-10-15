@@ -38,7 +38,7 @@ dependencies {
     testCompile("junit:junit")
 
     // wpff common
-    compile fileTree(dir: '../../mybooks_common/repos', include: ['mybooks_common*.jar'])
+    compile fileTree(dir: './lib/', include: ['mybooks_common*.jar'])
 
     // REST
     compile("org.springframework.boot:spring-boot-starter-web")

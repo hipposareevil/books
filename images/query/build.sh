@@ -8,6 +8,10 @@
 our_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 root=$our_directory/../..
 
+# copy in common
+mkdir -p ${our_directory}/lib
+cp ${our_directory}/../../mybooks_common/repos/*.jar ${our_directory}/lib/
+
 # load in common build file
 . $root/buildfiles/build-service.sh
 
