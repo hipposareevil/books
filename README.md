@@ -20,7 +20,6 @@ Table of Contents
       * [Docker images used](#docker-images-used)
       * [Frameworks used](#frameworks-used)
    * [Customizing application deployment](#customizing-application-deployment)
-      * [Google API key](#google-api-key)
       * [Docker image location](#docker-image-location)
       * [Deployment Host name](#deployment-host-name)
    * [Managing application](#managing-application)
@@ -168,9 +167,6 @@ openjdk:8-jdk-alpine | Base image for web services.
 # Customizing application deployment
 Docker compose utilizes an *.env* file where environment variables can be located. This project has the following variables.
 
-## Google API key
-The [query microservice](/images/query/) uses the google API service and requires a key. This should be put into the .env file.
-
 ## Docker image location
 This defaults to using the local Docker repository, not a private registry. If you want to tag and push images to a private repository (or dockerhub), you can run the docker compose with the environment variable *BOOK_REPOSITORY*.
 
@@ -220,15 +216,8 @@ or
 
 # Accessing the application
 
-The app will be running on [localhost:8080](http://localhost:8080). It takes a few seconds for the MySQL database to come up..
+The web application runs at [localhost:8080/](http://localhost:8080/). It takes a few seconds for the MySQL database to come up.
 
 Swagger API description is at [localhost:8080/swagger/](http://localhost:8080/swagger/). This can be used to test each of the microservices
 
-Authors are listed via [localhost:8080/author](http://localhost:8080/author), while an individual author can be accessed via [localhost:8080/author/2](http://localhost:8080/author/2)
-
-Book titles are listed via [localhost:8080/book](http://localhost:8080/book), while an individual title can be accessed via [localhost:8080/title/2](http://localhost:8080/title/2)
-
-Users are listed via [localhost:8080/user](http://localhost:8080/user).
-
-The query micro-service is at [localhost:8080/query](http://localhost:8080/query). 
 
