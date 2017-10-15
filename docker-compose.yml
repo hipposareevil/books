@@ -92,7 +92,7 @@ services:
    # Frontend webpage + js
    frontend:
      container_name: frontend
-     image: books.frontend:dev
+     image: books.frontend:prod
      restart: always
      logging:
        driver: "json-file"
