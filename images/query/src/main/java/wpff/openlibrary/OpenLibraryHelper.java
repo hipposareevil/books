@@ -123,6 +123,8 @@ public class OpenLibraryHelper {
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
 		
+		System.out.println("make query> " + queryUrl );
+		
 		// Make query
 		ResponseEntity<String> response = restTemplate.exchange(queryUrl, HttpMethod.GET, entity, String.class);
 		

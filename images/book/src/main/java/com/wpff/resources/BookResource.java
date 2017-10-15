@@ -84,32 +84,32 @@ public class BookResource {
   @UnitOfWork
   @TokenRequired
   public BookResult getBook(
-    @ApiParam(value = "ID of book to retrieve.", required = false)
-    @PathParam("id") 
-    IntParam bookId,
-    @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") 
-    String authDummy
-                        ) {
-    return this.convertToBean(authDummy, findSafely(bookId.get()));
-  }
-
-
-
-  /**
-   * Get list of books.
-   *
-   * @param start
-   *          Start index of data segment
-   * @param segmentSize
-   *          Size of data segment
-   * @param titleQuery
-   *          [optional] Name of book, or partial name, that is used to match
-   *          against the database.
-   * @param idQuery
-   *          [optional] List of book ids.
-   * @param authorIdQuery
-   *          [optional] List of author ids.
+    @ApiParam(value = "ID of book to retrieve.", required = false)	// 
+    @PathParam("id") 	// 
+    IntParam bookId,	// 
+    @ApiParam(value="Bearer authorization", required=true)	// 
+    @HeaderParam(value="Authorization") 	// 
+    String authDummy	// 
+                        ) {	// 
+    return this.convertToBean(authDummy, findSafely(bookId.get()));	// 
+  }	// 
+	// 
+	// 
+	// 
+  /**	// 
+   * Get list of books.	// 
+   *	// 
+   * @param start	// 
+   *          Start index of data segment	// 
+   * @param segmentSize	// 
+   *          Size of data segment	// 
+   * @param titleQuery	// 
+   *          [optional] Name of book, or partial name, that is used to match	// 
+   *          against the database.	// 
+   * @param idQuery	// 
+   *          [optional] List of book ids.	// 
+   * @param authorIdQuery	// 
+   *          [optional] List of author ids.	// n
    * @param authDummy
    *          Dummy authorization string that is solely used for Swagger
    *          description.
@@ -118,8 +118,7 @@ public class BookResource {
    */
   @ApiOperation(value="Get books via optional 'title' query param or optional 'ids' query param. " + 
                 "The three query params may be used at the same time.",
-                response=BookResult.class, responseContainer="List",
-                notes="Returns list of books. When no 'title', 'ids', or 'authorIds' are specified, all books in database are returned. " +
+                 notes="Returns list of books. When no 'title', 'ids', or 'authorIds' are specified, all books in database are returned. " +
                 "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
@@ -346,6 +345,10 @@ public class BookResource {
    * @return
    */
   static String convertListToCsv(List<String> values) {
+      if (values.size() > 20) {
+        values = values.subList(0,  20);
+      }
+      
       String csvString = "";
       for (String s : values) {
         csvString += s + ",";

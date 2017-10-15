@@ -1,4 +1,4 @@
-version: '2'
+version: '3.2'
 
 services:
 
@@ -89,6 +89,18 @@ services:
      networks:
        - booknet
 
+   # Frontend webpage + js
+   frontend:
+     container_name: frontend
+     image: books.frontend:dev
+     restart: always
+     logging:
+       driver: "json-file"
+     volumes:
+      - "./images/frontend/content/mybooks/:/scratch/"
+     networks:
+       - booknet
+
   
    # Gateway-api runs on port 80 internally
    # It also exposes a swagger.yaml file for the 'swagger' container below.
@@ -125,10 +137,11 @@ services:
      - MYSQL_PASSWORD=books 
 
 
+
    # Redis key/value store for user and tokens
    token_db:
     container_name: token_db
-    image: redis:3.0-alpine
+    image: redis:3.2-alpine
     restart: always
     logging:
       driver: "json-file"
