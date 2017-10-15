@@ -124,7 +124,8 @@ services:
     container_name: books_db
     image: mysql:latest
     volumes:
-      - "./mysql/books.sql:/docker-entrypoint-initdb.d/books.sql"
+      - "/database/mysql/:/var/lib/mysql"
+      - "./database/initial/books.sql:/docker-entrypoint-initdb.d/books.sql"
     restart: always
     logging:
       driver: "json-file"
@@ -145,6 +146,8 @@ services:
     restart: always
     logging:
       driver: "json-file"
+    volumes:
+      - "./database/redis/:/data"
     networks:
       - booknet
      

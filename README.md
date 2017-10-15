@@ -114,10 +114,12 @@ Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [s
 This waits for the various endpoints to come up and then grabs the designated (in docker-compose.yml) yaml files, combines them and then serves up the endpoint via swagger-ui.
 
 # Databases
-There are two databases used to manage the books and users.
+There are two databases used to manage the books and users. The data is stored in the *database* directory. 
 
 ## MySQL
 [MySQL](https://www.mysql.com/) is used to store books, authors, users, tags and user books lists.
+
+The database schema is stored in *database/initial/mybooks.sql*
 
 See [mysql](https://github.com/hipposareevil/books/blob/master/mysql/README.md) for more information and method to update the *admin* user's password.
 
