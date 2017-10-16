@@ -116,6 +116,25 @@
             let incomingData = response.data.data
             let start = response.data.start
             let length = response.data.length
+            let total = response.data.totalFound
+
+            // Verify the length hasn't changed
+            if (total === self.AllData.totalNumData) {
+              console.log('We have all the data we need: ' + total + ',' + self.AllData.totalNumData)
+              // We have all the data we can get
+              $state.complete()
+              return
+            } else {
+              // Size of data has changed, reset everything
+              $state.reset()
+
+              self.AllData.AuthorsJson = []
+              self.AllData.dataStart = 0
+              self.AllData.end = -1
+              self.AllData.totalNumData = 0
+            }
+
+            // save author data
             self.AllData.AuthorsJson = _.concat(self.AllData.AuthorsJson, incomingData)
 
             $state.loaded()

@@ -9,6 +9,7 @@ RUN npm install -g vue-cli
 # caller should mount into /scratch to run the dev server
 WORKDIR /scratch/
 
-ENTRYPOINT ["npm", "run", "dev"]
+#ENTRYPOINT ["npm", "run", "dev"]
+CMD npm run dev
 
 

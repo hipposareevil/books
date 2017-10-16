@@ -7,6 +7,15 @@ imageName="books.frontend:prod"
 our_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "Building $imageName"
+
+# Run npm run build in container
+docker run -it -v `pwd`/content/mybooks:/scratch books.frontend:dev npm run build
+
+# now content/mybooks/dist is new
+
+thedate=$(date)
+echo "$thedate" > ${our_directory}/content/mybooks/dist/build.time
+
 docker build -f Dockerfile.prod -t $imageName $our_directory
 
 echo ""

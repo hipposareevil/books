@@ -6,7 +6,8 @@ import Auth from '../auth'
 
 // URL of API
 const HOSTNAME = location.hostname
-const API_URL = 'http://' + HOSTNAME + ':8080/'
+const API_URL = 'http://' + HOSTNAME + ':8080'
+// const API_URL = 'http://localhost:8080'
 
 export default {
   /**
@@ -80,6 +81,7 @@ export default {
 
     // Make GET call to /author?name=foo to see if author exists
     const url = API_URL + '/author?name=' + book.authorName
+    console.log('making call to ' + url)
     context.$axios.get(url, { headers: { Authorization: authString } })
       .then((response) => {
         let listOfAuthors = response.data.data

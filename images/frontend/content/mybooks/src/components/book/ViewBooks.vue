@@ -127,8 +127,26 @@
             let incomingData = response.data.data
             let start = response.data.start
             let length = response.data.length
-            self.AllData.BooksJson = _.concat(self.AllData.BooksJson, incomingData)
+            let total = response.data.totalFound
 
+            // Verify the length hasn't changed
+            if (total === self.AllData.totalNumData) {
+              console.log('We have all the data we need: ' + total + ',' + self.AllData.totalNumData)
+              // We have all the data we can get
+              $state.complete()
+              return
+            } else {
+              // Size of data has changed, reset everything
+              $state.reset()
+
+              self.AllData.BooksJson = []
+              self.AllData.dataStart = 0
+              self.AllData.end = -1
+              self.AllData.totalNumData = 0
+            }
+
+            // Set book data
+            self.AllData.BooksJson = _.concat(self.AllData.BooksJson, incomingData)
             $state.loaded()
 
             // Update our pointers (start, end, so on
