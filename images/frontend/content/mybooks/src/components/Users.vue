@@ -111,7 +111,7 @@
   import auth from '../auth'
   import Clickable from './Clickable.vue'
   import deleteuserbutton from './buttons/DeleteUserButton.vue'
-  import Clickablepassword from './Clickablepassword.vue'
+  import Clickablepassword from './ClickablePassword.vue'
 
   /**
    * Class to hold user data and perform some basic tasks
