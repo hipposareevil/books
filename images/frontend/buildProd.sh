@@ -8,6 +8,9 @@ our_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "Building $imageName"
 
+# build dev first
+./buildDev.sh
+
 # Run npm run build in container
 docker run -it -v `pwd`/content/mybooks:/scratch books.frontend:dev npm run build
 
