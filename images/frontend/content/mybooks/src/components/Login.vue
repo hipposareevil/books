@@ -74,7 +74,7 @@
 
 
 <script>
-  import auth from '../auth'
+  import Auth from '../auth'
 
   export default {
     /**
@@ -107,7 +107,7 @@
           password: this.credentials.password
         }
         // Log in, this may call 'emitMessage' later
-        auth.login(this, credentials, '/')
+        Auth.login(this, credentials, '')
 
         // Send notification to the enclosing app
         this.$emit('dunsaved')

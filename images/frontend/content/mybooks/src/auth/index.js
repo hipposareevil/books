@@ -144,6 +144,10 @@ export default {
   logout (context) {
     this.zeroOut()
 
+    // clear out the vue-x storage
+    // context.$store.commit('clearEverything')
+    Event.$emit('clearEverything')
+
     // Go back to main page
     context.$router.push('/')
   },

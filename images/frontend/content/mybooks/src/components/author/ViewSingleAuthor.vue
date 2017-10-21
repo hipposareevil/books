@@ -1,23 +1,47 @@
 <template>
   <div>
+
+    <!-- Image GetValue Modal -->
+    <modal @okclicked="saveImageCalled" 
+           @cancelclicked="cancelImageCalled" 
+           v-bind:active="showImageChangeModal"
+           v-bind:message="createImageMessage()"></modal>
+
+    <!-- Author Name GetValue Modal -->
+    <modal @okclicked="saveAuthorCalled" 
+           @cancelclicked="cancelAuthorCalled" 
+           v-bind:active="showAuthorChangeModal"
+           v-bind:message="createNameMessage()"></modal>
+
     <!-- header -->
     <p class="subtitle is-4"
        style="border-bottom: solid lightgray 1px;">
-      Author: {{ authorData.name }}
-    </p>
 
+      <!-- Author Name -->
+      <span class="has-text-black">
+        Author:
+      </span>
+      <span class="isclickable"
+            title="Double click to update."
+            @dblclick="changeName"
+            v-bind:class="{ 'has-text-success' : authorNameWasChangedFlag.flag }">
+        {{ authorData.name }}
+      </span>
+    </p>
 
     <!-- data columns -->
     <div class="columns">
       <div class="column is-one-quarter">
 
-        <figure class="image is-square"
-                style="cursor: pointer;"
+        <!-- Image -->
+
+        <figure class="image is-square isclickable"
+                title="Double click to update."
+                v-bind:class="{ imagechanged : authorImageWasChangedFlag.flag }"
                 @dblclick="changeImage">
           <img v-if="authorData.imageLarge"
-               :src="authorData.imageLarge">
-          <img v-else
-               src="../../assets/kokopelli.jpg">
+               class="boxshadow"
+               v-bind:src="authorData.imageLarge">
         </figure>
 
       </div>
@@ -52,9 +76,12 @@
 </template>
 
 <script>
-  import auth from '../../auth'
+  import Auth from '../../auth'
+  import Modal from '../GetSingleValueModal.vue'
 
   export default {
+    // Components
+    components: { Modal },
     // Data for this component
     data () {
       return {
@@ -63,7 +90,19 @@
         // Set by the route prams
         authorId: this.$route.params.id,
         // book list for this author
-        bookData: {}
+        bookData: {},
+        // show the modal for updating image URL
+        showImageChangeModal: false,
+        // show the modal for updating author name
+        showAuthorChangeModal: false,
+        // Flag denoting the author image was changed
+        authorImageWasChangedFlag: {
+          flag: false
+        },
+        // Flag denoting the author name was changed
+        authorNameWasChangedFlag: {
+          flag: false
+        }
       }
     },
     /**
@@ -74,7 +113,7 @@
        * Get Single author
        */
       getAuthor () {
-        const authString = auth.getAuthHeader()
+        const authString = Auth.getAuthHeader()
         let self = this
         this.authorData = {}
         this.$axios.get('/author/' + this.authorId, { headers: { Authorization: authString } })
@@ -94,8 +133,7 @@
        *
        */
       getBooks () {
-        console.log('get books for ' + this.authorId)
-        const authString = auth.getAuthHeader()
+        const authString = Auth.getAuthHeader()
         let self = this
         this.authorData = {}
         this.$axios.get('/book?authorId=' + this.authorId, { headers: { Authorization: authString } })
@@ -118,7 +156,6 @@
       },
       /**
        * Make the hover for a given book
-       *
        */
       makeHover (current) {
         let listvalue = ''
@@ -128,10 +165,111 @@
         return listvalue
       },
       /**
-       *
+       * Create a message when changing the author's image
+       */
+      createImageMessage () {
+        return 'Set new image URL for ' + this.authorData.name + '.'
+      },
+      /**
+       * Create a message when changing the author's name
+       */
+      createNameMessage () {
+        return 'Set ' + this.authorData.name + '\'s new name.'
+      },
+      /**
+       * Change name of author
+       */
+      changeName () {
+        this.showAuthorChangeModal = true
+      },
+      /**
+       * Change the URL image for the author
        */
       changeImage () {
-        console.log('change image for author ' + this.authorData.name)
+        this.showImageChangeModal = true
+      },
+      /**
+       * Save was called via the popup modal.
+       * Try to save the author to the DB
+       */
+      saveImageCalled (value) {
+        this.showImageChangeModal = false
+        if (value) {
+          // Set the image for author
+          let data = {
+            imageSmall: value,
+            imageMedium: value,
+            imageLarge: value
+          }
+          this.authorData.imageLarge = value
+          console.log('Set author data to ' + this.authorData.imageLarge)
+          this.makePutCall(data, this.authorImageWasChangedFlag)
+        }
+      },
+      /**
+       * Cancel was called via the popup modal.
+       */
+      cancelImageCalled (value) {
+        this.showImageChangeModal = false
+      },
+      /**
+       * Save was called via the Name popup modal.
+       * Try to save the author name to the DB
+       */
+      saveAuthorCalled (value) {
+        this.showAuthorChangeModal = false
+        if (value) {
+          // Set the name for author
+          let data = {
+            name: value
+          }
+          this.authorData.name = value
+          console.log('Set author Name to ' + this.authorData.name)
+          this.makePutCall(data, this.authorNameWasChangedFlag)
+        }
+      },
+      /**
+       * Cancel for author name was called via the popup modal.
+       */
+      cancelAuthorCalled (value) {
+        this.showAuthorChangeModal = false
+      },
+      /**
+       * Make a PUT ajax call
+       *
+       * params:
+       * data: data to PUT
+       * flagMe: What variable to set to true and then after a timeout set back to false.
+       *   This must be an object that contains a 'flag' member.
+       */
+      makePutCall (data, flagMe) {
+        let self = this
+
+        // get authorization string
+        const authString = Auth.getAuthHeader()
+        console.log('making PUT request to /author/')
+
+        // params for axios request
+        let url = '/author/' + self.authorData.id
+        // auth headers
+        let ourheaders = {
+          'Authorization': authString
+        }
+        // make request
+        this.$axios.put(url, data, { headers: ourheaders })
+          .then((response) => {
+            // Mark the Flagged thing as changed, and then set timeout to remove that change.
+            if (flagMe) {
+              console.log('setting flag to true')
+              flagMe.flag = true
+              setTimeout(function () {
+                flagMe.flag = false
+              }, 1800)
+            }
+          })
+          .catch(function (error) {
+            console.log(error)
+          })
       }
     },
     /**
@@ -140,11 +278,36 @@
     mounted: function () {
       this.getAuthor()
       this.getBooks()
+    },
+    /**
+     * Prevent double clicking from highlighting the next table item
+     */
+    created: function () {
+      window.addEventListener('mousedown', function (event) {
+        if (event.detail > 1) {
+          event.preventDefault()
+        }
+      }, false)
     }
+
   }
 </script>
 
 <style>
+.isclickable {
+    cursor: pointer;
+}
+
+.isclickable:hover {
+    background-color: rgb(245,245,245)
+}
+
+.imagechanged {
+    border: solid rgb(49,207,178) 2px;
+    margin: 2px;
+    padding: 3px;
+}
+
 /* Tooltip container */
 .tooltip {
     position: relative;
@@ -176,6 +339,9 @@
     top: -25px;
     left: 120%;
     visibility: visible;
+}
+.boxshadow {
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, .1);
 }
 
 

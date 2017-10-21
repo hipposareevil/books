@@ -25,6 +25,17 @@ const store = new Vuex.Store({
     userBooksView: {}
   },
   mutations: {
+    // Clear everything from this store
+    clearEverything (state) {
+      console.log('$store. clear everything')
+
+      state.allBooks = {}
+      state.booksView = {}
+      state.allAuthors = {}
+      state.authorsView = {}
+      state.userBooks = {}
+      state.userBooksView = {}
+    },
     // The currently loaded set of 'books'
     // Note this is an object containing the books JSON and
     // state of the query (start, length, total, end)

@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <!-- Header for filter, search, list vs grid -->
     <ViewHeader theThing="My Books"
                 :numberOfThings="getCurrentLength"
@@ -73,8 +72,6 @@
         {{ errorMessage }}
       </div>
     </article>
-
-
   </div>
 </template>
 
@@ -115,7 +112,7 @@
           // Current end of our data length
           end: -1,
           // Total number of datum to get
-          totalNumData: 0
+          totalNumData: -1
         },
         /**
          * Current state of the view
@@ -161,6 +158,12 @@
      */
     methods: {
       /**
+       * Is the user logged in?
+       */
+      isLoggedIn () {
+        return Auth.isAuthenticated()
+      },
+      /**
        * Infinite loading. Get list of User Books
        */
       infiniteHandler ($state) {
@@ -170,42 +173,49 @@
         const authString = Auth.getAuthHeader()
         this.$axios.get(url, { headers: { Authorization: authString }, params: { start: self.AllData.dataStart, segmentSize: self.AllData.lengthToGet } })
           .then((response) => {
+            // Get data segment information
             let incomingData = response.data.data
             let start = response.data.start
             let length = response.data.length
-            let total = response.data.totalFound
+            // Total # of datum
+            let totalSize = response.data.totalFound
 
-            // Verify the length hasn't changed
-            if (total === self.AllData.totalNumData) {
-              console.log('We have all the data we need: ' + total + ',' + self.AllData.totalNumData)
-              // We have all the data we can get
-              $state.complete()
-              return
-            } else {
-              // Size of data has changed, reset everything
-              $state.reset()
+            // Has the dataset size changed?
+            if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {
+              console.log('ViewShelf: Dataset length for userbooks has changed. Resetting.')
 
               self.AllData.UserBooksJson = []
               self.AllData.dataStart = 0
               self.AllData.end = -1
-              self.AllData.totalNumData = 0
+              self.AllData.totalNumData = -1
+
+              $state.reset()
+              return
             }
 
+            // This method could be called when we come back to the tab
+            // so check that we have all the data or not
+            if (self.AllData.UserBooksJson.length >= totalSize) {
+              $state.loaded()
+              $state.complete()
+              return
+            }
+
+            // Data set is unchanged, continue getting data
             // save list of user books
             self.AllData.UserBooksJson = _.concat(self.AllData.UserBooksJson, incomingData)
-
-            $state.loaded()
-
-            // Update our pointers (start, end, so on
-            self.AllData.totalNumData = response.data.totalFound
             self.AllData.end = start + length
             self.AllData.dataStart = start + self.AllData.lengthToGet
+            self.AllData.totalNumData = totalSize
+
+            // save to $store
+            this.$store.commit('setUserBooks', self.AllData)
+
+            $state.loaded()
 
             if (self.AllData.end >= self.AllData.totalNumData) {
               $state.complete()
             }
-            // save to $store
-            this.$store.commit('setUserBooks', self.AllData)
           })
           .catch(function (error) {
             $state.complete()

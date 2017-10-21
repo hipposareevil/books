@@ -106,7 +106,7 @@
   import Auth from '../auth'
   import _ from 'lodash'
   import Message from './Message.vue'
-  import Modal from './Modal.vue'
+  import Modal from './AddThingModal.vue'
   import UpdateDb from '../updatedb'
 
   export default {

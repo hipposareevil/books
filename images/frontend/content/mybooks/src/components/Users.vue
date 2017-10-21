@@ -6,8 +6,6 @@
       Users
     </p>
 
-
-
     <!-- add new user -->
     <nav class="level">
       <!-- Left side -->

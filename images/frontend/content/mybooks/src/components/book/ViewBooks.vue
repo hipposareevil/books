@@ -124,42 +124,49 @@
         const authString = Auth.getAuthHeader()
         this.$axios.get('/book', { headers: { Authorization: authString }, params: { start: self.AllData.dataStart, segmentSize: self.AllData.lengthToGet } })
           .then((response) => {
+            // Get data segment information
             let incomingData = response.data.data
             let start = response.data.start
             let length = response.data.length
-            let total = response.data.totalFound
+            // Total # of datum
+            let totalSize = response.data.totalFound
 
-            // Verify the length hasn't changed
-            if (total === self.AllData.totalNumData) {
-              console.log('We have all the data we need: ' + total + ',' + self.AllData.totalNumData)
-              // We have all the data we can get
-              $state.complete()
-              return
-            } else {
-              // Size of data has changed, reset everything
-              $state.reset()
+            // Has the dataset size changed?
+            if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {
+              console.log('ViewBooks: Dataset length for userbooks has changed. Resetting.')
 
               self.AllData.BooksJson = []
               self.AllData.dataStart = 0
               self.AllData.end = -1
-              self.AllData.totalNumData = 0
+              self.AllData.totalNumData = -1
+
+              $state.reset()
+              return
             }
 
-            // Set book data
-            self.AllData.BooksJson = _.concat(self.AllData.BooksJson, incomingData)
-            $state.loaded()
+            // This method could be called when we come back to the tab
+            // so check that we have all the data or not
+            if (self.AllData.BooksJson.length >= totalSize) {
+              $state.loaded()
+              $state.complete()
+              return
+            }
 
-            // Update our pointers (start, end, so on
-            self.AllData.totalNumData = response.data.totalFound
+            // Data set is unchanged, continue getting data
+            // save list of user books
+            self.AllData.BooksJson = _.concat(self.AllData.BooksJson, incomingData)
             self.AllData.end = start + length
             self.AllData.dataStart = start + self.AllData.lengthToGet
+            self.AllData.totalNumData = totalSize
+
+            // save to $store
+            this.$store.commit('setAllBooks', self.AllData)
+
+            $state.loaded()
 
             if (self.AllData.end >= self.AllData.totalNumData) {
               $state.complete()
             }
-
-            // save to $store
-            this.$store.commit('setAllBooks', self.AllData)
           })
           .catch(function (error) {
             $state.complete()
@@ -168,7 +175,6 @@
                 Event.$emit('got401')
               }
             } else {
-              console.log('foooooooooo')
               console.log(error)
             }
           })

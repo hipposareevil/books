@@ -10,7 +10,7 @@
       <nav class="navbar is-size-5"  role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
           <a class="navbar-item" href="/">
-            <img src="./assets/library.png">&nbsp;myBooks
+            <img src="./assets/leaningBooks.png">&nbsp;myBooks
           </a>
         </div>
 
@@ -23,6 +23,15 @@
             <!-- home -->
             <a class="navbar-item">
               <router-link tag="div" to="/" exact>
+                <span class="icon is-medium"><i class="fa fa-home"></i></span>
+                <span>Home</span>
+              </router-link>
+            </a>
+
+            <!-- user books -->
+            <a class="navbar-item"
+               v-if="is_authenticated()">
+              <router-link tag="div" to="/shelves" exact>
                 <span class="icon is-medium"><i class="fa fa-wpexplorer"></i></span>
                 <span>My Books</span>
               </router-link>
@@ -30,7 +39,8 @@
 
 
             <!-- /books -->
-            <a class="navbar-item">
+            <a class="navbar-item disabled"
+               v-if="is_authenticated()">
               <router-link tag="span" to="/books" exact>
                 <span class="icon is-large"><i class="fa fa-book"></i></span>
                 <span>All Books</span>
@@ -39,7 +49,8 @@
 
 
             <!-- /authors -->
-            <a class="navbar-item">
+            <a class="navbar-item"
+               v-if="is_authenticated()">
               <router-link tag="span" to="/authors" exact>
                 <span class="icon is-large"><i class="fa fa-grav"></i></span>
                 <span>All Authors</span>
@@ -51,11 +62,11 @@
 
 
           <!-- right side -->
-          <div class="navbar-end">
+          <div class="navbar-end"
+               v-if="is_authenticated('admin')">
 
             <!-- Admin dropdown -->
-            <div class="navbar-item has-dropdown is-hoverable"
-                 v-if="is_authenticated('admin')" >
+            <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link">
                 Admin
               </a>
@@ -185,6 +196,7 @@ export default {
     // register event listeners
     Event.$on('got401', () => this.wasLoggedOut())
     Event.$on('got500', (eventmessage) => this.serverError(eventmessage))
+    Event.$on('clearEverything', () => this.clearEverything())
   },
   methods: {
     /**
@@ -213,6 +225,12 @@ export default {
       this.doLoginModal = true
     },
     /**
+     *
+     */
+    clearEverything () {
+      this.$store.commit('clearEverything')
+    },
+    /*
      * Server sent a 401, so we are logged out
      *
      */

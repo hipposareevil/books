@@ -78,7 +78,7 @@
 
 <script>
   import _ from 'lodash'
-  import Modal from './Modal.vue'
+  import Modal from './AddThingModal.vue'
   import Auth from '../auth'
   import UpdateDb from '../updatedb'
 
