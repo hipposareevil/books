@@ -10,6 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -171,12 +172,14 @@ public class AuthorResource {
   public AuthorResult createAuthor(
     @ApiParam(value = "Author information.", required = false)
     AuthorQuery authorBean,
+    
     @Context SecurityContext context,
+    
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
       ) {
     if (authorBean == null) {
-      throw new WebApplicationException("No data payload received.", Response.Status.BAD_REQUEST);
+      throw new WebApplicationException("No data payload received for creating Author.", Response.Status.BAD_REQUEST);
     }
     
     // START
@@ -190,7 +193,7 @@ public class AuthorResource {
       BeanUtils.copyProperties(authorInDatabase, authorBean);
       
       // Make subjects in DB a CSV string
-      authorInDatabase.setSubjectsAsCsv(convertListToCsv(authorBean.getSubjects()));
+      authorInDatabase.setSubjectsAsCsv(AuthorHelper.convertListToCsv(authorBean.getSubjects()));
 
       // Create the author in the database, 
       // then convert it to a normal bean and return that
@@ -211,23 +214,68 @@ public class AuthorResource {
     }
   }
 
-
-  /**
-   * Helper to convert a list into a csv of those values
+   /**
+   * Update an author in the DB.
    * 
-   * @param values
-   * @return the list of values as a CSV string
+   * @param authorBean
+   *          Author to update
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authorId  ID of author, from the path
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return udpatedAuthor
    */
-  static String convertListToCsv(List<String> values) {
-      String csvString = "";
-      for (String s : values) {
-        csvString += s + ",";
+  @ApiOperation(
+    value="Update an existing author.",
+    notes="Update the author in the database. The 'id' field will be ignored. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+                )
+  @PUT
+  @ApiResponse(code = 409, message = "Duplicate value")
+  @TokenRequired
+  @Path("/{author_id}")
+  public AuthorResult updateAuthor(
+    @ApiParam(value = "Author information.", required = false)
+    AuthorQuery authorBean,
+    
+    @Context SecurityContext context,
+    
+    @ApiParam(value = "ID of author.", required = false) 
+    @PathParam("author_id") 
+    IntParam authorId,
+
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authDummy
+      ) {
+    if (authorBean == null) {
+      throw new WebApplicationException("No data payload received for updating Author.", Response.Status.BAD_REQUEST);
+    }
+    
+    // START
+    verifyAdminUser(context);
+      
+    try {
+      Author updated = this.authorHelper.updateAuthor(authorBean, authorId.get());
+
+      return this.convertToBean(updated);
+    }
+    catch (org.hibernate.exception.ConstraintViolationException e) {
+      String errorMessage = e.getMessage();
+      // check cause/parent
+      if (e.getCause() != null) {
+        errorMessage = e.getCause().getMessage();
       }
-      // trim last comma
-      csvString = csvString.substring(0, csvString.length());
-      return csvString;
+
+      throw new WebApplicationException(errorMessage, 409);
+    }
+    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
+      throw new WebApplicationException("Error in updating database when creating author  " + authorBean + ".", Response.Status.INTERNAL_SERVER_ERROR);
+    }
   }
- 
+  
+
+
   /**
    * Deletes a author by ID
    *
@@ -276,6 +324,8 @@ public class AuthorResource {
   /************************************************************************/
   /** Helper methods **/
   /************************************************************************/
+  
+
   
   /**
    * Convert an Author from the DB into a AuthorResult for return to the caller

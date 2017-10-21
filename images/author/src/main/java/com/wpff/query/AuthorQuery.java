@@ -124,5 +124,29 @@ public class AuthorQuery {
   public void setSubjects(List<String> subjects) {
     this.subjects = subjects;
   }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("AuthorQuery [name=");
+    builder.append(name);
+    builder.append(", birthDate=");
+    builder.append(birthDate);
+    builder.append(", olKey=");
+    builder.append(olKey);
+    builder.append(", imageSmall=");
+    builder.append(imageSmall);
+    builder.append(", imageMedium=");
+    builder.append(imageMedium);
+    builder.append(", imageLarge=");
+    builder.append(imageLarge);
+    builder.append(", subjects=");
+    builder.append(subjects);
+    builder.append("]");
+    return builder.toString();
+  }
   
 }

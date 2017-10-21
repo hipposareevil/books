@@ -1,13 +1,14 @@
 package com.wpff.db;
 
-import com.wpff.core.Author;
+import java.util.List;
+import java.util.Optional;
 
-import io.dropwizard.hibernate.AbstractDAO;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 
-import java.util.List;
-import java.util.Optional;
+import com.wpff.core.Author;
+
+import io.dropwizard.hibernate.AbstractDAO;
 
 
 /**
@@ -50,6 +51,16 @@ public class AuthorDAO extends AbstractDAO<Author> {
     currentSession().delete(author);
   }
 
+  
+  	/**
+   * Update an existing author
+   *
+   * @param author
+   *          Author to update
+   */
+	public void update(Author author) {
+		currentSession().saveOrUpdate(author);
+	}
 
 
   /**

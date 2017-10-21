@@ -155,6 +155,26 @@ public class Author implements Comparable {
     this.olKey = olKey;
   }
 
+  @Override
+  public int compareTo(Object o) {
+    Author other = (Author) o;
+    return Integer.compare(this.id, other.id);
+  }
+
+  /**
+   * @return the subjects
+   */
+  public String getSubjectsAsCsv() {
+    return subjectsAsCsv;
+  }
+
+  /**
+   * @param subjects the subjects to set
+   */
+  public void setSubjectsAsCsv(String subjects) {
+    this.subjectsAsCsv = subjects;
+  }
+
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
@@ -175,28 +195,10 @@ public class Author implements Comparable {
     builder.append(imageLarge);
     builder.append(", olKey=");
     builder.append(olKey);
+    builder.append(", subjectsAsCsv=");
+    builder.append(subjectsAsCsv);
     builder.append("]");
     return builder.toString();
-  }
-
-  @Override
-  public int compareTo(Object o) {
-    Author other = (Author) o;
-    return Integer.compare(this.id, other.id);
-  }
-
-  /**
-   * @return the subjects
-   */
-  public String getSubjectsAsCsv() {
-    return subjectsAsCsv;
-  }
-
-  /**
-   * @param subjects the subjects to set
-   */
-  public void setSubjectsAsCsv(String subjects) {
-    this.subjectsAsCsv = subjects;
   }
 
 

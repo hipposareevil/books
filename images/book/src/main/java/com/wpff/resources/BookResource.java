@@ -15,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -69,7 +70,7 @@ public class BookResource {
    *
    * @param bookId
    *          ID of book
-   * @param authDummy
+   * @param authorizationKey
    *          Dummy authorization string that is solely used for Swagger
    *          description.
    * @return Book
@@ -84,42 +85,42 @@ public class BookResource {
   @UnitOfWork
   @TokenRequired
   public BookResult getBook(
-    @ApiParam(value = "ID of book to retrieve.", required = false)	// 
-    @PathParam("id") 	// 
-    IntParam bookId,	// 
-    @ApiParam(value="Bearer authorization", required=true)	// 
-    @HeaderParam(value="Authorization") 	// 
-    String authDummy	// 
-                        ) {	// 
-    return this.convertToBean(authDummy, findSafely(bookId.get()));	// 
-  }	// 
-	// 
-	// 
-	// 
-  /**	// 
-   * Get list of books.	// 
-   *	// 
-   * @param start	// 
-   *          Start index of data segment	// 
-   * @param segmentSize	// 
-   *          Size of data segment	// 
-   * @param titleQuery	// 
-   *          [optional] Name of book, or partial name, that is used to match	// 
-   *          against the database.	// 
-   * @param idQuery	// 
-   *          [optional] List of book ids.	// 
-   * @param authorIdQuery	// 
-   *          [optional] List of author ids.	// n
-   * @param authDummy
+    @ApiParam(value = "ID of book to retrieve.", required = false)	
+    @PathParam("id") 	
+    IntParam bookId,	
+    @ApiParam(value="Bearer authorization", required=true)	
+    @HeaderParam(value="Authorization") 	
+    String authorizationKey	 
+                        ) {
+     // The authorization string is passed in so we can get the author name 
+      // from the 'author' webservice
+    return this.convertToBean(authorizationKey, findSafely(bookId.get()));	 
+  }	
+  /**	
+   * Get list of books.	
+   *	
+   * @param start	 
+   *          Start index of data segment	
+   * @param segmentSize	 
+   *          Size of data segment	
+   * @param titleQuery	 
+   *          [optional] Name of book, or partial name, that is used to match	
+   *          against the database.	
+   * @param idQuery	 
+   *          [optional] List of book ids.	
+   * @param authorIdQuery	 
+   *          [optional] List of author ids.
+   * @param authorizationKey
    *          Dummy authorization string that is solely used for Swagger
    *          description.
    * @return List of matching Books. When the params are empty, all books will be
    *         returned
    */
-  @ApiOperation(value="Get books via optional 'title' query param or optional 'ids' query param. " + 
-                "The three query params may be used at the same time.",
-                 notes="Returns list of books. When no 'title', 'ids', or 'authorIds' are specified, all books in database are returned. " +
-                "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+  @ApiOperation(
+      value="Get books via optional 'title' query param or optional 'ids' query param. " + 
+            "The three query params may be used at the same time.",
+      notes="Returns list of books. When no 'title', 'ids', or 'authorIds' are specified, all books in database are returned. " +
+            "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
   @UnitOfWork
@@ -143,7 +144,7 @@ public class BookResource {
 		Integer segmentSize,
         
     @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
+    @HeaderParam(value="Authorization") String authorizationKey
                             ) {
     // Start
     
@@ -182,10 +183,12 @@ public class BookResource {
     }
 
     // Convert the set of Books to list of BookResults
+    // The authorization string is passed in so we can get the author name
+    // from the 'author' webservice
     List<BookResult> bookList = bookSet.
         stream().
         sorted().
-        map( x -> this.convertToBean(authDummy, x)).
+        map( x -> this.convertToBean(authorizationKey, x)).
         collect(Collectors.toList());
     
     ResultWrapper<BookResult> result = ResultWrapperUtil.createWrapper(bookList, start, segmentSize);
@@ -201,7 +204,7 @@ public class BookResource {
    *          Book data
    * @param context
    *          security context (INJECTED via TokenFilter)
-   * @param authDummy
+   * @param authorizationKey
    *          Dummy authorization string that is solely used for Swagger
    *          description.
    * @return newly created Book
@@ -221,7 +224,7 @@ public class BookResource {
     BookQuery bookBean,
     @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
-    @HeaderParam(value="Authorization") String authDummy
+    @HeaderParam(value="Authorization") String authorizationKey
                            ) {
     // START
     try {
@@ -251,7 +254,93 @@ public class BookResource {
       // open library url is different too
       BeanUtils.copyProperty(bookInDatabase, "olWorks", bookBean.getOpenlibraryWorkUrl());
       
-      return this.convertToBean(authDummy, bookDAO.create(bookInDatabase));
+     // The authorization string is passed in so we can get the author name 
+      // from the 'author' webservice      
+      return this.convertToBean(authorizationKey, bookDAO.create(bookInDatabase));
+    }
+    catch (org.hibernate.exception.ConstraintViolationException e) {
+      String errorMessage = e.getMessage();
+      // check cause/parent
+      if (e.getCause() != null) {
+        errorMessage = e.getCause().getMessage();
+      }
+
+      throw new WebApplicationException(errorMessage, 409);
+    }
+    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
+      throw new WebApplicationException("Error in updating database when creating book  " + bookBean + ".", Response.Status.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Updates a book in the database
+   *
+   * @param bookBean
+   *          Book data
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param authorizationKey
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return updated Book
+   */
+  @ApiOperation(
+    value = "Updates a book in the database.",
+    notes = "Updats existing book. Requires authentication token in header with key AUTHORIZATION. "
+        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
+    response = Book.class
+                )
+  @PUT
+  @UnitOfWork
+  @TokenRequired
+  @Path("/{book_id}")
+  public BookResult updateBook(
+    @ApiParam(value = "Book information.", required = true)
+    BookQuery bookBean,
+    
+    @ApiParam(value = "ID of book.", required = false) 
+    @PathParam("book_id") 
+    IntParam bookId,
+    
+    @Context SecurityContext context,
+    
+    @ApiParam(value="Bearer authorization", required=true)
+    @HeaderParam(value="Authorization") String authorizationKey
+                           ) {
+    // START
+    try {
+       // Verify context's group is admin.
+      verifyAdminUser(context);
+      
+      // Get existing book
+      Book bookToUpdate = findSafely(bookId.get());        
+      
+      // Only copy over non null values. 
+      // Note we don't override everything
+      copyProperty(bookToUpdate, "year", bookBean.getFirstPublishedYear());
+      copyProperty(bookToUpdate, "title", bookBean.getTitle());
+      copyProperty(bookToUpdate, "description", bookBean.getDescription());
+      copyProperty(bookToUpdate, "olWorks", bookBean.getOpenlibraryWorkUrl());
+      copyProperty(bookToUpdate, "imageSmall", bookBean.getImageSmall());
+      copyProperty(bookToUpdate, "imageMedium", bookBean.getImageMedium());
+      copyProperty(bookToUpdate, "imageLarge", bookBean.getImageLarge());
+
+      if (bookBean.getSubjects() != null) {
+        // the bookBean's subjects is a list, convert it into a CSV string
+        copyProperty(bookToUpdate, "subject", convertListToCsv(bookBean.getSubjects()));
+      }
+
+      if (bookBean.getIsbns() != null) {
+        // the bookBean's isbns is a list, convert it into a CSV string
+        copyProperty(bookToUpdate, "isbn", convertListToCsv(bookBean.getIsbns()));
+      }
+
+      // Update
+      this.bookDAO.update(bookToUpdate);
+      
+      // The authorization string is passed in so we can get the author name 
+      // from the 'author' webservice      
+      return this.convertToBean(authorizationKey, bookToUpdate);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -273,7 +362,7 @@ public class BookResource {
    *
    * @param bookId ID of book
    * @param context security context (INJECTED via TokenFilter)
-   * @param authDummy Dummy authorization string that is solely used for Swagger description.
+   * @param authorizationKey Dummy authorization string that is solely used for Swagger description.
    * @return Response denoting if the operation was successful (202) or failed (404)
    */
   @ApiOperation(
@@ -292,7 +381,7 @@ public class BookResource {
     @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") 
-    String authDummy
+    String authorizationKey
                         ) {
     // Start
     try {
@@ -302,7 +391,6 @@ public class BookResource {
       // Is OK to remove book
       bookDAO.delete(findSafely(bookId.get()));
       return Response.ok().build();
-
     }
     catch (org.hibernate.HibernateException he) {
       throw new NotFoundException("No book by id '" + bookId + "'");
@@ -344,11 +432,12 @@ public class BookResource {
    * @param values
    * @return
    */
-  static String convertListToCsv(List<String> values) {
+  private static String convertListToCsv(List<String> values) {
+    if (values != null) {
       if (values.size() > 20) {
-        values = values.subList(0,  20);
+        values = values.subList(0, 20);
       }
-      
+
       String csvString = "";
       for (String s : values) {
         csvString += s + ",";
@@ -356,11 +445,17 @@ public class BookResource {
       // trim last comma
       csvString = csvString.substring(0, csvString.length());
       return csvString;
+    } else {
+      return "";
+    }
   }
   
   /**
    * Convert a Book from the DB into a BookResult for return to caller
    * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'author'
+   *          web service
    * @param dbBook
    *          Book in DB
    * @return Book bean
@@ -394,7 +489,7 @@ public class BookResource {
       List<String> isbns = Arrays.asList(dbBook.getIsbn().split("\\s*,\\s*"));
       BeanUtils.copyProperty(result, "isbns", isbns);
 
-      // Get author name now
+      // Get author name now via the 'author' webservice
       String authorName = getAuthorName(authString, dbBook.getAuthorId());
       BeanUtils.copyProperty(result, "authorName", authorName);      
     } 
@@ -420,7 +515,6 @@ public class BookResource {
     try {
       // Going to the 'author' web service directly
       String url = "http://author:8080/author/" + authorId;
-      System.out.println("Getting authorname from URL:" + url);
       
       HttpClient client = HttpClientBuilder.create().build();
       HttpGet request = new HttpGet(url);
@@ -492,6 +586,22 @@ public class BookResource {
       throw new WebApplicationException("Must be logged in as a member of the 'admin' user group.", Response.Status.UNAUTHORIZED);
     }
   }
+  
+    /**
+   * Copy non null property
+   * 
+   * @param destination
+   * @param field
+   * @param value
+   * @throws InvocationTargetException 
+   * @throws IllegalAccessException 
+   */
+  private static void copyProperty(Object destination, String field, Object value) 
+      throws IllegalAccessException, InvocationTargetException {
+    if (value != null) {
+      BeanUtils.copyProperty(destination, field, value);
 
+    }
+  }
   
 }

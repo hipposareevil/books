@@ -92,7 +92,7 @@ services:
    # Frontend webpage + js
    frontend:
      container_name: frontend
-     image: books.frontend:prod
+     image: books.frontend:dev
      restart: always
      logging:
        driver: "json-file"
@@ -101,7 +101,6 @@ services:
      networks:
        - booknet
 
-  
    # Gateway-api runs on port 80 internally
    # It also exposes a swagger.yaml file for the 'swagger' container below.
    gateway:
@@ -124,7 +123,7 @@ services:
     container_name: books_db
     image: mysql:latest
     volumes:
-      - "/database/mysql/:/var/lib/mysql"
+      - "./database/mysql/:/var/lib/mysql"
       - "./database/initial/books.sql:/docker-entrypoint-initdb.d/books.sql"
     restart: always
     logging:

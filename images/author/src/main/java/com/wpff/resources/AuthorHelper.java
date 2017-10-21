@@ -1,11 +1,15 @@
 package com.wpff.resources;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import javax.ws.rs.NotFoundException;
 
+import org.apache.commons.beanutils.BeanUtils;
+
 import com.wpff.core.Author;
 import com.wpff.db.AuthorDAO;
+import com.wpff.query.AuthorQuery;
 
 import io.dropwizard.hibernate.UnitOfWork;
 
@@ -13,9 +17,34 @@ public class AuthorHelper {
   
   private final AuthorDAO authorDAO;
 
+  /**
+   * Create new helper
+   * 
+   * @param authorDao
+   *          DAO used by helper
+   */
   public AuthorHelper(AuthorDAO authorDao) {
     this.authorDAO= authorDao;
   }
+  
+  /**
+   * Helper to convert a list into a csv of those values
+   * 
+   * @param values
+   * @return the list of values as a CSV string
+   */
+  static String convertListToCsv(List<String> values) {
+    String csvString = "";
+    if (values != null) {
+      for (String s : values) {
+        csvString += s + ",";
+      }
+      // trim last comma
+      csvString = csvString.substring(0, csvString.length());      
+    }
+    return csvString;
+  }
+ 
 
   /**
    * Look for author by incoming id. If returned Author is null, throw 404.
@@ -64,7 +93,39 @@ public class AuthorHelper {
     System.out.println("Created author: " + author.getId());
     return author;
   }
+  
+  /**
+   * Update an Author in the database
+   * 
+   * @param authorBean
+   *          Author to update in database
+   * @param authorId
+   *          Author's ID
+   * @return Updated author from database
+   * @throws InvocationTargetException
+   * @throws IllegalAccessException
+   */
+  @UnitOfWork
+  Author updateAuthor(AuthorQuery authorBean, int authorId) 
+      throws IllegalAccessException, InvocationTargetException {
+    Author authorToUpdate  = authorDAO.findById(authorId).orElseThrow(() -> new NotFoundException("No author by id " + authorId));
+    
+    // Copy over non null values
+    copyProperty(authorToUpdate, "name", authorBean.getName());
+    copyProperty(authorToUpdate, "birthDate", authorBean.getBirthDate());
+    copyProperty(authorToUpdate, "olKey", authorBean.getOlKey());
+    copyProperty(authorToUpdate, "imageSmall", authorBean.getImageSmall());
+    copyProperty(authorToUpdate, "imageLarge", authorBean.getImageLarge());
+    copyProperty(authorToUpdate, "imageMedium", authorBean.getImageMedium());
+    
+    // Make subjects in DB a CSV string
+    authorToUpdate.setSubjectsAsCsv(convertListToCsv(authorBean.getSubjects()));
+    
+    this.authorDAO.update(authorToUpdate);    
+    return authorToUpdate;
+  }
 
+  
   /**
    * Delete an author by ID
    * 
@@ -75,5 +136,22 @@ public class AuthorHelper {
   void deleteAuthor(int authorId) {
     Author deleteMe = this.findById(authorId);
     this.authorDAO.delete(deleteMe);
+  }
+  
+  
+  /**
+   * Copy non null property
+   * 
+   * @param destination
+   * @param field
+   * @param value
+   * @throws InvocationTargetException 
+   * @throws IllegalAccessException 
+   */
+  private static void copyProperty(Object destination, String field, Object value) 
+      throws IllegalAccessException, InvocationTargetException {
+    if (value != null) {
+      BeanUtils.copyProperty(destination, field, value);
+    }
   }
 }

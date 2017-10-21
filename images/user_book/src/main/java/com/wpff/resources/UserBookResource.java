@@ -178,8 +178,8 @@ public class UserBookResource {
 
 			@ApiParam(value = "List of tags of books to retrieve. Only user books that have these tags will be returned",
 					required = false)
-      @QueryParam("tag") List<String> 
-	    tagQuery,
+      @QueryParam("tag") 
+	    List<String> tagQuery,
 	    
       @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
       @QueryParam("start") 
@@ -355,7 +355,9 @@ public class UserBookResource {
 	@TokenRequired
 	@Path("/{user_id}/{user_book_id}")
 	public FullUserBook updateUserBook(
-	    @Context SecurityContext context, 
+	    @Context 
+	    SecurityContext context,
+	    
 	    @ApiParam(value = "ID of user.",required = false) 
 	    @PathParam("user_id") 
 	    IntParam userId,

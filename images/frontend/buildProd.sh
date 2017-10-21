@@ -6,11 +6,12 @@ imageName="books.frontend:prod"
 # our real directory (so this can be called from outside directories)
 our_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-echo "Building $imageName"
-
 # build dev first
+echo "Building the books.frontend:dev version first"
 ./buildDev.sh
 
+
+echo "Now building $imageName"
 # Run npm run build in container
 docker run -it -v `pwd`/content/mybooks:/scratch books.frontend:dev npm run build
 

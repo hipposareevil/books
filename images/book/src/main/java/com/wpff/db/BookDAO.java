@@ -82,6 +82,15 @@ public class BookDAO extends AbstractDAO<Book> {
   public Book create(Book book) {
     return persist(book);
   }
+  
+  /**
+   * Updates book in DB.
+   *
+   * @param book Book to be updated
+   */
+  public void update(Book book) {
+    currentSession().saveOrUpdate(book);
+  }
 
   /**
    * Delete book from database.

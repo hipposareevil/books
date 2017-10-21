@@ -8,9 +8,9 @@ import java.util.List;
  * thus missing the 'id' that is present in the full BookResult bean.
  */
 public class BookQuery {
-  private int authorId;
+  private Integer authorId;
 
-  private int firstPublishedYear;
+  private Integer firstPublishedYear;
 
   private String title;
 
@@ -38,41 +38,35 @@ public class BookQuery {
 
   private String imageMedium;
 
-  private String imageLarge;  
-
-  
-   ////////////////////////////////////////////
-
-  /**
-   * @return the imageLarge
-   */
-  public String getImageLarge() {
-    return imageLarge;
-  }
-
-  /**
-   * @param imageLarge the imageLarge to set
-   */
-  public void setImageLarge(String imageLarge) {
-    this.imageLarge = imageLarge;
-  }
-
- 
+  private String imageLarge;
 
   /**
    * @return the authorId
    */
-  public int getAuthorId() {
+  public Integer getAuthorId() {
     return authorId;
   }
 
   /**
    * @param authorId the authorId to set
    */
-  public void setAuthorId(int authorId) {
+  public void setAuthorId(Integer authorId) {
     this.authorId = authorId;
   }
 
+  /**
+   * @return the firstPublishedYear
+   */
+  public Integer getFirstPublishedYear() {
+    return firstPublishedYear;
+  }
+
+  /**
+   * @param firstPublishedYear the firstPublishedYear to set
+   */
+  public void setFirstPublishedYear(Integer firstPublishedYear) {
+    this.firstPublishedYear = firstPublishedYear;
+  }
 
   /**
    * @return the title
@@ -102,7 +96,48 @@ public class BookQuery {
     this.isbns = isbns;
   }
 
- 
+  /**
+   * @return the subjects
+   */
+  public List<String> getSubjects() {
+    return subjects;
+  }
+
+  /**
+   * @param subjects the subjects to set
+   */
+  public void setSubjects(List<String> subjects) {
+    this.subjects = subjects;
+  }
+
+  /**
+   * @return the description
+   */
+  public String getDescription() {
+    return description;
+  }
+
+  /**
+   * @param description the description to set
+   */
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  /**
+   * @return the openlibraryWorkUrl
+   */
+  public String getOpenlibraryWorkUrl() {
+    return openlibraryWorkUrl;
+  }
+
+  /**
+   * @param openlibraryWorkUrl the openlibraryWorkUrl to set
+   */
+  public void setOpenlibraryWorkUrl(String openlibraryWorkUrl) {
+    this.openlibraryWorkUrl = openlibraryWorkUrl;
+  }
+
   /**
    * @return the imageSmall
    */
@@ -130,49 +165,20 @@ public class BookQuery {
   public void setImageMedium(String imageMedium) {
     this.imageMedium = imageMedium;
   }
-  
-    /**
-   * @return the description
+
+  /**
+   * @return the imageLarge
    */
-  public String getDescription() {
-    return description;
+  public String getImageLarge() {
+    return imageLarge;
   }
 
   /**
-   * @param description the description to set
+   * @param imageLarge the imageLarge to set
    */
-  public void setDescription(String description) {
-    this.description = description;
+  public void setImageLarge(String imageLarge) {
+    this.imageLarge = imageLarge;
   }
-  
-    /**
-   * @return the subjects
-   */
-  public List<String> getSubjects() {
-    return subjects;
-  }
-
-  /**
-   * @param subjects the subjects to set
-   */
-  public void setSubjects(List<String> subjects) {
-    this.subjects = subjects;
-  }
-  
-    /**
-   * @return the openlibraryWorkUrl
-   */
-  public String getOpenlibraryWorkUrl() {
-    return openlibraryWorkUrl;
-  }
-
-  /**
-   * @param openlibraryWorkUrl the openlibraryWorkUrl to set
-   */
-  public void setOpenlibraryWorkUrl(String openlibraryWorkUrl) {
-    this.openlibraryWorkUrl = openlibraryWorkUrl;
-  }
-
 
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
@@ -182,7 +188,7 @@ public class BookQuery {
     StringBuilder builder = new StringBuilder();
     builder.append("BookQuery [authorId=");
     builder.append(authorId);
-    builder.append(", year=");
+    builder.append(", firstPublishedYear=");
     builder.append(firstPublishedYear);
     builder.append(", title=");
     builder.append(title);
@@ -202,21 +208,7 @@ public class BookQuery {
     builder.append(imageLarge);
     builder.append("]");
     return builder.toString();
-  }
-
-  /**
-   * @return the firstPublishedYear
-   */
-  public int getFirstPublishedYear() {
-    return firstPublishedYear;
-  }
-
-  /**
-   * @param firstPublishedYear the firstPublishedYear to set
-   */
-  public void setFirstPublishedYear(int firstPublishedYear) {
-    this.firstPublishedYear = firstPublishedYear;
-  }
+  }  
 
 
 
