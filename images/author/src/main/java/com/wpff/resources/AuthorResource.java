@@ -20,6 +20,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 // utils
 import org.apache.commons.beanutils.BeanUtils;
@@ -37,6 +39,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 
 
 /**
@@ -71,11 +75,11 @@ public class AuthorResource {
         + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
-  @Path("/{id}")
+  @Path("/{author_id}")
   @TokenRequired
   public AuthorResult getAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = false)
-    @PathParam("id") 
+    @PathParam("author_id") 
     IntParam authorId,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization")
@@ -88,9 +92,9 @@ public class AuthorResource {
   /**
    * Get list authors.
    *
-   * @param start
+   * @param offset
    *          Start index of data segment
-   * @param segmentSize
+   * @param limit
    *          Size of data segment
    * @param authorNameQuery
    *          Name of author, or partial name, that is used to match against the
@@ -114,12 +118,12 @@ public class AuthorResource {
       @QueryParam("name") String authorNameQuery,
     
       @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
-      @QueryParam("start") 
-      Integer start,
+      @QueryParam("offset") 
+      Integer offset,
 
       @ApiParam(value = "size of the returned data segment.", required = false) 
-			@QueryParam("segmentSize") 
-			Integer segmentSize,
+			@QueryParam("limit") 
+			Integer limit,
 
       @ApiParam(value="Bearer authorization", required=true)
       @HeaderParam(value="Authorization") String authDummy
@@ -141,10 +145,10 @@ public class AuthorResource {
         map( x -> this.convertToBean(x)).
         collect(Collectors.toList());
     
-    System.out.println("author.get: start: " + start);
-        System.out.println("author.get: length: " + segmentSize);
+    System.out.println("author.get: start: " + offset);
+        System.out.println("author.get: length: " + limit);
         
-    ResultWrapper<AuthorResult> result = ResultWrapperUtil.createWrapper(authorList, start, segmentSize);
+    ResultWrapper<AuthorResult> result = ResultWrapperUtil.createWrapper(authorList, offset, limit);
     
     return result;
   }
@@ -157,6 +161,8 @@ public class AuthorResource {
    *          Author to add
    * @param context
    *          security context (INJECTED via TokenFilter)
+   * @param uriInfo
+   *          Information about this URI
    * @param authDummy
    *          Dummy authorization string that is solely used for Swagger
    *          description.
@@ -167,13 +173,21 @@ public class AuthorResource {
     notes="Create new author in the database. The 'id' field will be ignored. Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @POST
-  @ApiResponse(code = 409, message = "Duplicate value")
+  @ApiResponses( value = {
+      @ApiResponse(code = 409, message = "Author already exists."),
+      @ApiResponse(code = 200, 
+                   message = "Author created. URI of Author is in the header 'location'.",
+                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created Author")
+                  )
+           })
   @TokenRequired
-  public AuthorResult createAuthor(
+  public Response createAuthor(
     @ApiParam(value = "Author information.", required = false)
     AuthorQuery authorBean,
     
     @Context SecurityContext context,
+    
+    @Context UriInfo uriInfo,
     
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy
@@ -198,7 +212,10 @@ public class AuthorResource {
       // Create the author in the database, 
       // then convert it to a normal bean and return that
       Author created = this.authorHelper.createAuthor(authorInDatabase);
-      return this.convertToBean(created);
+      
+      UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+      builder.path(Integer.toString(created.getId()));
+      return Response.created(builder.build()).build();  
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -297,11 +314,11 @@ public class AuthorResource {
         + "User must be in the 'admin' group."
                 )
   @DELETE
-  @Path("/{id}")
+  @Path("/{author_id}")
   @TokenRequired
   public Response deleteAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = true)
-    @PathParam("id") IntParam authorId,
+    @PathParam("author_id") IntParam authorId,
     @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authDummy

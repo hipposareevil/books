@@ -25,6 +25,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 // utils
 import org.apache.commons.beanutils.BeanUtils;
@@ -49,6 +51,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 
 
 /**
@@ -81,12 +85,12 @@ public class BookResource {
     "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @GET
-  @Path("/{id}")
+  @Path("/{book_id}")
   @UnitOfWork
   @TokenRequired
   public BookResult getBook(
     @ApiParam(value = "ID of book to retrieve.", required = false)	
-    @PathParam("id") 	
+    @PathParam("book_id") 	
     IntParam bookId,	
     @ApiParam(value="Bearer authorization", required=true)	
     @HeaderParam(value="Authorization") 	
@@ -99,9 +103,9 @@ public class BookResource {
   /**	
    * Get list of books.	
    *	
-   * @param start	 
+   * @param offset	 
    *          Start index of data segment	
-   * @param segmentSize	 
+   * @param limit
    *          Size of data segment	
    * @param titleQuery	 
    *          [optional] Name of book, or partial name, that is used to match	
@@ -130,18 +134,18 @@ public class BookResource {
     @QueryParam("title") String titleQuery,
     
     @ApiParam(value = "List of book IDs to retrieve.", required = false)
-    @QueryParam("id") List<Integer> idQuery,
+    @QueryParam("book_id") List<Integer> idQuery,
     
     @ApiParam(value = "List of Author IDs to get books for.", required = false)
-    @QueryParam("authorId") List<Integer> authorIdQuery,
+    @QueryParam("author_id") List<Integer> authorIdQuery,
 
     @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
-    @QueryParam("start") 
-    Integer start,
+    @QueryParam("offset") 
+    Integer offset,
 
     @ApiParam(value = "size of the returned data segment.", required = false) 
-   	@QueryParam("segmentSize") 
-		Integer segmentSize,
+   	@QueryParam("limit") 
+		Integer limit,
         
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authorizationKey
@@ -191,7 +195,7 @@ public class BookResource {
         map( x -> this.convertToBean(authorizationKey, x)).
         collect(Collectors.toList());
     
-    ResultWrapper<BookResult> result = ResultWrapperUtil.createWrapper(bookList, start, segmentSize);
+    ResultWrapper<BookResult> result = ResultWrapperUtil.createWrapper(bookList, offset, limit);
         
     return result;
   }
@@ -204,6 +208,8 @@ public class BookResource {
    *          Book data
    * @param context
    *          security context (INJECTED via TokenFilter)
+   * @param uriInfo
+   *          Information about this URI
    * @param authorizationKey
    *          Dummy authorization string that is solely used for Swagger
    *          description.
@@ -212,17 +218,25 @@ public class BookResource {
   @ApiOperation(
     value = "Create new book.",
     notes = "Creates new book. Requires authentication token in header with key AUTHORIZATION. "
-        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.",
-    response = Book.class
+        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @POST
   @UnitOfWork(transactional = false)
   @TokenRequired
-  @ApiResponse(code = 409, message = "Duplicate value")
-  public BookResult createBook(
+  @ApiResponses( value = {
+      @ApiResponse(code = 409, message = "Book already exists."),
+      @ApiResponse(code = 200, 
+                   message = "Book created. URI of Book is in the header 'location'.",
+                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created Book")
+                  )
+           })  
+  public Response createBook(
     @ApiParam(value = "Book information.", required = true)
     BookQuery bookBean,
+    
     @Context SecurityContext context,
+    @Context UriInfo uriInfo,
+    
     @ApiParam(value="Bearer authorization", required=true)
     @HeaderParam(value="Authorization") String authorizationKey
                            ) {
@@ -254,9 +268,13 @@ public class BookResource {
       // open library url is different too
       BeanUtils.copyProperty(bookInDatabase, "olWorks", bookBean.getOpenlibraryWorkUrl());
       
-     // The authorization string is passed in so we can get the author name 
+      // The authorization string is passed in so we can get the author name 
       // from the 'author' webservice      
-      return this.convertToBean(authorizationKey, bookDAO.create(bookInDatabase));
+      Book created = bookDAO.create(bookInDatabase);
+      
+      UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+      builder.path(Integer.toString(created.getId()));
+      return Response.created(builder.build()).build();  
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();
@@ -277,6 +295,8 @@ public class BookResource {
    *
    * @param bookBean
    *          Book data
+   * @param bookId
+   *          ID of book to be updated
    * @param context
    *          security context (INJECTED via TokenFilter)
    * @param authorizationKey
@@ -371,12 +391,12 @@ public class BookResource {
         + " Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
                 )
   @DELETE
-  @Path("/{id}")
+  @Path("/{book_id}")
   @UnitOfWork
   @TokenRequired
   public Response deleteBook(
     @ApiParam(value = "ID of book to retrieve.", required = true)
-    @PathParam("id") 
+    @PathParam("book_id") 
     IntParam bookId,
     @Context SecurityContext context,
     @ApiParam(value="Bearer authorization", required=true)

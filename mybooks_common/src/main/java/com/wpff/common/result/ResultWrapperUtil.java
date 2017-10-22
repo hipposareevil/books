@@ -8,6 +8,8 @@ import java.util.List;
  */
 public class ResultWrapperUtil {
   
+  public static int DEFAULT_OFFSET = 20;
+  
   /**
    * Create a wrapper around a list of data. This will chop the incoming data
    * into the appropriate segment determined by the start and length of segment parameters.
@@ -24,14 +26,14 @@ public class ResultWrapperUtil {
       Integer whereToStart, 
 	    Integer lengthOfSegment) {
     ResultWrapper<Q> wrapper = new ResultWrapper<>();
-    System.out.println("version 2");
+    
     // Check params and create defaults
     if (whereToStart == null) {
       whereToStart = 0;
     }
     if (lengthOfSegment == null) {
       // make the segment be the full data
-      lengthOfSegment = -1;
+      lengthOfSegment = DEFAULT_OFFSET;
     }
 
     // Verify whereToStart
@@ -50,9 +52,9 @@ public class ResultWrapperUtil {
     List<Q> newData = data.subList(whereToStart, whereToEnd);
 
     wrapper.setData(newData);
-    wrapper.setLength(newData.size());
-    wrapper.setStart(whereToStart);
-    wrapper.setTotalFound(data.size());
+    wrapper.setLimit(newData.size());
+    wrapper.setOffset(whereToStart);
+    wrapper.setTotal(data.size());
 
     return wrapper;
   }

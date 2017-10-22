@@ -65,13 +65,13 @@ public class BookQueryController<T> {
 			   dataType = "string", 
 			   paramType = "query"),
 	    @ApiImplicitParam(
-	       name = "start", 
+	       name = "offset", 
 	       value = "Where to start the returned data segment from the full result",
 	       required = false,
 			   dataType = "int", 
 			   paramType = "query"),
 	     @ApiImplicitParam(
-	       name = "segmentSize", 
+	       name = "limit", 
 	       value = "Size of the returned data segment.",
 	       required = false,
 			   dataType = "int",
@@ -81,8 +81,8 @@ public class BookQueryController<T> {
 	@RequestMapping(method = RequestMethod.GET, path = "/author", produces = "application/json")	
 	public ResultWrapper<QueryAuthorResult> queryForAuthor(
 	    @RequestParam(value = "author") String authorQuery,
-  	    @RequestParam(value = "start", required=false) Integer start,
-  	    @RequestParam(value = "segmentSize", required=false) Integer segmentSize
+  	    @RequestParam(value = "offset", required=false) Integer offset,
+  	    @RequestParam(value = "limit", required=false) Integer limit
 	    )
 			throws UnsupportedEncodingException, IllegalAccessException, InvocationTargetException 
 	{
@@ -102,7 +102,7 @@ public class BookQueryController<T> {
         collect(Collectors.toList());
     
     // create wrapper
-    ResultWrapper<QueryAuthorResult> results = ResultWrapperUtil.createWrapper(authorList, start, segmentSize);
+    ResultWrapper<QueryAuthorResult> results = ResultWrapperUtil.createWrapper(authorList, offset, limit);
         
     return results;
 	}
@@ -133,13 +133,13 @@ public class BookQueryController<T> {
     @ApiImplicitParam(name = "isbn", value = "Book ISBN", required = false,
                         dataType = "string", paramType = "query"),
    @ApiImplicitParam(
-	       name = "start", 
+	       name = "offset", 
 	       value = "Where to start the returned data segment from the full result",
 	       required = false,
 			   dataType = "int", 
 			   paramType = "query"),
 	     @ApiImplicitParam(
-	       name = "segmentSize", 
+	       name = "limit", 
 	       value = "Size of the returned data segment.",
 	       required = false,
 			   dataType = "int",
@@ -150,11 +150,10 @@ public class BookQueryController<T> {
     @RequestParam(value = "author", required=false) String author, 
     @RequestParam(value = "title", required=false) String title,
     @RequestParam(value = "isbn", required=false) String isbn,
-    @RequestParam(value = "start", required=false) Integer start, 
-  	  @RequestParam(value = "segmentSize", required=false) Integer segmentSize 
+    @RequestParam(value = "offset", required=false) Integer offset, 
+  	  @RequestParam(value = "limit", required=false) Integer limit
     ) throws IOException {
-	  System.out.println("Got query for titles: " + author + ":" + title + ":" + isbn);
-		// Begin
+	  		// Begin
 		List<OpenLibraryTitle> titles = OpenLibraryHelper.queryForTitles(author, title, isbn);
 
     // Convert
@@ -168,7 +167,7 @@ public class BookQueryController<T> {
     Collections.sort(bookList);
     
   // create wrapper
-    ResultWrapper<QueryTitleResult> results = ResultWrapperUtil.createWrapper(bookList, start, segmentSize);
+    ResultWrapper<QueryTitleResult> results = ResultWrapperUtil.createWrapper(bookList, offset, limit);
         
     return results;
 	}

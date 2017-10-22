@@ -13,10 +13,10 @@
                 >
     </ViewHeader>
 
-    <authorslist v-if="ViewState.viewAsList" 
-                 :authors="authorList"></authorslist>
-    <authorsgrid v-else 
-                 :authors="authorList"></authorsgrid>
+    <AuthorsList v-if="ViewState.viewAsList" 
+                 :authors="authorList"></AuthorsList>
+    <AuthorsGrid v-else 
+                 :authors="authorList"></AuthorsGrid>
 
 
     <infinite-loading @infinite="infiniteHandler">
@@ -35,8 +35,8 @@
 
 <script>
   import Auth from '../../auth'
-  import authorslist from './AuthorsAsList.vue'
-  import authorsgrid from './AuthorsAsGrid.vue'
+  import AuthorsList from './AuthorsAsList.vue'
+  import AuthorsGrid from './AuthorsAsGrid.vue'
   import ViewHeader from '../ViewHeader.vue'
   import InfiniteLoading from 'vue-infinite-loading'
   import _ from 'lodash'
@@ -46,7 +46,7 @@
   */
   export default {
     // Components we depend on
-    components: { authorslist, authorsgrid, ViewHeader, InfiniteLoading },
+    components: { AuthorsList, AuthorsGrid, ViewHeader, InfiniteLoading },
     // Data for this component
     data () {
       return {
@@ -111,13 +111,24 @@
         let self = this
 
         const authString = Auth.getAuthHeader()
-        this.$axios.get('/author', { headers: { Authorization: authString }, params: { start: self.AllData.dataStart, segmentSize: self.AllData.lengthToGet } })
+        let params = {
+          offset: self.AllData.dataStart,
+          limit: self.AllData.lengthToGet
+        }
+        let url = '/author'
+
+        this.$axios.get(url, {
+          headers: { Authorization: authString },
+          params: params })
           .then((response) => {
+            // Get data segment information
             let incomingData = response.data.data
-            let start = response.data.start
-            let length = response.data.length
+            // start of data inside total set
+            let start = response.data.offset
+            // length of data in this response
+            let length = response.data.limit
             // Total # of datum
-            let totalSize = response.data.totalFound
+            let totalSize = response.data.total
 
             // Has the dataset size changed?
             if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {
@@ -142,9 +153,6 @@
             // Data set is unchanged, continue getting data
 
             // save author data
-            self.AllData.AuthorsJson = _.concat(self.AllData.AuthorsJson, incomingData)
-
-            // save list of authors
             self.AllData.AuthorsJson = _.concat(self.AllData.AuthorsJson, incomingData)
             self.AllData.end = start + length
             self.AllData.dataStart = start + self.AllData.lengthToGet
@@ -201,6 +209,8 @@
       authorList: function () {
         let result = this.AllData.AuthorsJson
         this.lengthOfViewableAuthors = result.length
+
+        console.log('authorList. length ' + result.length)
 
         if (!this.filterAuthorString) {
           return result

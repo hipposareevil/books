@@ -168,17 +168,25 @@
        */
       infiniteHandler ($state) {
         let self = this
-
-        let url = '/user_book/' + Auth.user.id
         const authString = Auth.getAuthHeader()
-        this.$axios.get(url, { headers: { Authorization: authString }, params: { start: self.AllData.dataStart, segmentSize: self.AllData.lengthToGet } })
+        let params = {
+          offset: self.AllData.dataStart,
+          limit: self.AllData.lengthToGet
+        }
+        let url = '/user_book/' + Auth.user.id
+
+        this.$axios.get(url, {
+          headers: { Authorization: authString },
+          params: params })
           .then((response) => {
             // Get data segment information
             let incomingData = response.data.data
-            let start = response.data.start
-            let length = response.data.length
+            // start of data inside total set
+            let start = response.data.offset
+            // length of data in this response
+            let length = response.data.limit
             // Total # of datum
-            let totalSize = response.data.totalFound
+            let totalSize = response.data.total
 
             // Has the dataset size changed?
             if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {

@@ -136,7 +136,7 @@
         const authString = Auth.getAuthHeader()
         let self = this
         this.authorData = {}
-        this.$axios.get('/book?authorId=' + this.authorId, { headers: { Authorization: authString } })
+        this.$axios.get('/book?author_id=' + this.authorId, { headers: { Authorization: authString } })
           .then((response) => {
             self.bookData = response.data.data
           })

@@ -18,6 +18,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 // utils
 import org.apache.commons.beanutils.BeanUtils;
@@ -36,6 +38,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 // Jedis
 import redis.clients.jedis.Jedis;
 
@@ -66,9 +70,9 @@ public class TagResource {
 	/**
    * Return all tags in the database
    *
-   * @param start
+   * @param offset
    *          Start index of data segment
-   * @param segmentSize
+   * @param limit
    *          Size of data segment
    * @param context
    *          security context (INJECTED via TokenFilter)
@@ -86,12 +90,12 @@ public class TagResource {
 	@TokenRequired
 	public ResultWrapper<Tag> getTags(
 	    @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
-			@QueryParam("start") 
-			Integer start,
+			@QueryParam("offset") 
+			Integer offset,
 
 	    @ApiParam(value = "size of the returned data segment.", required = false) 
-			@QueryParam("segmentSize") 
-			Integer segmentSize,
+			@QueryParam("limit") 
+			Integer limit,
 
 			@Context 
 			SecurityContext context,
@@ -101,11 +105,8 @@ public class TagResource {
 	    String authDummy) {
 	  // Start
 		List<Tag> tags = tagDAO.findAll();
-
-		System.out.println("Get tags.  start: " + start);
-		System.out.println("Get tags.  size: " + segmentSize);
-		
-		ResultWrapper<Tag> result = ResultWrapperUtil.createWrapper(tags, start, segmentSize);
+	
+		ResultWrapper<Tag> result = ResultWrapperUtil.createWrapper(tags, offset, limit);
 		return result;
 	}
 
@@ -126,13 +127,13 @@ public class TagResource {
 	    notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
 	    )
 	@GET
-	@Path("/{id}")
+	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
 	public Tag getTag(
 			@Context SecurityContext context,
 			@ApiParam(value = "ID of tag to retrieve.", required = false) 
-			@PathParam("id") 
+			@PathParam("tag_id") 
 			IntParam tagId,
 			
 			@ApiParam(value = "Bearer authorization", required = true) 
@@ -162,12 +163,12 @@ public class TagResource {
 	        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. "
 	    )
 	@DELETE
-	@Path("/{id}")
+	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
 	public Response delete(
 			@ApiParam(value = "Name of tag to delete.", required = true) 
-			@PathParam("id") 
+			@PathParam("tag_id") 
 			Integer tagId,
 			
 			@Context SecurityContext context,
@@ -207,11 +208,11 @@ public class TagResource {
 	        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin' user. "
 	    )
 	@PUT
-	@Path("/{id}")
+	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
 	public Response update(
-			@PathParam("id") 
+			@PathParam("tag_id") 
 			Integer tagId,
 			PostTag tagBean,
 			@Context SecurityContext context,
@@ -260,6 +261,8 @@ public class TagResource {
 	 *            Tag to create in the database
 	 * @param jedis
 	 *            Jedis instance used to store token data. (INJECTED)
+   * @param uriInfo
+   *          Information about this URI	
 	 * @param authDummy
 	 *            Dummy authorization string that is solely used for Swagger
 	 *            description.
@@ -268,16 +271,24 @@ public class TagResource {
 	@ApiOperation(
 	    value = "Create new tag", 
 	    notes = "Create new tag in database. Requires authentication token in header with key AUTHORIZATION. "
-	        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.", response = Tag.class
+	        + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
 	        )
-	@ApiResponse(code = 409, message = "Duplicate tag")
+	@ApiResponses( value = {
+      @ApiResponse(code = 409, message = "Tag already exists."),
+      @ApiResponse(code = 200, 
+                   message = "Tag created. URI of Tag is in the header 'location'.",
+                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created Tag")
+                  )
+           })
 	@POST
 	@UnitOfWork
 	@TokenRequired
-	public Tag createTag(
+	public Response createTag(
 			@ApiParam(value = "Tag information.", required = true) 
 			PostTag tagBean,
 			@Context Jedis jedis,
+      @Context UriInfo uriInfo,
+    
 			@ApiParam(value = "Bearer authorization", required = true) 
 			@HeaderParam(value = "Authorization") 
 			String authDummy) {
@@ -302,7 +313,11 @@ public class TagResource {
 		}
 
 		// No existing tag, go ahead and create
-		return this.tagDAO.create(transientTag);
+		Tag newTag = this.tagDAO.create(transientTag);
+
+    UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+    builder.path(Integer.toString(newTag.getId()));
+    return Response.created(builder.build()).build();
 	}
 
 	/****************************************************************

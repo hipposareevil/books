@@ -8,19 +8,19 @@ our_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # build dev first
 echo "Building the books.frontend:dev version first"
-./buildDev.sh
+$our_directory/buildDev.sh
 
 
 echo "Now building $imageName"
 # Run npm run build in container
-docker run -it -v `pwd`/content/mybooks:/scratch books.frontend:dev npm run build
+docker run -it -v $our_directory/content/mybooks:/scratch books.frontend:dev npm run build
 
 # now content/mybooks/dist is new
 
 thedate=$(date)
 echo "$thedate" > ${our_directory}/content/mybooks/dist/build.time
 
-docker build -f Dockerfile.prod -t $imageName $our_directory
+docker build -f ${our_directory}/Dockerfile.prod -t $imageName $our_directory
 
 echo ""
 echo "Built $imageName"

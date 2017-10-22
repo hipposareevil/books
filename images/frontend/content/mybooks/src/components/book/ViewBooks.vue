@@ -13,11 +13,11 @@
                 >
     </ViewHeader>
 
-    <!-- when 'books' changes, a watcher in bookslist and booksgrid updates their view -->
-    <bookslist v-if="ViewState.viewAsList"
-               :books="bookList"></bookslist>
-    <booksgrid v-else
-               :books="bookList"></booksgrid>
+    <!-- when 'books' changes, a watcher in BooksAsList and BooksAsGrid updates their view -->
+    <BooksAsList v-if="ViewState.viewAsList"
+               :books="bookList"></BooksAsList>
+    <BooksAsGrid v-else
+               :books="bookList"></BooksAsGrid>
 
     <infinite-loading @infinite="infiniteHandler">
       <span slot="no-more">
@@ -41,8 +41,8 @@
 
 <script>
   import Auth from '../../auth'
-  import bookslist from './BooksAsList.vue'
-  import booksgrid from './BooksAsGrid.vue'
+  import BooksAsList from './BooksAsList.vue'
+  import BooksAsGrid from './BooksAsGrid.vue'
   import ViewHeader from '../ViewHeader.vue'
   import InfiniteLoading from 'vue-infinite-loading'
   import _ from 'lodash'
@@ -52,7 +52,7 @@
    */
   export default {
     // Components we depend on
-    components: { bookslist, booksgrid, ViewHeader, InfiniteLoading },
+    components: { BooksAsList, BooksAsGrid, ViewHeader, InfiniteLoading },
     // Data for this component
     data () {
       return {
@@ -122,14 +122,24 @@
         let self = this
 
         const authString = Auth.getAuthHeader()
-        this.$axios.get('/book', { headers: { Authorization: authString }, params: { start: self.AllData.dataStart, segmentSize: self.AllData.lengthToGet } })
+        let params = {
+          offset: self.AllData.dataStart,
+          limit: self.AllData.lengthToGet
+        }
+        let url = '/book'
+
+        this.$axios.get(url, {
+          headers: { Authorization: authString },
+          params: params })
           .then((response) => {
             // Get data segment information
             let incomingData = response.data.data
-            let start = response.data.start
-            let length = response.data.length
+            // start of data inside total set
+            let start = response.data.offset
+            // length of data in this response
+            let length = response.data.limit
             // Total # of datum
-            let totalSize = response.data.totalFound
+            let totalSize = response.data.total
 
             // Has the dataset size changed?
             if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {

@@ -22,6 +22,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
@@ -39,6 +41,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 
 /**
  * Resource at /user_book that manages user's books
@@ -89,9 +92,14 @@ public class UserBookResource {
      	@PathParam("user_id") 
 	    IntParam userId,
 
-			@ApiParam(value = "ID of userBook.", required = false) @PathParam("user_book_id") IntParam userBookId,
+			@ApiParam(value = "ID of userBook.", required = false) 
+	    @PathParam("user_book_id") 
+	    IntParam userBookId,
 
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+			@ApiParam(value = "Bearer authorization", required = true) 
+	    @HeaderParam(value = "Authorization") 
+	    String authDummy) 
+	{
 		// Start
 
 		// Verify the username matches the userid or is 'admin'
@@ -155,9 +163,9 @@ public class UserBookResource {
 	 *            ID of user
 	 * @param tagQuery
 	 *            [optional] List of tags of books.
-   * @param start
+   * @param offset
    *          Start index of data segment
-   * @param segmentSize
+   * @param limit
    *          Size of data segment
 	 * @param authDummy
 	 *            Dummy authorization string that is solely used for Swagger
@@ -181,14 +189,18 @@ public class UserBookResource {
       @QueryParam("tag") 
 	    List<String> tagQuery,
 	    
+			@ApiParam(value = "",
+					required = false)
+      @QueryParam("book_id") 
+	    Integer bookId,
+	    
       @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
-      @QueryParam("start") 
-      Integer start,
+      @QueryParam("offset") 
+      Integer offset,
 
       @ApiParam(value = "size of the returned data segment.", required = false) 
-			@QueryParam("segmentSize") 
-			Integer segmentSize,
-	    
+			@QueryParam("limit") 
+			Integer limit,
 
 			@ApiParam(value = "Bearer authorization", required = true) 
 	    @HeaderParam(value = "Authorization") 
@@ -208,7 +220,7 @@ public class UserBookResource {
             Collectors.toList());
       }
 
-      ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(userBooks, start, segmentSize);
+      ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(userBooks, offset, limit);
       return result;
 
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
@@ -222,31 +234,42 @@ public class UserBookResource {
 	
 
 	/**
-	 * Create a userbook in the database. This requires an authorization token to be
-	 * present in the headers.
-	 *
-	 * @param context
-	 *            security context (INJECTED via TokenFilter)
-	 * @param userBookBean
-	 *            UserBook to create in the database
-	 * @param userId
-	 *            ID of user
-	 * @param authDummy
-	 *            Dummy authorization string that is solely used for Swagger
-	 *            description.
-	 * @return The newly created userbook
-	 */
+   * Create a userbook in the database. This requires an authorization token to be
+   * present in the headers.
+   *
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param uriInfo
+   *          Information about this URI
+   * @param userBookBean
+   *          UserBook to create in the database
+   * @param userId
+   *          ID of user
+   * @param authDummy
+   *          Dummy authorization string that is solely used for Swagger
+   *          description.
+   * @return The newly created userbook
+   */
 	@ApiOperation(value = "Create new userbook",
 			notes = "Create new userbook in database. Requires authentication token in header with key AUTHORIZATION. "
 			    + "Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
 	@ApiResponses(value = { 
 	    @ApiResponse(code = 409, message = "Userbook already exists in database."), 
-	    @ApiResponse(code = 200, response = FullUserBook.class, message = "Userbook successfully added.") })
+	    @ApiResponse(code = 200, 
+	       message = "Userbook created. URI of Userbook is in the header 'location'.",
+                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created Userbook")
+	                )  
+	    })
 	@POST
 	@TokenRequired
 	@Path("/{user_id}")
-	public FullUserBook createUserBook(@Context SecurityContext context, @ApiParam(value = "ID of user.",
-			required = false) @PathParam("user_id") IntParam userId,
+	public Response createUserBook(
+	    @Context SecurityContext context, 
+	    @Context UriInfo uriInfo,
+	    
+	    @ApiParam(value = "ID of user.",
+			required = false) @PathParam("user_id") 
+	    IntParam userId,
 
 			@ApiParam(value = "User Book information.", required = true) PostUserBook userBookBean,
 			
@@ -320,7 +343,11 @@ public class UserBookResource {
 
 			// Copy values into new 'UserBook' class
 			FullUserBook userBookToReturn = this.ubHelper.getUserBookById(newUserBook.getUserBookId());
-			return userBookToReturn;
+					
+			  UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+      builder.path(Integer.toString(userBookToReturn.getUserBookId()));
+      return Response.created(builder.build()).build();  
+			
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
 			throw new WebApplicationException(
 					"Error in updating database when creating user_book",
