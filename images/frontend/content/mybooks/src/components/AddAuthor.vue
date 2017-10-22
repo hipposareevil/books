@@ -40,24 +40,73 @@
           </div>
         </div>
       </div>
-
     </nav>
 
-    <div style="text-align: center;">
-    <ul>
-      <li v-for="(current, index) in authorJson">
-        <a @click="clickOnAuthor(current)">        
-          <span class="icon is-small"><i class="fa fa-user"></i></span>
-          <div class="tooltip">
-            <span class="tooltiptext" v-html="makeHoverData(current)"></span>
-            {{ current.name }} 
-          </div>
-        </a>
-      </li>
-    </ul>
-    </div>
-    <br>
-    
+    <!-- List of authors -->
+
+    <div class="columns">
+      <!-- left side column -->
+      <div class="column is-half"
+           style="border-right: solid lightgray 1px;">
+
+        <h2 class="title is-4">
+          <span style="border-bottom: solid gray 1px;">
+            Existing Authors
+          </span>
+        </h2>
+
+        <!-- list of existing authors -->
+        <ul>
+          <li v-for="(current, index) in existingAuthors">
+            <a class="tooltip"
+              style="min-width: 15em; padding-bottom: 1em; cursor: default;">
+              {{ current.name }} 
+              <span class="tooltiptext lefthover"
+                    v-html="makeHoverData(current)"></span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+
+      <!-- right side column -->
+      <div class="column is-one-half"
+           style="">
+        <h2 class="title is-4">
+          <span style="border-bottom: solid gray 1px;">
+            Author to Add
+          </span>
+        </h2>
+
+        <!-- list of queried authors -->
+        <ul>
+          <li v-for="(current, index) in authorJson"
+              style="padding-bottom: 1em;">
+            <a style="cursor: default">
+              <div class="tooltip">
+
+                <button class="button is-info is-small"
+                        @click="clickOnAuthor(current)">
+                  Add to database
+                </button>
+
+                <span style="margin-left: 1em;">
+                  {{ current.name }}
+                </span>
+
+                <span class="tooltiptext"
+                      v-html="makeHoverData(current)"></span>
+
+              </div>
+            </a>
+          </li>
+        </ul>
+
+      </div> <!-- end right column -->
+
+    </div> <!-- end columns -->
+
+
     <!-- longer error message to user -->
     <article v-if="errorMessage"
              class="main-width message is-danger">
@@ -88,6 +137,8 @@
       return {
         // currently chosen author
         currentAuthor: {},
+        // authors from db
+        existingAuthors: {},
         // author JSON data
         authorJson: {},
         // input name
@@ -119,13 +170,16 @@
        *
        */
       search () {
-        console.log('AddAuthor.search called')
         let self = this
+        const authString = Auth.getAuthHeader()
+
+        // Get author from query
+        this.authorJson = {}
         this.loading = true
         this.$axios.get('/query/author?author=' + this.forminput.name + '')
           .then((response) => {
-            this.authorJson = response.data.data
-            this.loading = false
+            self.authorJson = response.data.data
+            self.loading = false
           })
         .catch(function (error) {
           self.loading = false
@@ -135,6 +189,21 @@
             console.log(error)
           }
         })
+
+        // Get books from database
+        this.existingAuthors = {}
+        let url = '/author?name=' + this.forminput.name
+        this.$axios.get(url, { headers: { Authorization: authString } })
+          .then((response) => {
+            self.existingAuthors = response.data.data
+          })
+          .catch(function (error) {
+            if (error.response.status === 401) {
+              Event.$emit('got401')
+            } else {
+              console.log(error)
+            }
+          })
       },
       /**
        * Clear the form inputs
@@ -255,11 +324,14 @@
   animation-duration: 3s;
 }
 
+.tooltip:hover {
+  background-color: rgb(245,245,245)
+}
+
 /* Tooltip container */
 .tooltip {
     position: relative;
     display: inline-block;
-    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 
 /* Tooltip text */

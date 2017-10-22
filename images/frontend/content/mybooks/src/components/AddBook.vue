@@ -23,7 +23,6 @@
               <input class="input"
                      v-model="forminput.authorName"
                      type="text"
-                     v-on:input="debouncedSearch"
                      placeholder="Author name">
             </p>
             <p class="control">
@@ -61,27 +60,72 @@
         </div>
       </div>
 
-      <!-- Right side -->
-      <!--
-          <div class="level-right">
-            <p class="level-item"><strong>Count:</strong></p>
-            <p class="level-item">{{ count }}</p>
-          </div>
-          -->
     </nav>
 
-    <div style="text-align: center;">
-      <ul>
-        <li v-for="(current, index) in bookJson">
-          <a @click="clickOnBook(current)">
-            <div class="tooltip">
-              <span class="tooltiptext" v-html="makeHoverData(current)"></span>
+    <br>
+    <!-- List of books -->
+
+    <div class="columns">
+      <!-- left side column -->
+      <div class="column is-half"
+           style="border-right: solid lightgray 1px;">
+
+        <h2 class="title is-4">
+          <span style="border-bottom: solid gray 1px;">
+            Existing Books
+          </span>
+        </h2>
+
+        <!-- list of existing books -->
+        <ul>
+          <li v-for="(current, index) in existingBooks">
+            <a class="tooltip"
+              style="min-width: 15em; padding-bottom: 1em; cursor: default;">
               {{ current.title }}
-            </div>
-          </a>
-        </li>
-      </ul>
-    </div>
+              <span class="tooltiptext lefthover"
+                    v-html="makeHoverData(current)"></span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+
+      <!-- right side column -->
+      <div class="column is-one-half"
+           style="">
+        <h2 class="title is-4">
+          <span style="border-bottom: solid gray 1px;">
+            Books to Add
+          </span>
+        </h2>
+
+        <!-- list of queried books -->
+        <ul>
+          <li v-for="(current, index) in bookJson"
+              style="padding-bottom: 1em;">
+            <a style="cursor: default">
+              <div class="tooltip">
+
+                <button class="button is-info is-small"
+                        @click="clickOnBook(current)">
+                  Add to database
+                </button>
+
+                <span style="margin-left: 1em;">
+                  {{ current.title }}
+                </span>
+
+                <span class="tooltiptext"
+                      v-html="makeHoverData(current)"></span>
+
+              </div>
+            </a>
+          </li>
+        </ul>
+
+      </div> <!-- end right column -->
+
+    </div> <!-- end columns -->
 
     <!-- longer error message to user -->
     <article v-if="errorMessage"
@@ -110,7 +154,13 @@
   import UpdateDb from '../updatedb'
 
   export default {
+    /**
+     * Components used
+     */
     components: { Message, Modal },
+    /**
+     * Data for AddBook
+     */
     data () {
       return {
         // Currently chosen book
@@ -119,6 +169,8 @@
         userMessage: '',
         // book JSON data
         bookJson: {},
+        // books from db
+        existingBooks: {},
         // Form inputs
         forminput: {
           title: '',
@@ -154,6 +206,7 @@
         this.forminput.isbn = ''
         this.showmodal = false
         this.bookJson = {}
+        this.existingBooks = {}
       },
       /**
        * Save was called via the popup modal.
@@ -196,6 +249,9 @@
        */
       search () {
         let self = this
+        const authString = Auth.getAuthHeader()
+
+        // Get books from query
         this.bookJson = {}
         this.loading = true
         this.$axios.get('/query/book?author=' + this.forminput.authorName +
@@ -207,6 +263,21 @@
           })
         .catch(function (error) {
           self.loading = false
+          if (error.response.status === 401) {
+            Event.$emit('got401')
+          } else {
+            console.log(error)
+          }
+        })
+
+        // Get books from database
+        this.existingBooks = {}
+        let url = '/book?title=' + this.forminput.title
+        this.$axios.get(url, { headers: { Authorization: authString } })
+          .then((response) => {
+            this.existingBooks = response.data.data
+          })
+        .catch(function (error) {
           if (error.response.status === 401) {
             Event.$emit('got401')
           } else {
@@ -278,6 +349,9 @@
 </script> 
 
 <style>
+.main-width {
+  width: 95%
+}
 
 .fade-enter-active, .fade-leave-active {
   transition: opacity 5s
@@ -294,7 +368,10 @@
 .tooltip {
     position: relative;
     display: inline-block;
-    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+.tooltip:hover {
+  background-color: rgb(245,245,245)
 }
 
 /* Tooltip text */
@@ -306,8 +383,7 @@
     text-align: center;
     padding: 5px 0;
     border-radius: 6px;
- 
-    /* Position the tooltip text - see examples below! */
+
     position: absolute;
     z-index: 1;
 }
@@ -319,9 +395,18 @@
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext {
     top: -25px;
-    left: 120%;
+    left: 125%;
     visibility: visible;
 }
 
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    top: -80px;
+    left: 125%;
+    visibility: visible;
+}
 
+.tooltip:hover .lefthover {
+    left: 100%;
+}
 </style>

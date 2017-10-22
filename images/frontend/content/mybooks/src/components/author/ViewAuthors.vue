@@ -210,8 +210,6 @@
         let result = this.AllData.AuthorsJson
         this.lengthOfViewableAuthors = result.length
 
-        console.log('authorList. length ' + result.length)
-
         if (!this.filterAuthorString) {
           return result
         }
