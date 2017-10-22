@@ -60,7 +60,7 @@ public class PostUserBook {
 
 	/**
 	 * May return null to signal no tags
-	 * @return
+	 * @return list of tags
 	 */
 	public List<String> getTags() {
 	  return this.tags;

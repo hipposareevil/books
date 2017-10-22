@@ -1,5 +1,8 @@
 package com.wpff.resources;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +17,12 @@ import javax.ws.rs.core.SecurityContext;
 
 // utils
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.FullUserBook;
 import com.wpff.core.PostUserBook;
@@ -122,12 +130,15 @@ public class UserBookHelper {
 	/**
 	 * Get list of UserBooks for the requested User id
 	 * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
 	 * @param userId
 	 *            ID of user to get books for
 	 * @return List of UserBooks
 	 */
 	@UnitOfWork
-	List<FullUserBook> getUserBooksForUser(int userId) throws IllegalAccessException, InvocationTargetException {
+	List<FullUserBook> getUserBooksForUser(String authString,int userId) throws IllegalAccessException, InvocationTargetException {
 		List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
 
 		// Get list of books in db
@@ -142,6 +153,10 @@ public class UserBookHelper {
 
 			// Add tags from tagmapping table
 			addTagsToUserBook(bookToReturn);
+			
+			// Get title
+			String title = getTitle(authString, dbBook.getBookId());
+			bookToReturn.setTitle(title);
 
 			// add UserBook to list
 			userBooks.add(bookToReturn);
@@ -165,13 +180,9 @@ public class UserBookHelper {
 		DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
 				() -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
 
-		System.out.println("got userbook from DB: " + bookInDb);
-
 		FullUserBook bookToReturn = new FullUserBook();
 		// Copy over bean values - copy(destination, source)
 		BeanUtils.copyProperties(bookToReturn, bookInDb);
-
-		System.out.println("Copied DB stuff into bookToReturn:" + bookToReturn);
 
 		// Add tags from tagmapping table
 		addTagsToUserBook(bookToReturn);
@@ -323,5 +334,71 @@ public class UserBookHelper {
 
 		userBook.setTags(tagNames);
 	}
+	
+	 /**
+   * Retrieve the book title from the 'book' webservice for the incoming
+   * book id
+   * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
+   * @param bookId
+   *          ID of book to get title for
+   * @return
+   */
+  private String getTitle(String authString, int bookId) {
+    try {
+      // Going to the 'book' web service directly
+      String url = "http://book:8080/book/" + bookId;
+      
+      HttpClient client = HttpClientBuilder.create().build();
+      HttpGet request = new HttpGet(url);
+
+      // add request header
+      request.addHeader("User-Agent", "BookAgent");
+      request.addHeader("content-type", "application/json");
+      request.addHeader("Authorization", authString);
+      
+      // Execute request
+      HttpResponse response = client.execute(request);
+
+      // Get code
+      int responseCode = response.getStatusLine().getStatusCode();
+      
+      // Convert body of result
+      BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+      StringBuffer result = new StringBuffer();
+      String line = "";
+      while ((line = rd.readLine()) != null) {
+        result.append(line);
+      }
+      
+      String title= "";
+
+      // Check result
+      if (responseCode == 200) {
+        // Convert into bean
+        ObjectMapper mapper = new ObjectMapper();
+        BookBean bookBean = null;
+        try {
+          bookBean = mapper.readValue(result.toString(), BookBean.class);
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+        }
+        
+        title = bookBean.getTitle();
+      }
+      else {
+        System.out.println("Unable to get book's title for id: " + bookId);
+        System.out.println("Error code: " + responseCode);
+        System.out.println("Error content: " + result);
+      }
+
+      return title;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "";
+    }
+  }
 
 }

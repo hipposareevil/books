@@ -6,24 +6,37 @@
       <div class="level-left">
         <div class="level-item has-text-centered">
           <div class="field has-addons">
+            <!-- filter input -->
             <input class="input"
                    style="width: 7em;"
                    type="text"
                    placeholder="filter"
                    v-model="filterString">
+            <!-- clear button -->
             <p class="control">
               <button class="button"
                       @click="filterString = ''">
                 Clear
               </button>
             </p>
+            <!-- list the number of things -->
             <p class="control"
               v-if="numberOfThings">
               <a class="button is-static">
-                ({{ numberOfThings }})
+                ({{ numberOfThings }}<span v-if="totalNumber">&nbsp;of {{ totalNumber }}</span>)
               </a>
             </p>
 
+            <!-- grab all -->
+            <p class="control">
+              <button class="button"
+                      @click="grabAll()">
+                <span class="has-text-danger">
+                  Get All
+                </span>
+              </button>
+            </p>
+            
           </div>
         </div>
       </div>
@@ -38,13 +51,15 @@
             <!-- search and clear -->
             <div class="field has-addons">
               <p class="control">
-                <input class="input" type="text"
+                <input class="input"
+                       type="text"
+                       v-on:input="debouncedSearch"
                        v-bind:placeholder="getPlaceHolder()"
                        v-model="searchString">
               </p>
               <p class="control">
                 <button class="button"
-                        @click="searchString = ''">
+                        @click="clearSearch">
                   Clear
                 </button>
               </p>
@@ -82,12 +97,14 @@
 </template>
 
 <script>
+  import _ from 'lodash'
+
   /**
    * Data and methods
    */
   export default {
     // Props for this component
-    props: [ 'theThing', 'numberOfThings', 'showAsList' ],
+    props: [ 'theThing', 'numberOfThings', 'showAsList', 'totalNumber' ],
     // Data for this component
     data () {
       return {
@@ -120,7 +137,32 @@
        */
       getPlaceHolder () {
         return 'Search ' + this.theThing
+      },
+      /**
+       * Send the search string to the parent
+       */
+      search () {
+        this.$emit('searchString', this.searchString)
+      },
+      /**
+       * Clear the search string
+       */
+      clearSearch () {
+        this.searchString = ''
+        this.$emit('searchString', this.searchString)
+      },
+      /**
+       * Signal to grab everything
+       */
+      grabAll () {
+        this.$emit('grabAll')
       }
+    },
+    /**
+     * debounce some functions
+     */
+    created: function () {
+      this.debouncedSearch = _.debounce(this.search, 250)
     },
    /**
     * What strings to watch for
@@ -132,7 +174,7 @@
       filterString: function (val, oldVal) {
         this.$emit('filterString', val)
       },
-      searchString: function (val, oldVal) {
+      XXsearchString: function (val, oldVal) {
         this.$emit('searchString', val)
       }
     }

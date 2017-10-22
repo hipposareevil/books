@@ -5,11 +5,13 @@
     <!-- Header for filter, search, list vs grid -->
     <ViewHeader theThing="Authors"
                 :numberOfThings="lengthOfViewableAuthors"
+                :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
                 @filterString="filterStringUpdated"
+                @grabAll="grabAll"
                 >
     </ViewHeader>
 
@@ -19,7 +21,7 @@
                  :authors="authorList"></AuthorsGrid>
 
 
-    <infinite-loading @infinite="infiniteHandler">
+    <infinite-loading @infinite="infiniteHandler" ref="infiniteLoading">
       <span slot="no-more">
         -- end authors ({{ lengthOfViewableAuthors }}) --
       </span>
@@ -71,7 +73,13 @@
           // Current end of our data length
           end: -1,
           // Total number of datum to get
-          totalNumData: 0
+          totalNumData: 0,
+          // Reset the data
+          reset: function () {
+            this.AuthorsJson = []
+            this.dataStart = 0
+            this.end = -1
+          }
         },
         /**
          * Current state of the view
@@ -116,6 +124,9 @@
           limit: self.AllData.lengthToGet
         }
         let url = '/author'
+        if (this.searchAuthorString !== '') {
+          url = url + '?name=' + this.searchAuthorString
+        }
 
         this.$axios.get(url, {
           headers: { Authorization: authString },
@@ -134,20 +145,22 @@
             if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {
               console.log('ViewAuthors: Dataset length for userbooks has changed. Resetting.')
 
-              self.AllData.AuthorsJson = []
-              self.AllData.dataStart = 0
-              self.AllData.end = -1
-              self.AllData.totalNumData = -1
+              self.AllData.reset()
+              self.AllData.totalNumData = totalSize
 
-              $state.reset()
+              if ($state) {
+                $state.reset()
+              }
               return
             }
 
             // This method could be called when we come back to the tab
             // so check that we have all the data or not
             if (self.AllData.AuthorsJson.length >= totalSize) {
-              $state.loaded()
-              $state.complete()
+              if ($state) {
+                $state.loaded()
+                $state.complete()
+              }
               return
             }
             // Data set is unchanged, continue getting data
@@ -161,14 +174,20 @@
             // save to $store
             this.$store.commit('setAllAuthors', self.AllData)
 
-            $state.loaded()
+            if ($state) {
+              $state.loaded()
+            }
 
             if (self.AllData.end >= self.AllData.totalNumData) {
-              $state.complete()
+              if ($state) {
+                $state.complete()
+              }
             }
           })
           .catch(function (error) {
-            $state.complete()
+            if ($state) {
+              $state.complete()
+            }
             if (error.response) {
               if (error.response.status === 401) {
                 Event.$emit('got401')
@@ -197,12 +216,22 @@
        */
       searchStringUpdated (value) {
         this.searchAuthorString = value
+        this.AllData.reset()
+        this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
       },
       /**
        * The filter string has been updated
       */
       filterStringUpdated (value) {
         this.filterAuthorString = value
+      },
+      /**
+       * Grab all values
+       */
+      grabAll () {
+        this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
+        this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+        this.infiniteHandler(null)
       }
     },
     computed: {

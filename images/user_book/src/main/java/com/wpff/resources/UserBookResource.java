@@ -158,24 +158,27 @@ public class UserBookResource {
 	}
 
 	/**
-	 * Return all userBooks for a given user
-	 *
-	 * @param context
-	 *            security context (INJECTED via TokenFilter)
-	 * @param userId
-	 *            ID of user
-	 * @param tagQuery
-	 *            [optional] List of tags of books.
+   * Return all userBooks for a given user
+   *
+   * @param context
+   *          security context (INJECTED via TokenFilter)
+   * @param userId
+   *          ID of user
+   * @param tagQuery
+   *          [optional] List of tags of books.
+   * @param bookId
+   *          [optional] ID of book to find
+   * @param bookTitle
+   *          [optiona] Title of books for the user
    * @param offset
    *          Start index of data segment
    * @param limit
    *          Size of data segment
-	 * @param authDummy
-	 *            Dummy authorization string that is solely used for Swagger
-	 *            description.
-	 * @return List of GetUserBook
-	 * 
-	 */
+   * @param authString
+   *          Authorization string
+   * @return List of GetUserBook
+   * 
+   */
 	@ApiOperation(value = "Get list of UserBooks for user.",
 			notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
 	@GET
@@ -197,6 +200,11 @@ public class UserBookResource {
       @QueryParam("book_id") 
 	    Integer bookId,
 	    
+			@ApiParam(value = "Title of books within the user's books.Only the books with that matching title will be returned",
+					required = false)
+      @QueryParam("book_title") 
+	    String bookTitle,
+	    
       @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
       @QueryParam("offset") 
       Integer offset,
@@ -207,14 +215,14 @@ public class UserBookResource {
 
 			@ApiParam(value = "Bearer authorization", required = true) 
 	    @HeaderParam(value = "Authorization") 
-	    String authDummy) {
+	    String authString) {
 		// Start
 		try {
 			// Verify the username matches the userid or is 'admin'
 			ubHelper.verifyUserIdHasAccess(context, userId.get());
 
 			// Ok to get books
-			List<FullUserBook> userBooks = ubHelper.getUserBooksForUser(userId.get());
+			List<FullUserBook> userBooks = ubHelper.getUserBooksForUser(authString, userId.get());
 
       // If tagQuery is non null, filter out tags
       if (! tagQuery.isEmpty()) {
@@ -226,10 +234,17 @@ public class UserBookResource {
       }
       
       if ( bookId != null ) {
-        // Only return user-book if it matches this id 
+        // Only return user-book if it matches the book_id
          userBooks = userBooks.
              stream().
              filter(t -> t.getBookId() == bookId.intValue()).
+             collect(Collectors.toList());
+      }
+      
+      if ( bookTitle != null && !bookTitle.isEmpty() ) {
+          userBooks = userBooks.
+             stream().
+             filter(t -> t.getTitle().toLowerCase().contains(bookTitle.toLowerCase())).
              collect(Collectors.toList());
       }
 

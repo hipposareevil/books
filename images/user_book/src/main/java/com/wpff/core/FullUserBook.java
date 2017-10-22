@@ -14,6 +14,8 @@ public class FullUserBook extends PostUserBook {
 	private int userBookId;
 
 	private int userId;
+	
+	private String title;
 
 	public String toString() {
 		StringBuilder string = new StringBuilder();
@@ -46,5 +48,13 @@ public class FullUserBook extends PostUserBook {
 	public int getUserId() {
 		return this.userId;
 	}
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
 }

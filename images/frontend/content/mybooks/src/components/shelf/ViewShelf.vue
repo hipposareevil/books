@@ -3,11 +3,13 @@
     <!-- Header for filter, search, list vs grid -->
     <ViewHeader theThing="My Books"
                 :numberOfThings="getCurrentLength"
+                :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
                 @filterString="filterStringUpdated"
+                @grabAll="grabAll"
                 >
     </ViewHeader>
 
@@ -53,7 +55,7 @@
                      v-bind:allTags="TagJson"
                      :userBooks="AllData.UserBooksJson"></ShelfAsGrid>
 
-        <infinite-loading @infinite="infiniteHandler">
+        <infinite-loading @infinite="infiniteHandler" ref="infiniteLoading">
           <span slot="no-more">
             -- end shelf ({{ AllData.UserBooksJson.length }})--
           </span>
@@ -112,7 +114,13 @@
           // Current end of our data length
           end: -1,
           // Total number of datum to get
-          totalNumData: -1
+          totalNumData: -1,
+          // Reset the data
+          reset: function () {
+            this.UserBooksJson = []
+            this.dataStart = 0
+            this.end = -1
+          }
         },
         /**
          * Current state of the view
@@ -175,6 +183,10 @@
         }
         let url = '/user_book/' + Auth.user.id
 
+        if (this.searchBookString !== '') {
+          url = url + '?book_title=' + this.searchBookString
+        }
+
         this.$axios.get(url, {
           headers: { Authorization: authString },
           params: params })
@@ -192,20 +204,22 @@
             if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {
               console.log('ViewShelf: Dataset length for userbooks has changed. Resetting.')
 
-              self.AllData.UserBooksJson = []
-              self.AllData.dataStart = 0
-              self.AllData.end = -1
-              self.AllData.totalNumData = -1
+              self.AllData.reset()
+              self.AllData.totalNumData = totalSize
 
-              $state.reset()
+              if ($state) {
+                $state.reset()
+              }
               return
             }
 
             // This method could be called when we come back to the tab
             // so check that we have all the data or not
             if (self.AllData.UserBooksJson.length >= totalSize) {
-              $state.loaded()
-              $state.complete()
+              if ($state) {
+                $state.loaded()
+                $state.complete()
+              }
               return
             }
 
@@ -219,14 +233,20 @@
             // save to $store
             this.$store.commit('setUserBooks', self.AllData)
 
-            $state.loaded()
+            if ($state) {
+              $state.loaded()
+            }
 
             if (self.AllData.end >= self.AllData.totalNumData) {
-              $state.complete()
+              if ($state) {
+                $state.complete()
+              }
             }
           })
           .catch(function (error) {
-            $state.complete()
+            if ($state) {
+              $state.complete()
+            }
             if (error.response) {
               if (error.response.status === 401) {
                 Event.$emit('got401')
@@ -295,12 +315,22 @@
        */
       searchStringUpdated (value) {
         this.searchBookString = value
+        this.AllData.reset()
+        this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
       },
       /**
        * The filter string has been updated
       */
       filterStringUpdated (value) {
         this.filterBookString = value
+      },
+      /**
+       * Grab all values
+       */
+      grabAll () {
+        this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
+        this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+        this.infiniteHandler(null)
       },
       /**
        * Print an Error to the user
