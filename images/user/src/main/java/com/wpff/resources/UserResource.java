@@ -20,7 +20,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 // utils
@@ -42,7 +41,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
 // Jedis
 import redis.clients.jedis.Jedis;
 
@@ -175,14 +173,12 @@ public class UserResource {
   @ApiResponses( value = {
       @ApiResponse(code = 409, message = "User already exists."),
       @ApiResponse(code = 200, 
-                   message = "User created. URI of User is in the header 'location'.",
-                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created User")
-                  )
+                   message = "User created")
            })
   @POST
   @UnitOfWork
   @TokenRequired
-  public Response createUser(@ApiParam(value = "User information.", required = true) PostUser userBean,
+  public User createUser(@ApiParam(value = "User information.", required = true) PostUser userBean,
       @Context Jedis jedis,
 
       @Context SecurityContext context, @Context UriInfo uriInfo,
@@ -209,10 +205,7 @@ public class UserResource {
       BeanUtils.copyProperties(user, userBean);
 
       User newUser = this.userDAO.create(user);
-
-      UriBuilder builder = uriInfo.getAbsolutePathBuilder();
-      builder.path(Integer.toString(newUser.getId()));
-      return Response.created(builder.build()).build();
+      return newUser;
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
       throw new WebApplicationException(
           "Error in updating database when creating user   " + userBean + ".",

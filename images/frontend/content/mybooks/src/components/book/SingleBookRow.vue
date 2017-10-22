@@ -29,11 +29,20 @@
 
     <!-- actions -->
     <td>
-      <button class="button is-info is-small"
-              v-bind:class="{'is-success' : userbookWasAdded.flag, 'is-danger' : userbookWasAddedError.flag}" 
-              @click="addBookToList(currentBook)">
-        <span>Add To My Books</span>
-      </button>
+      <div v-if="currentBookIsOnAShelf">
+        <!-- book already on shelf -->
+        <button class="button is-info is-small is-static">
+          <span>Add To My Books</span>
+        </button>
+      </div>
+      <div v-else>
+        <!-- book not on a shelf -->
+        <button class="button is-info is-small"
+                v-bind:class="{'is-success' : userBookWasAdded.flag, 'is-danger' : userBookWasAddedError.flag}" 
+                @click="addBookToList(currentBook)">
+          <span>Add To My Books</span>
+        </button>
+      </div>
     </td> <!-- end action -->
   </tr>
 </template>
@@ -55,14 +64,22 @@
     data () {
       return {
         // Flag denoting the book was added
-        userbookWasAdded: {
+        userBookWasAdded: {
           flag: false
         },
         // Flag showing error for userbook being added
-        userbookWasAddedError: {
+        userBookWasAddedError: {
           flag: false
-        }
+        },
+        // Flag signalling if current book (row) is in the user's shelf
+        currentBookIsOnAShelf: false
       }
+    },
+    /**
+     * See if there is a matching user_book for this book
+     */
+    mounted: function () {
+      this.getMatchingUserBook()
     },
     /**
      * Method
@@ -83,15 +100,47 @@
         this.$router.push('/authors/' + current.authorId)
       },
       /**
+       * Find a matching user book, denoting if this book
+       * can be added or not.
+       */
+      getMatchingUserBook () {
+        let self = this
+
+        // Get user id from Auth
+        let userId = Auth.user.id
+        let ourHeaders = {
+          'Authorization': Auth.getAuthHeader()
+        }
+        let ourParams = {
+          'book_id': this.currentBook.id
+        }
+
+        // Try to create a new user_book
+        let url = '/user_book/' + userId
+        this.$axios.get(url, {
+          headers: ourHeaders,
+          params: ourParams
+        })
+          .then((response) => {
+            let length = response.data.data.length
+            if (length === 1) {
+              self.currentBookIsOnAShelf = true
+            }
+          })
+          .catch(function () {
+            // Do nothing if we can't get the user_book
+            console.log('Unable to find user_book for book: ' + self.currentBook.title)
+          })
+      },
+      /**
        * Add book to a shelf. Notify the ViewBook component
        */
       addBookToList (book) {
-        console.log('ViewBooks.bookWasAddedForUser: book title ' + book.title)
         // Get user id from Auth
         let userId = Auth.user.id
 
         let self = this
-        let ourheaders = {
+        let ourHeaders = {
           'Authorization': Auth.getAuthHeader()
         }
 
@@ -102,20 +151,24 @@
 
         // Try to create a new user_book
         let url = '/user_book/' + userId
-        this.$axios.post(url, data, { headers: ourheaders })
+        this.$axios.post(url, data, { headers: ourHeaders })
           .then((response) => {
-            self.userbookWasAdded.flag = true
+            // Flag that the book was added
+            self.userBookWasAdded.flag = true
+
             setTimeout(function () {
-              self.userbookWasAdded.flag = false
+              self.userBookWasAdded.flag = false
             }, 1200)
           })
           .catch(function (error) {
             if (error.response) {
               let statusCode = error.response.status
               if (statusCode === 409) {
-                self.userbookWasAddedError.flag = true
+                // Flag that the book was NOT added
+
+                self.userBookWasAddedError.flag = true
                 setTimeout(function () {
-                  self.userbookWasAddedError.flag = false
+                  self.userBookWasAddedError.flag = false
                 }, 1200)
               }
             }

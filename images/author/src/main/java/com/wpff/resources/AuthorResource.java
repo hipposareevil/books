@@ -20,7 +20,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 // utils
@@ -40,7 +39,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
 
 
 /**
@@ -176,12 +174,10 @@ public class AuthorResource {
   @ApiResponses( value = {
       @ApiResponse(code = 409, message = "Author already exists."),
       @ApiResponse(code = 200, 
-                   message = "Author created. URI of Author is in the header 'location'.",
-                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created Author")
-                  )
+                   message = "Author created.")
            })
   @TokenRequired
-  public Response createAuthor(
+  public AuthorResult createAuthor(
     @ApiParam(value = "Author information.", required = false)
     AuthorQuery authorBean,
     
@@ -212,10 +208,7 @@ public class AuthorResource {
       // Create the author in the database, 
       // then convert it to a normal bean and return that
       Author created = this.authorHelper.createAuthor(authorInDatabase);
-      
-      UriBuilder builder = uriInfo.getAbsolutePathBuilder();
-      builder.path(Integer.toString(created.getId()));
-      return Response.created(builder.build()).build();  
+      return this.convertToBean(created);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();

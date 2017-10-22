@@ -58,7 +58,7 @@ export default {
     let self = this
     context.$axios.get(VALIDATE_URL, { headers: { Authorization: authString } })
       .then((response) => {
-        console.log('User validated')
+        console.log('User is logged in.')
       })
       .catch(function () {
         console.log('Auth.validatetokens: Unable to validate user authtoken. Logging our selves out internally.')

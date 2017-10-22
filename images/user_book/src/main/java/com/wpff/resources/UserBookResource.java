@@ -22,7 +22,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import com.wpff.common.drop.filter.TokenRequired;
@@ -41,7 +40,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
 
 /**
  * Resource at /user_book that manages user's books
@@ -132,13 +130,18 @@ public class UserBookResource {
 	@TokenRequired
 	public FullUserBook getUserBook(
 	    @Context SecurityContext context, 
+	    
 	    @ApiParam(value = "ID of user.", 	required = false) 
 	    @PathParam("user_id") 
 	    IntParam userId,
 
-			@ApiParam(value = "ID of userBook.", required = false) @PathParam("user_book_id") IntParam userBookId,
+			@ApiParam(value = "ID of userBook.", required = false)
+	    @PathParam("user_book_id") 
+	    IntParam userBookId,
 
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(value = "Authorization") String authDummy) {
+			@ApiParam(value = "Bearer authorization", required = true) 
+	    @HeaderParam(value = "Authorization") 
+	    String authDummy) {
 		try {
 			// Start
 
@@ -173,7 +176,7 @@ public class UserBookResource {
 	 * @return List of GetUserBook
 	 * 
 	 */
-	@ApiOperation(value = "Get userBooks for user.",
+	@ApiOperation(value = "Get list of UserBooks for user.",
 			notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
 	@GET
 	@Path("/{user_id}")
@@ -189,7 +192,7 @@ public class UserBookResource {
       @QueryParam("tag") 
 	    List<String> tagQuery,
 	    
-			@ApiParam(value = "",
+			@ApiParam(value = "ID of book to find in list of user books. Only the user book that contains this book id will be returned",
 					required = false)
       @QueryParam("book_id") 
 	    Integer bookId,
@@ -216,8 +219,18 @@ public class UserBookResource {
       // If tagQuery is non null, filter out tags
       if (! tagQuery.isEmpty()) {
         // Filter out books by tag. If the books tags match any in the query, keep them
-        userBooks = userBooks.stream().filter(t -> !Collections.disjoint(t.getTags(), tagQuery)).collect(
-            Collectors.toList());
+        userBooks = userBooks.
+            stream().
+            filter(t -> !Collections.disjoint(t.getTags(), tagQuery)).
+            collect(Collectors.toList());
+      }
+      
+      if ( bookId != null ) {
+        // Only return user-book if it matches this id 
+         userBooks = userBooks.
+             stream().
+             filter(t -> t.getBookId() == bookId.intValue()).
+             collect(Collectors.toList());
       }
 
       ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(userBooks, offset, limit);
@@ -256,14 +269,12 @@ public class UserBookResource {
 	@ApiResponses(value = { 
 	    @ApiResponse(code = 409, message = "Userbook already exists in database."), 
 	    @ApiResponse(code = 200, 
-	       message = "Userbook created. URI of Userbook is in the header 'location'.",
-                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created Userbook")
-	                )  
+	       message = "Userbook created.")
 	    })
 	@POST
 	@TokenRequired
 	@Path("/{user_id}")
-	public Response createUserBook(
+	public FullUserBook createUserBook(
 	    @Context SecurityContext context, 
 	    @Context UriInfo uriInfo,
 	    
@@ -337,17 +348,12 @@ public class UserBookResource {
         }
 			}
 
-
 			//////////////////
 			// Marshall back from database
 
 			// Copy values into new 'UserBook' class
 			FullUserBook userBookToReturn = this.ubHelper.getUserBookById(newUserBook.getUserBookId());
-					
-			  UriBuilder builder = uriInfo.getAbsolutePathBuilder();
-      builder.path(Integer.toString(userBookToReturn.getUserBookId()));
-      return Response.created(builder.build()).build();  
-			
+			return userBookToReturn;			
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
 			throw new WebApplicationException(
 					"Error in updating database when creating user_book",

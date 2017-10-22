@@ -25,7 +25,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 // utils
@@ -52,7 +51,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
 
 
 /**
@@ -226,11 +224,9 @@ public class BookResource {
   @ApiResponses( value = {
       @ApiResponse(code = 409, message = "Book already exists."),
       @ApiResponse(code = 200, 
-                   message = "Book created. URI of Book is in the header 'location'.",
-                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created Book")
-                  )
+                   message = "Book created.")
            })  
-  public Response createBook(
+  public BookResult createBook(
     @ApiParam(value = "Book information.", required = true)
     BookQuery bookBean,
     
@@ -271,10 +267,7 @@ public class BookResource {
       // The authorization string is passed in so we can get the author name 
       // from the 'author' webservice      
       Book created = bookDAO.create(bookInDatabase);
-      
-      UriBuilder builder = uriInfo.getAbsolutePathBuilder();
-      builder.path(Integer.toString(created.getId()));
-      return Response.created(builder.build()).build();  
+      return this.convertToBean(authorizationKey, created);
     }
     catch (org.hibernate.exception.ConstraintViolationException e) {
       String errorMessage = e.getMessage();

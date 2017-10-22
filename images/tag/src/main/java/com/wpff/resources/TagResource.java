@@ -18,7 +18,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 // utils
@@ -39,7 +38,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
 // Jedis
 import redis.clients.jedis.Jedis;
 
@@ -276,14 +274,12 @@ public class TagResource {
 	@ApiResponses( value = {
       @ApiResponse(code = 409, message = "Tag already exists."),
       @ApiResponse(code = 200, 
-                   message = "Tag created. URI of Tag is in the header 'location'.",
-                   responseHeaders = @ResponseHeader(name = "location", description="URI of newly created Tag")
-                  )
+                   message = "Tag created.")
            })
 	@POST
 	@UnitOfWork
 	@TokenRequired
-	public Response createTag(
+	public Tag createTag(
 			@ApiParam(value = "Tag information.", required = true) 
 			PostTag tagBean,
 			@Context Jedis jedis,
@@ -312,12 +308,9 @@ public class TagResource {
 					Response.Status.INTERNAL_SERVER_ERROR);
 		}
 
-		// No existing tag, go ahead and create
-		Tag newTag = this.tagDAO.create(transientTag);
-
-    UriBuilder builder = uriInfo.getAbsolutePathBuilder();
-    builder.path(Integer.toString(newTag.getId()));
-    return Response.created(builder.build()).build();
+    // No existing tag, go ahead and create
+    Tag newTag = this.tagDAO.create(transientTag);
+    return newTag; 
 	}
 
 	/****************************************************************
