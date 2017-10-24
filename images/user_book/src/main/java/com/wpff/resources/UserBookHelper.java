@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,11 +25,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wpff.core.DatabaseUserBook;
-import com.wpff.core.FullUserBook;
-import com.wpff.core.PostUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
 import com.wpff.core.User;
+import com.wpff.core.beans.FullUserBook;
+import com.wpff.core.beans.PostUserBook;
 import com.wpff.db.TagDAO;
 import com.wpff.db.TagMappingDAO;
 import com.wpff.db.UserBookDAO;
@@ -87,6 +88,7 @@ public class UserBookHelper {
 		
 		// Copy over bean values - copy(destination, source)
 		BeanUtils.copyProperties(userBookToCreate, userBookBean);
+		userBookToCreate.setDateAdded(new Date());
 
 		// Set the user_id from the URL to the 'userBook'
 		userBookToCreate.setUserId(userId.get());
@@ -138,7 +140,8 @@ public class UserBookHelper {
 	 * @return List of UserBooks
 	 */
 	@UnitOfWork
-	List<FullUserBook> getUserBooksForUser(String authString,int userId) throws IllegalAccessException, InvocationTargetException {
+	List<FullUserBook> getUserBooksForUser(String authString, Integer userId) 
+	    throws IllegalAccessException, InvocationTargetException {
 		List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
 
 		// Get list of books in db
@@ -146,24 +149,42 @@ public class UserBookHelper {
 
 		// convert each book into a FullUserBook
 		for (DatabaseUserBook dbBook : booksInDatabase) {
-			FullUserBook bookToReturn = new FullUserBook();
-
-			// Copy over bean values - copy(destination, source)
-			BeanUtils.copyProperties(bookToReturn, dbBook);
-
-			// Add tags from tagmapping table
-			addTagsToUserBook(bookToReturn);
-			
-			// Get title
-			String title = getTitle(authString, dbBook.getBookId());
-			bookToReturn.setTitle(title);
-
-			// add UserBook to list
-			userBooks.add(bookToReturn);
+		  userBooks.add(convert(dbBook, authString));
 		}
 
 		return userBooks;
 	}
+	
+	/**
+	 * Get list of UserBooks for the requested User id
+	 * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
+	 * @param userId
+	 *            ID of user to get books for
+	 * @param numRecent
+	 *            of most recently user books  
+	 * @return List of UserBooks
+	 */
+	@UnitOfWork
+	List<FullUserBook> getUserBooksForUser(String authString, Integer userId, int numRecent) 
+	    throws IllegalAccessException, InvocationTargetException {
+	  // get db books
+		List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
+
+		// Get list of books in db
+		List<DatabaseUserBook> booksInDatabase = userBookDAO.findMostRecentBooks(userId, numRecent);
+
+		// convert each book into a FullUserBook
+		for (DatabaseUserBook dbBook : booksInDatabase) {
+		  userBooks.add(convert(dbBook, authString));
+		}
+
+		return userBooks;
+	}
+
+	
 
 
 	/**
@@ -171,23 +192,20 @@ public class UserBookHelper {
 	 *
 	 * @param userBookId
 	 *            ID of user book to retrieve
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
 	 * @return GetUserBook containing all UserBook info and tags
 	 * @throws InvocationTargetException
 	 * @throws IllegalAccessException
 	 */
 	@UnitOfWork
-	FullUserBook getUserBookById(int userBookId) throws IllegalAccessException, InvocationTargetException {
+	FullUserBook getUserBookById(String authString, int userBookId) throws IllegalAccessException, InvocationTargetException {
+	  // Get db book
 		DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
 				() -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
 
-		FullUserBook bookToReturn = new FullUserBook();
-		// Copy over bean values - copy(destination, source)
-		BeanUtils.copyProperties(bookToReturn, bookInDb);
-
-		// Add tags from tagmapping table
-		addTagsToUserBook(bookToReturn);
-
-		return bookToReturn;
+		return convert(bookInDb, authString);
 	}
 
 
@@ -305,6 +323,38 @@ public class UserBookHelper {
 	}
 	
 	
+	////////////////////////////////////////////////////////////////
+	// 
+	// Helpers
+		
+	
+	/**
+   * Convert a DB book to a FullUserBook bean
+   * 
+   * @param dbBook
+   *          Book to convert
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
+   * @return
+   */
+	 private FullUserBook convert(DatabaseUserBook dbBook, String authString) 
+	   throws IllegalAccessException, InvocationTargetException {
+	    	FullUserBook bookToReturn = new FullUserBook();
+
+			// Copy over bean values - copy(destination, source)
+			BeanUtils.copyProperties(bookToReturn, dbBook);
+
+			// Add tags from tagmapping table
+			addTagsToUserBook(bookToReturn);
+			
+			// Get title
+			String title = getTitle(authString, dbBook.getBookId());
+			bookToReturn.setTitle(title);
+			
+			return bookToReturn;
+	  }
+	
 	/**
 	 * Add tags from database to userbook
 	 *
@@ -334,6 +384,8 @@ public class UserBookHelper {
 
 		userBook.setTags(tagNames);
 	}
+	
+	
 	
 	 /**
    * Retrieve the book title from the 'book' webservice for the incoming

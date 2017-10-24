@@ -1,5 +1,6 @@
 package com.wpff.core;
 
+import java.util.Date;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -7,22 +8,23 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
  * DatabaseUserBook represents a book for a user in the database. It contains:
- * <ul>
- * <li>user book id (ID of this entity)
- * <li>- userID (ID in user table)
- * <li>- bookID (ID in book table)
- * <li>rating of book by the user (up or down)
- * <li>extra data
  *
- * </ul>
  * Tags are not stored in this class/table.
  */
 @Entity
 @Table(name = "userbook")
+@NamedQueries(
+    { 
+		@NamedQuery(name = "com.wpff.core.DatabaseUserBook.findMostRecent",
+		      query = "SELECT u FROM DatabaseUserBook u WHERE u.user_id = :user_id ORDER by date_added DESC")
+    }
+)
 public class DatabaseUserBook {
 
 	/**
@@ -56,6 +58,12 @@ public class DatabaseUserBook {
 	 */
 	@Column(name = "data", nullable = true)
 	private String data;
+	
+	/**
+	 * Date user book was added
+	 */
+	@Column(name = "date_added", nullable = true)
+	private Date dateAdded;
 
 	/**
 	 * Default constructor
@@ -143,4 +151,32 @@ public class DatabaseUserBook {
 	public int hashCode() {
 		return Objects.hash(this.userBookId, this.bookId, this.user_id, this.rating, this.data);
 	}
+
+  /**
+   * @return the user_id
+   */
+  public int getUser_id() {
+    return user_id;
+  }
+
+  /**
+   * @param user_id the user_id to set
+   */
+  public void setUser_id(int user_id) {
+    this.user_id = user_id;
+  }
+
+  /**
+   * @return the dateAdded
+   */
+  public Date getDateAdded() {
+    return dateAdded;
+  }
+
+  /**
+   * @param dateAdded the dateAdded to set
+   */
+  public void setDateAdded(Date dateAdded) {
+    this.dateAdded = dateAdded;
+  }
 }

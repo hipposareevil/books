@@ -172,7 +172,6 @@ services:
       - DEPLOY_HOST_NAME=${DEPLOY_HOST_NAME}
 
 
-
 networks:
    # network for all containers
    booknet:

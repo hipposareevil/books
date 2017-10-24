@@ -15,10 +15,23 @@
             <!-- clear button -->
             <p class="control">
               <button class="button"
+                      title="Clear filter"
                       @click="filterString = ''">
                 Clear
               </button>
             </p>
+
+            <!-- grab all -->
+            <p class="control">
+              <button class="button"
+                      title="Get all"
+                      @click="grabAll()">
+                <span class="has-text-danger">
+                  Get All
+                </span>
+              </button>
+            </p>
+            
             <!-- list the number of things -->
             <p class="control"
               v-if="numberOfThings">
@@ -27,16 +40,6 @@
               </a>
             </p>
 
-            <!-- grab all -->
-            <p class="control">
-              <button class="button"
-                      @click="grabAll()">
-                <span class="has-text-danger">
-                  Get All
-                </span>
-              </button>
-            </p>
-            
           </div>
         </div>
       </div>

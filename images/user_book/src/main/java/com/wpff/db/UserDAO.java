@@ -1,14 +1,15 @@
 package com.wpff.db;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Restrictions;
+
 import com.wpff.core.User;
 
 import io.dropwizard.hibernate.AbstractDAO;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.MatchMode;
-
-import java.util.List;
-import java.util.Optional;
 
 
 /**
@@ -40,7 +41,6 @@ public class UserDAO extends AbstractDAO<User> {
    * @return Optional User
    */
   public Optional<User> findById(Integer id) {
-    System.out.println("userdao.findbyid:" + id);
     return Optional.ofNullable(get(id));
   }
 

@@ -1,6 +1,7 @@
-package com.wpff.core;
+package com.wpff.core.beans;
 
 import java.util.Arrays;
+import java.util.Date;
 
 /**
  * UserBook bean that returned from various methods. It adds the 'userBookId'
@@ -16,6 +17,8 @@ public class FullUserBook extends PostUserBook {
 	private int userId;
 	
 	private String title;
+	
+	private Date dateAdded;
 
 	public String toString() {
 		StringBuilder string = new StringBuilder();
@@ -55,6 +58,20 @@ public class FullUserBook extends PostUserBook {
 
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  /**
+   * @return the dateAdded
+   */
+  public Date getDateAdded() {
+    return dateAdded;
+  }
+
+  /**
+   * @param dateAdded the dateAdded to set
+   */
+  public void setDateAdded(Date dateAdded) {
+    this.dateAdded = dateAdded;
   }
 
 }

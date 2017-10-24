@@ -1,4 +1,4 @@
-package com.wpff.core;
+package com.wpff.core.beans;
 
 import java.util.Arrays;
 import java.util.List;

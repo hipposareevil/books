@@ -3,6 +3,7 @@ package com.wpff.db;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 
@@ -39,11 +40,36 @@ public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
 	 */
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public List<DatabaseUserBook> findBooksByUserId(Integer userId) {
-		return currentSession()
+	    Criteria criteria = currentSession()
 				.createCriteria(DatabaseUserBook.class)
-				.add(Restrictions.eq("user_id", userId))
-				.list();
+				.add(Restrictions.eq("user_id", userId));
+	    				
+	    	return criteria.list();
 	}
+	
+
+	/**
+	 * Find numRecent most recently added user books
+	 * 
+		 * @param userId
+	 *            User ID
+	 * @param numRecent
+	 *            of most recently user books  
+	 * @return list of UserBooks 
+	 */
+	@SuppressWarnings({ "unchecked" })
+  public List<DatabaseUserBook> findMostRecentBooks(Integer userId, int numRecent) {
+
+    List<DatabaseUserBook> books = list(
+        namedQuery("com.wpff.core.DatabaseUserBook.findMostRecent").
+                setParameter("user_id", userId).
+                setMaxResults(numRecent)
+        );
+
+    return books;
+  }
+	
+		
 
 	/**
 	 * Persists a new UserBook into the backing DB.

@@ -28,10 +28,10 @@ import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.core.DatabaseUserBook;
-import com.wpff.core.FullUserBook;
-import com.wpff.core.PostUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
+import com.wpff.core.beans.FullUserBook;
+import com.wpff.core.beans.PostUserBook;
 
 import io.dropwizard.jersey.params.IntParam;
 // Swagger
@@ -117,9 +117,8 @@ public class UserBookResource {
 	 *            ID of user
 	 * @param userBookId
 	 *            ID of user_book
-	 * @param authDummy
-	 *            Dummy authorization string that is solely used for Swagger
-	 *            description.
+	 * @param authString
+	 *           Authorization string
 	 * @return GetUserBook
 	 * 
 	 */
@@ -141,14 +140,14 @@ public class UserBookResource {
 
 			@ApiParam(value = "Bearer authorization", required = true) 
 	    @HeaderParam(value = "Authorization") 
-	    String authDummy) {
+	    String authString) {
 		try {
 			// Start
 
 			// Verify the username matches the userid or is 'admin'
 			ubHelper.verifyUserIdHasAccess(context, userId.get());
 
-			return ubHelper.getUserBookById(userBookId.get());
+			return ubHelper.getUserBookById(authString, userBookId.get());
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
 			throw new WebApplicationException(
 					"Error in getting UserBook for user: " + userId.get() + ", user book id: " + userBookId.get(),
@@ -169,11 +168,13 @@ public class UserBookResource {
    * @param bookId
    *          [optional] ID of book to find
    * @param bookTitle
-   *          [optiona] Title of books for the user
+   *          [optional] Title of books for the user
+   * @param lastAdded
+   *          [optional] Return the lastAdded most recently added user books
    * @param offset
-   *          Start index of data segment
+   *          [optional] Start index of data segment
    * @param limit
-   *          Size of data segment
+   *          [optional] Size of data segment
    * @param authString
    *          Authorization string
    * @return List of GetUserBook
@@ -204,6 +205,10 @@ public class UserBookResource {
 					required = false)
       @QueryParam("book_title") 
 	    String bookTitle,
+	    	    
+      @ApiParam(value = "Return the most recently added user books.", required = false) 
+      @QueryParam("last_added") 
+      Integer lastAdded,
 	    
       @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
       @QueryParam("offset") 
@@ -222,7 +227,15 @@ public class UserBookResource {
 			ubHelper.verifyUserIdHasAccess(context, userId.get());
 
 			// Ok to get books
-			List<FullUserBook> userBooks = ubHelper.getUserBooksForUser(authString, userId.get());
+			List<FullUserBook> userBooks = null;
+			
+			// If lastAdded query is non null, just get the last X most recently added books
+			if (lastAdded != null) {
+			  userBooks = ubHelper.getUserBooksForUser(authString, userId.get(), lastAdded);
+			}
+			else {
+			  userBooks = ubHelper.getUserBooksForUser(authString, userId.get());
+			}
 
       // If tagQuery is non null, filter out tags
       if (! tagQuery.isEmpty()) {
@@ -273,9 +286,8 @@ public class UserBookResource {
    *          UserBook to create in the database
    * @param userId
    *          ID of user
-   * @param authDummy
-   *          Dummy authorization string that is solely used for Swagger
-   *          description.
+	 * @param authString
+	 *           Authorization string
    * @return The newly created userbook
    */
 	@ApiOperation(value = "Create new userbook",
@@ -299,8 +311,9 @@ public class UserBookResource {
 
 			@ApiParam(value = "User Book information.", required = true) PostUserBook userBookBean,
 			
-			@ApiParam(value = "Bearer authorization", required = true) @HeaderParam(
-					value = "Authorization") String authDummy) {
+			@ApiParam(value = "Bearer authorization", required = true) 
+	    @HeaderParam(value = "Authorization") 
+	    String authString) {
 		// Start
 		try {
 			// Verify the username is 'admin or matches the userid's username.
@@ -367,7 +380,8 @@ public class UserBookResource {
 			// Marshall back from database
 
 			// Copy values into new 'UserBook' class
-			FullUserBook userBookToReturn = this.ubHelper.getUserBookById(newUserBook.getUserBookId());
+			FullUserBook userBookToReturn = this.ubHelper.getUserBookById(authString, newUserBook.getUserBookId());
+			
 			return userBookToReturn;			
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
 			throw new WebApplicationException(
@@ -386,9 +400,8 @@ public class UserBookResource {
    *          UserBook to update in the database
    * @param userId
    *          ID of user
-   * @param authDummy
-   *          Dummy authorization string that is solely used for Swagger
-   *          description.
+	 * @param authString
+	 *           Authorization string
    * @param userBookId
    *          ID of user book to get. Taken from path param
    * 
@@ -419,7 +432,7 @@ public class UserBookResource {
 			
 			@ApiParam(value = "Bearer authorization", required = true) 
 	    @HeaderParam(value = "Authorization") 
-	    String authDummy) {
+	    String authString) {
 		// Start
 		try {
 			// Verify the username is 'admin or matches the userid's username.
@@ -478,7 +491,7 @@ public class UserBookResource {
 			// Marshall back from database
 
 			// Copy values into new 'UserBook' class
-			FullUserBook userBookToReturn = this.ubHelper.getUserBookById(userBookId.get());
+			FullUserBook userBookToReturn = this.ubHelper.getUserBookById(authString, userBookId.get());
 			return userBookToReturn;
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
 			throw new WebApplicationException(
