@@ -28,6 +28,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
+import com.wpff.common.result.Segment;
 import com.wpff.core.PostUser;
 import com.wpff.core.User;
 import com.wpff.core.VisableUser;
@@ -136,16 +137,22 @@ public class UserResource {
           value = "Authorization") String authDummy) {
     // Start
     verifyAdminUser(context);
-
+    
+    	Segment segment = new Segment(offset, limit);
+ 
     // Get list of all Users.
-    List<User> users = userDAO.findAll();
+    List<User> users = userDAO.findAll(segment);
+    
+    // Get # of users
+    segment.setTotalLength(userDAO.getNumberOfUsers());
 
     // Convert each User into a VisableUser bean that just contains 'id' and 'name'
-    List<VisableUser> userList = users.stream()
+    List<VisableUser> userList = users
+        .stream()
         .map(e -> new VisableUser(e.getName(), e.getUserGroup(), e.getId()))
         .collect(Collectors.toList());
 
-    ResultWrapper<VisableUser> result = ResultWrapperUtil.createWrapper(userList, offset, limit);
+    ResultWrapper<VisableUser> result = ResultWrapperUtil.createWrapper(userList, segment);
 
     return result;
   }

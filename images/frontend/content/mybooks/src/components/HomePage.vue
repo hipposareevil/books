@@ -30,6 +30,7 @@
 
 <script>
   import Auth from '../auth'
+  let NUM_BOOKS = 5
 
   export default {
     // Data
@@ -66,15 +67,27 @@
 
         const authString = Auth.getAuthHeader()
         let params = {
-          offset: 0,
-          limit: 1000
+          limit: 0
         }
-        let url = '/user_book/' + Auth.user.id + '?last_added=5'
+        // find number of books
+        let url = '/user_book/' + Auth.user.id
         this.$axios.get(url, {
           headers: { Authorization: authString },
           params: params })
           .then((response) => {
-            self.userBooks = response.data.data
+            let numBooks = response.data.total
+            let offset = (numBooks - NUM_BOOKS)
+
+            // Get last NUM_BOOKS books
+            params = {
+              offset: offset
+            }
+            this.$axios.get(url, {
+              headers: { Authorization: authString },
+              params: params })
+              .then((response) => {
+                self.userBooks = response.data.data
+              })
           })
           .catch(function (error) {
             if (error.response) {

@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
+import com.wpff.common.result.Segment;
 import com.wpff.core.Book;
 import com.wpff.db.BookDAO;
 import com.wpff.query.BookQuery;
@@ -90,12 +91,13 @@ public class BookResource {
     @ApiParam(value = "ID of book to retrieve.", required = false)	
     @PathParam("book_id") 	
     IntParam bookId,	
+    
     @ApiParam(value="Bearer authorization", required=true)	
     @HeaderParam(value="Authorization") 	
     String authorizationKey	 
                         ) {
-     // The authorization string is passed in so we can get the author name 
-      // from the 'author' webservice
+    // The authorization string is passed in so we can get the author name
+    // from the 'author' webservice
     return this.convertToBean(authorizationKey, findSafely(bookId.get()));	 
   }	
   /**	
@@ -149,7 +151,7 @@ public class BookResource {
     @HeaderParam(value="Authorization") String authorizationKey
                             ) {
     // Start
-    
+   		
     // Using a Set to deal with any duplicates that might come up from using 
     // a 'title' and a 'id' that would overlap
     Set<Book> bookSet = new TreeSet<Book>();
@@ -159,43 +161,52 @@ public class BookResource {
 
     // Grab books by title, if it exists
     if (titleQuery != null) {
-      System.out.println("Looking at title query: " + titleQuery);
       bookSet.addAll(bookDAO.findByName(titleQuery));
       paramsExist = true;
     }
 
     // The idQuery will be empty if nothing is specified, but will still exist as a List.
     if ( (idQuery != null) && (! idQuery.isEmpty()) ){
-      System.out.println("Looking at id query: " + idQuery);
       bookSet.addAll(bookDAO.findById(idQuery));
       paramsExist = true;
     }
 
     // The authorIdQuery will be empty if nothing is specified, but will still exist as a List.
     if ( (authorIdQuery != null) && (! authorIdQuery.isEmpty()) ){
-      System.out.println("Looking at author id query: " + authorIdQuery); 
       bookSet.addAll(bookDAO.findByAuthorId(authorIdQuery));
       paramsExist = true;
     }
 
     // If set of books is empty, grab all books
     if (bookSet.isEmpty() && (!paramsExist)) {
-      System.out.println("bookSet is empty. adding all");
-      bookSet.addAll(bookDAO.findAll());
-    }
-
-    // Convert the set of Books to list of BookResults
-    // The authorization string is passed in so we can get the author name
-    // from the 'author' webservice
-    List<BookResult> bookList = bookSet.
+       // Create desired segment from offset & limit
+      Segment segment = new Segment(offset, limit);
+      segment.setTotalLength(bookDAO.getNumberOfBooks());
+      
+      // Get all for this segment
+      bookSet.addAll(bookDAO.findAll(segment));
+    
+      // Convert the set of Books to list of BookResults
+      // The authorization string is passed in so we can get the author name
+      // from the 'author' webservice
+      List<BookResult> bookList = bookSet.stream()
+          .sorted()
+          .map(x -> this.convertToBean(authorizationKey, x))
+          .collect(Collectors.toList());
+      
+      return ResultWrapperUtil.createWrapper(bookList, segment);
+    } else {
+      // Convert the set of Books to list of BookResults
+      // The authorization string is passed in so we can get the author name
+      // from the 'author' webservice
+      List<BookResult> bookList = bookSet.
         stream().
         sorted().
         map( x -> this.convertToBean(authorizationKey, x)).
         collect(Collectors.toList());
-    
-    ResultWrapper<BookResult> result = ResultWrapperUtil.createWrapper(bookList, offset, limit);
-        
-    return result;
+
+      return ResultWrapperUtil.createWrapper(bookList, offset, limit);
+    }
   }
 
 

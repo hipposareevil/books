@@ -30,7 +30,7 @@ public class ResultWrapper<T> {
   /**
    * Total number of results.
    */
-  private int total;
+  private long total;
 
   /**
    * List of results. This may be a partial list of the full results.
@@ -83,14 +83,14 @@ public class ResultWrapper<T> {
   /**
    * @return the total
    */
-  public int getTotal() {
+  public long getTotal() {
     return total;
   }
 
   /**
    * @param total the total to set
    */
-  public void setTotal(int total) {
+  public void setTotal(long total) {
     this.total = total;
   }
   

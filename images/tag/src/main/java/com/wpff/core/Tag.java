@@ -5,8 +5,6 @@ import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
@@ -14,9 +12,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "tag")
-@NamedQueries({
-		@NamedQuery(name = "com.wpff.core.Tag.findAll", query = "SELECT u FROM Tag u")
-})
+
 /**
  * Tag class
  */

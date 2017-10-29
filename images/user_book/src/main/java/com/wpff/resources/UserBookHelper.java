@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wpff.common.result.Segment;
 import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
@@ -128,24 +128,39 @@ public class UserBookHelper {
 
     return userBookToUpdate;
   }
+  
+  /**
+   * Get total number of userbooks
+   * @param userId User to get number of books for
+   * @return Number of userbooks for user
+   */
+  	@UnitOfWork
+  long getTotalNumberUserBooks(Integer userId) {
+    return userBookDAO.getNumberOfUserBooks(userId);
+  }
 
 	/**
-	 * Get list of UserBooks for the requested User id
-	 * 
+   * Get list of UserBooks for the requested User id
+   * 
    * @param authString
    *          Authentication header which is necessary for a REST call to 'book'
    *          web service
-	 * @param userId
-	 *            ID of user to get books for
-	 * @return List of UserBooks
-	 */
+   * @param userId
+   *          ID of user to get books for
+   * @param desiredSegment
+   *          offset and limit for the query
+   * @return List of UserBooks
+   */
 	@UnitOfWork
-	List<FullUserBook> getUserBooksForUser(String authString, Integer userId) 
+	List<FullUserBook> getUserBooksForUser(
+	    String authString, 
+	    Integer userId,
+	    Segment desiredSegment)
 	    throws IllegalAccessException, InvocationTargetException {
 		List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
 
 		// Get list of books in db
-		List<DatabaseUserBook> booksInDatabase = userBookDAO.findBooksByUserId(userId);
+		List<DatabaseUserBook> booksInDatabase = userBookDAO.findBooksByUserId(userId, desiredSegment);
 
 		// convert each book into a FullUserBook
 		for (DatabaseUserBook dbBook : booksInDatabase) {
@@ -155,38 +170,7 @@ public class UserBookHelper {
 		return userBooks;
 	}
 	
-	/**
-	 * Get list of UserBooks for the requested User id
-	 * 
-   * @param authString
-   *          Authentication header which is necessary for a REST call to 'book'
-   *          web service
-	 * @param userId
-	 *            ID of user to get books for
-	 * @param numRecent
-	 *            of most recently user books  
-	 * @return List of UserBooks
-	 */
-	@UnitOfWork
-	List<FullUserBook> getUserBooksForUser(String authString, Integer userId, int numRecent) 
-	    throws IllegalAccessException, InvocationTargetException {
-	  // get db books
-		List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
-
-		// Get list of books in db
-		List<DatabaseUserBook> booksInDatabase = userBookDAO.findMostRecentBooks(userId, numRecent);
-
-		// convert each book into a FullUserBook
-		for (DatabaseUserBook dbBook : booksInDatabase) {
-		  userBooks.add(convert(dbBook, authString));
-		}
-
-		return userBooks;
-	}
-
 	
-
-
 	/**
 	 * Get UserBook from database. This will contain the UserBooks tags
 	 *
@@ -338,37 +322,33 @@ public class UserBookHelper {
    *          web service
    * @return
    */
-	 private FullUserBook convert(DatabaseUserBook dbBook, String authString) 
-	   throws IllegalAccessException, InvocationTargetException {
-	    	FullUserBook bookToReturn = new FullUserBook();
+  private FullUserBook convert(DatabaseUserBook dbBook, String authString) throws IllegalAccessException,
+      InvocationTargetException {
+    FullUserBook bookToReturn = new FullUserBook();
 
-			// Copy over bean values - copy(destination, source)
-			BeanUtils.copyProperties(bookToReturn, dbBook);
+    // Copy over bean values - copy(destination, source)
+    BeanUtils.copyProperties(bookToReturn, dbBook);
 
-			// Add tags from tagmapping table
-			addTagsToUserBook(bookToReturn);
-			
-			// Get title
-			String title = getTitle(authString, dbBook.getBookId());
-			bookToReturn.setTitle(title);
-			
-			return bookToReturn;
-	  }
-	
+    // Add tags from tagmapping table
+    addTagsToUserBook(bookToReturn);
+
+    // Get title
+    String title = getTitle(authString, dbBook.getBookId());
+    bookToReturn.setTitle(title);
+
+    return bookToReturn;
+  }
+
 	/**
 	 * Add tags from database to userbook
 	 *
 	 */
 	private void addTagsToUserBook(FullUserBook userBook) {
-		System.out.println("Adding tags to userbook:" + userBook);
-
 		// Get tag mappings for user book
 		List<TagMapping> tagMappings = this.tagMappingDAO.findTagMappings(userBook.getUserBookId());
 
 		// Get tag IDs for the user book
 		List<Integer> tagIds = tagMappings.stream().map(TagMapping::getTagId).collect(Collectors.toList());
-
-		System.out.println("TAGIDS: " + Arrays.toString(tagIds.toArray()));
 
 		// Get all tags in database and convert into a map keyed by tagID
 		Map<String, Tag> allTags = this.tagDAO.findAll();
@@ -376,11 +356,6 @@ public class UserBookHelper {
 
 		// Correlate tag ids from tagMappings into tag names
 		List<String> tagNames = tagIds.stream().map(e -> tagsIndexById.get(e).getName()).collect(Collectors.toList());
-		System.out.println("TAG names: " + Arrays.toString(tagNames.toArray()));
-
-		for (String x : tagNames) {
-			System.out.println("Assigning tag " + x + " to userbook: " + userBook);
-		}
 
 		userBook.setTags(tagNames);
 	}

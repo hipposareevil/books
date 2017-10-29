@@ -28,6 +28,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
+import com.wpff.common.result.Segment;
 import com.wpff.core.Author;
 import com.wpff.query.AuthorQuery;
 import com.wpff.result.AuthorResult;
@@ -127,13 +128,15 @@ public class AuthorResource {
       @HeaderParam(value="Authorization") String authDummy
                                 ) {
     // Start
+    Segment segment = new Segment(offset, limit);
+    segment.setTotalLength(this.authorHelper.getTotalNumberAuthors());
     
     List<Author> authors = null;
     if (authorNameQuery != null) {
-      authors = this.authorHelper.findByName(authorNameQuery);
+      authors = this.authorHelper.findByName(authorNameQuery, segment);
     }
     else {
-      authors = this.authorHelper.findAll();
+      authors = this.authorHelper.findAll(segment);
     }
     
     // Convert list of Authors (DB) to AuthorResults (bean)
@@ -143,10 +146,8 @@ public class AuthorResource {
         map( x -> this.convertToBean(x)).
         collect(Collectors.toList());
     
-    System.out.println("author.get: start: " + offset);
-        System.out.println("author.get: length: " + limit);
-        
-    ResultWrapper<AuthorResult> result = ResultWrapperUtil.createWrapper(authorList, offset, limit);
+   
+    ResultWrapper<AuthorResult> result = ResultWrapperUtil.createWrapper(authorList, segment);
     
     return result;
   }

@@ -5,8 +5,10 @@ import java.util.Optional;
 
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
+import com.wpff.common.result.Segment;
 import com.wpff.core.DatabaseUserBook;
 
 import io.dropwizard.hibernate.AbstractDAO;
@@ -21,56 +23,60 @@ public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
 	}
 
 	/**
-	 * Look up an UserBook by id.
-	 *
-	 * @param id
-	 *            UserBook ID
-	 * @return Optional UserBook
-	 */
+   * Look up an UserBook by id.
+   *
+   * @param id
+   *          UserBook
+   * @param segment
+   *          Offset and limit for query
+   * @return Optional UserBook
+   */
 	public Optional<DatabaseUserBook> findById(Integer id) {
 		return Optional.ofNullable(get(id));
 	}
 
 	/**
-	 * Find all UserBooks for a given user
-	 *
-	 * @param userId
-	 *            User ID
-	 * @return list of UserBooks for incoming user
-	 */
+   * Find user books for incoming user
+   * 
+   * @param userId
+   *          ID of user
+   * @param segment
+   *          Segment describing start and offset
+   * @return
+   */
 	@SuppressWarnings({ "deprecation", "unchecked" })
-	public List<DatabaseUserBook> findBooksByUserId(Integer userId) {
-	    Criteria criteria = currentSession()
-				.createCriteria(DatabaseUserBook.class)
-				.add(Restrictions.eq("user_id", userId));
-	    				
+	public List<DatabaseUserBook> findBooksByUserId(Integer userId,
+	    Segment segment) {
+	    Integer offset = segment.getOffset();
+	    Integer limit = segment.getLimit();
+
+	    	Criteria criteria = currentSession()
+        .createCriteria(DatabaseUserBook.class)
+        .add(Restrictions.eq("user_id", userId))
+        .setFirstResult(offset)
+        .setMaxResults(limit);
+
 	    	return criteria.list();
 	}
+
+  /**
+   * Get total number of user books
+   * 
+   * @param userId
+   *          ID for user books
+   * @return number of books
+   */
+	public long getNumberOfUserBooks(Integer userId) {
+	    Criteria criteria = currentSession()
+				.createCriteria(DatabaseUserBook.class)
+				.add(Restrictions.eq("user_id", userId))
+				.setProjection(Projections.rowCount());
+	    
+	    Number numRows = (Number) criteria.uniqueResult();
+	    return numRows.longValue();
+	}
+
 	
-
-	/**
-	 * Find numRecent most recently added user books
-	 * 
-		 * @param userId
-	 *            User ID
-	 * @param numRecent
-	 *            of most recently user books  
-	 * @return list of UserBooks 
-	 */
-	@SuppressWarnings({ "unchecked" })
-  public List<DatabaseUserBook> findMostRecentBooks(Integer userId, int numRecent) {
-
-    List<DatabaseUserBook> books = list(
-        namedQuery("com.wpff.core.DatabaseUserBook.findMostRecent").
-                setParameter("user_id", userId).
-                setMaxResults(numRecent)
-        );
-
-    return books;
-  }
-	
-		
-
 	/**
 	 * Persists a new UserBook into the backing DB.
 	 *

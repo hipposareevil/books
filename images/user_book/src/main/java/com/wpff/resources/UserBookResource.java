@@ -27,6 +27,7 @@ import javax.ws.rs.core.UriInfo;
 import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
+import com.wpff.common.result.Segment;
 import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
@@ -169,9 +170,7 @@ public class UserBookResource {
    *          [optional] ID of book to find
    * @param bookTitle
    *          [optional] Title of books for the user
-   * @param lastAdded
-   *          [optional] Return the lastAdded most recently added user books
-   * @param offset
+    * @param offset
    *          [optional] Start index of data segment
    * @param limit
    *          [optional] Size of data segment
@@ -205,10 +204,6 @@ public class UserBookResource {
 					required = false)
       @QueryParam("book_title") 
 	    String bookTitle,
-	    	    
-      @ApiParam(value = "Return the most recently added user books.", required = false) 
-      @QueryParam("last_added") 
-      Integer lastAdded,
 	    
       @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
       @QueryParam("offset") 
@@ -226,17 +221,16 @@ public class UserBookResource {
 			// Verify the username matches the userid or is 'admin'
 			ubHelper.verifyUserIdHasAccess(context, userId.get());
 
-			// Ok to get books
+			// Create desired segment from offset & limit
+			Segment segment = new Segment(offset, limit);
 			List<FullUserBook> userBooks = null;
-			
-			// If lastAdded query is non null, just get the last X most recently added books
-			if (lastAdded != null) {
-			  userBooks = ubHelper.getUserBooksForUser(authString, userId.get(), lastAdded);
-			}
-			else {
-			  userBooks = ubHelper.getUserBooksForUser(authString, userId.get());
-			}
 
+      userBooks = ubHelper.getUserBooksForUser(authString, userId.get(), segment);
+      segment.setTotalLength(ubHelper.getTotalNumberUserBooks(userId.get()));
+
+      ////////////////////
+      // Filter out by tag, id, title
+      
       // If tagQuery is non null, filter out tags
       if (! tagQuery.isEmpty()) {
         // Filter out books by tag. If the books tags match any in the query, keep them
@@ -260,8 +254,10 @@ public class UserBookResource {
              filter(t -> t.getTitle().toLowerCase().contains(bookTitle.toLowerCase())).
              collect(Collectors.toList());
       }
-
-      ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(userBooks, offset, limit);
+      
+      // Return values
+      ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(userBooks, segment);
+      
       return result;
 
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
@@ -271,8 +267,7 @@ public class UserBookResource {
 					Response.Status.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	
+		
 
 	/**
    * Create a userbook in the database. This requires an authorization token to be
@@ -345,9 +340,6 @@ public class UserBookResource {
             .filter(t -> incomingTags.contains(t.getName()))
             .collect(Collectors.toList());
 
-        for (Tag x : matchingTags) {
-          System.out.println("got matching tag: " + x);
-        }
 
         List<Tag> allTags = new ArrayList<Tag>(matchingTags);
 
@@ -355,24 +347,17 @@ public class UserBookResource {
         Tag newTag = null;
         for (String desiredTag : incomingTags) {
           if (!tagsInDbMap.containsKey(desiredTag)) {
-            System.out.println("We are missing tag " + desiredTag + " in database");
-
             newTag = ubHelper.createTag(desiredTag);
             allTags.add(newTag);
-            System.out.println("NEW TAG: " + newTag);
           }
         }
 
-        System.out.println("");
         // 3- for each desired tag add an entry into the tagmap
         for (Tag tag : allTags) {
-          System.out.println("Looking at tag: " + tag);
-
           // Make tag mapping [userBookId, tagId]
           TagMapping mapping = new TagMapping(newUserBook.getUserBookId(), tag.getId());
 
           ubHelper.createTagMapping(mapping);
-          System.out.println("Created new tag mapping: " + mapping);
         }
 			}
 
@@ -443,7 +428,6 @@ public class UserBookResource {
       ubHelper.updateUserBook(userBookBean, userBookId.get());
       
       List<String> tags = userBookBean.getTags();
-      System.out.println("TAGS: " + tags);
       
       if (tags != null) {
         ////////////////
@@ -474,7 +458,6 @@ public class UserBookResource {
           if (!tagsInDbMap.containsKey(desiredTag)) {
             newTag = ubHelper.createTag(desiredTag);
             allTags.add(newTag);
-            System.out.println("NEW TAG: " + newTag);
           }
         }
 

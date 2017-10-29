@@ -59,4 +59,28 @@ public class ResultWrapperUtil {
     return wrapper;
   }
 
+  
+  /**
+   * Create a wrapper around the list of data. No chopping of the data is
+   * performed.
+   * 
+   * @param data
+   *          Data being returned
+   * @param segment
+   *          Information about the segment of data. This contains the start,
+   *          length and total.
+   * @return wrapper around data
+   */
+  public static <Q> ResultWrapper<Q> createWrapper(
+        List<Q> data,
+        Segment segment) {      
+    ResultWrapper<Q> wrapper = new ResultWrapper<>();
+
+    wrapper.setData(data);
+    wrapper.setLimit(data.size());
+    wrapper.setOffset(segment.getOffset());
+    wrapper.setTotal(segment.getTotalLength());
+
+    return wrapper;
+  }
 }

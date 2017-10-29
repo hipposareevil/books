@@ -7,6 +7,7 @@ import javax.ws.rs.NotFoundException;
 
 import org.apache.commons.beanutils.BeanUtils;
 
+import com.wpff.common.result.Segment;
 import com.wpff.core.Author;
 import com.wpff.db.AuthorDAO;
 import com.wpff.query.AuthorQuery;
@@ -61,11 +62,22 @@ public class AuthorHelper {
    /**
    * Get all authors
    * 
+   * @param desiredSegment
+   *          offset and limit for the query
    * @return list of Authors
    */
   @UnitOfWork
-  List<Author> findAll() {
-    return authorDAO.findAll();
+  List<Author> findAll(Segment desiredSegment) {
+    return authorDAO.findAll(desiredSegment);
+  }
+  
+  /**
+   * Get total number of authors
+   * @return Number of authors
+   */
+  	@UnitOfWork
+  long getTotalNumberAuthors() {
+  	  return authorDAO.getNumberOfAuthors();
   }
 
   /**
@@ -73,11 +85,13 @@ public class AuthorHelper {
    * 
    * @param authorQuery
    *          author name
+   * @param desiredSegment
+   *          offset and limit for the query  
    * @returnlist of Authors
    */
   @UnitOfWork
-  List<Author> findByName(String authorQuery) {
-    return authorDAO.findByName(authorQuery);
+  List<Author> findByName(String authorQuery, Segment desiredSegment) {
+    return authorDAO.findByName(authorQuery, desiredSegment);
   }
 
   /**

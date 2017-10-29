@@ -8,8 +8,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
@@ -19,12 +17,6 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "userbook")
-@NamedQueries(
-    { 
-		@NamedQuery(name = "com.wpff.core.DatabaseUserBook.findMostRecent",
-		      query = "SELECT u FROM DatabaseUserBook u WHERE u.user_id = :user_id ORDER by date_added DESC")
-    }
-)
 public class DatabaseUserBook {
 
 	/**

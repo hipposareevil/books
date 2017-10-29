@@ -1,14 +1,18 @@
 package com.wpff.db;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+
+import com.wpff.common.result.Segment;
 import com.wpff.core.Tag;
 
 import io.dropwizard.hibernate.AbstractDAO;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.MatchMode;
-
-import java.util.List;
-import java.util.Optional;
 
 
 /**
@@ -72,14 +76,39 @@ public class TagDAO extends AbstractDAO<Tag> {
   public void delete(Tag tag) {
     currentSession().delete(tag);
   }
+  
+  /**
+   * Get total number of tags
+   * 
+   * @return number of tags
+   */
+	public long getNumberOfTags() {
+	    Criteria criteria = currentSession()
+				.createCriteria(Tag.class)
+				.setProjection(Projections.rowCount());
+	    
+	    Number numRows = (Number) criteria.uniqueResult();
+	    return numRows.longValue();
+	}
+
 
   /**
-   * Find all tags in the database. Uses the named query in com.wpff.core.Tag
-   *
+   * Find all tags in the database. 
+   * 
+   * @param segment
+   *          Offset and limit for query
    * @return List of Tags, may be empty
    */
-  public List<Tag> findAll() {
-    return list(namedQuery("com.wpff.core.Tag.findAll"));
+  public List<Tag> findAll(Segment segment) {
+      Integer offset = segment.getOffset();
+    Integer limit = segment.getLimit();
+
+	  Criteria criteria = currentSession()
+     .createCriteria(Tag.class)
+     .setFirstResult(offset)
+     .setMaxResults(limit);
+	    	
+	  return criteria.list();
   }
 
 

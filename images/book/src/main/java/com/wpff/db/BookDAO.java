@@ -3,9 +3,12 @@ package com.wpff.db;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
+import com.wpff.common.result.Segment;
 import com.wpff.core.Book;
 
 import io.dropwizard.hibernate.AbstractDAO;
@@ -103,13 +106,38 @@ public class BookDAO extends AbstractDAO<Book> {
 
 
   /**
-   * Find all books in the database.
+   * Find all books in the database. 
    *
+   * @param segment
+   *          Offset and limit for query
    * @return List of Books, may be empty
    */
-  public List<Book> findAll() {
-    return list(namedQuery("com.wpff.core.Book.findAll"));
+  public List<Book> findAll(Segment segment) {
+    Integer offset = segment.getOffset();
+    Integer limit = segment.getLimit();
+
+	  Criteria criteria = currentSession()
+     .createCriteria(Book.class)
+     .setFirstResult(offset)
+     .setMaxResults(limit);
+	    	
+	  return criteria.list();
   }
+  
+  
+  /**
+   * Get total number of books
+   * 
+   * @return number of books
+   */
+	public long getNumberOfBooks() {
+	    Criteria criteria = currentSession()
+				.createCriteria(Book.class)
+				.setProjection(Projections.rowCount());
+	    
+	    Number numRows = (Number) criteria.uniqueResult();
+	    return numRows.longValue();
+	}
 
 
 }

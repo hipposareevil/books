@@ -26,6 +26,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
+import com.wpff.common.result.Segment;
 import com.wpff.core.PostTag;
 import com.wpff.core.Tag;
 import com.wpff.db.TagDAO;
@@ -102,9 +103,13 @@ public class TagResource {
 			@HeaderParam(value = "Authorization") 
 	    String authDummy) {
 	  // Start
-		List<Tag> tags = tagDAO.findAll();
+    	Segment segment = new Segment(offset, limit);
+ 
+		List<Tag> tags = tagDAO.findAll(segment);
+		    // Get list of all tags.
+    segment.setTotalLength(tagDAO.getNumberOfTags());
 	
-		ResultWrapper<Tag> result = ResultWrapperUtil.createWrapper(tags, offset, limit);
+		ResultWrapper<Tag> result = ResultWrapperUtil.createWrapper(tags, segment);
 		return result;
 	}
 

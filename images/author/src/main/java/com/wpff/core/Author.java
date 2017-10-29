@@ -5,8 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 
@@ -15,14 +13,6 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "author")
-@NamedQueries(
-    {
-        @NamedQuery(
-          name = "com.wpff.core.Author.findAll",
-            query = "SELECT a FROM Author a"
-        )
-    } 
-)
 public class Author implements Comparable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
