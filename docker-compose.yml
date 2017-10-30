@@ -111,11 +111,29 @@ services:
      restart: always
      logging:
        driver: "json-file"
-     depends_on:
-      - author
      networks:
       - booknet
 
+   # Graphite metrics collector
+   graphite:
+     container_name: graphite
+     image: graphiteapp/graphite-statsd:latest
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+      - booknet
+
+   grafana:
+     container_name: grafana
+     image: grafana/grafana:latest
+     ports:
+      - 3000:3000
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+      - booknet
 
    # MySQL database for storing books, authors and users.
    # This loads the books.sql database on initialization
@@ -135,7 +153,6 @@ services:
      - MYSQL_DATABASE=booksdatabase
      - MYSQL_USER=booksuser 
      - MYSQL_PASSWORD=books 
-
 
 
    # Redis key/value store for user and tokens

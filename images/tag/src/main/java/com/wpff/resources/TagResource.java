@@ -23,6 +23,7 @@ import javax.ws.rs.core.UriInfo;
 // utils
 import org.apache.commons.beanutils.BeanUtils;
 
+import com.codahale.metrics.annotation.Timed;
 import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
@@ -87,6 +88,7 @@ public class TagResource {
 	@GET
 	@UnitOfWork
 	@TokenRequired
+	@Timed(absolute=true, name="getTags")
 	public ResultWrapper<Tag> getTags(
 	    @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
 			@QueryParam("offset") 
@@ -102,16 +104,19 @@ public class TagResource {
 			@ApiParam(value = "Bearer authorization", required = true) 
 			@HeaderParam(value = "Authorization") 
 	    String authDummy) {
+	  //
 	  // Start
-    	Segment segment = new Segment(offset, limit);
- 
-		List<Tag> tags = tagDAO.findAll(segment);
-		    // Get list of all tags.
-    segment.setTotalLength(tagDAO.getNumberOfTags());
-	
-		ResultWrapper<Tag> result = ResultWrapperUtil.createWrapper(tags, segment);
-		return result;
-	}
+	  
+      Segment segment = new Segment(offset, limit);
+
+      List<Tag> tags = tagDAO.findAll(segment);
+      // Get list of all tags.
+      segment.setTotalLength(tagDAO.getNumberOfTags());
+
+      ResultWrapper<Tag> result = ResultWrapperUtil.createWrapper(tags, segment);
+      return result;
+    
+  }
 
 	/**
 	 * Return single tag from database
@@ -133,6 +138,7 @@ public class TagResource {
 	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
+	@Timed(absolute=true, name="getSingleTag")
 	public Tag getTag(
 			@Context SecurityContext context,
 			@ApiParam(value = "ID of tag to retrieve.", required = false) 
@@ -169,6 +175,7 @@ public class TagResource {
 	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
+	@Timed(absolute=true, name="deleteTag")
 	public Response delete(
 			@ApiParam(value = "Name of tag to delete.", required = true) 
 			@PathParam("tag_id") 
@@ -214,6 +221,7 @@ public class TagResource {
 	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
+	@Timed(absolute=true, name="updateTag")
 	public Response update(
 			@PathParam("tag_id") 
 			Integer tagId,
@@ -284,6 +292,7 @@ public class TagResource {
 	@POST
 	@UnitOfWork
 	@TokenRequired
+  @Timed(absolute=true, name="createTag")
 	public Tag createTag(
 			@ApiParam(value = "Tag information.", required = true) 
 			PostTag tagBean,

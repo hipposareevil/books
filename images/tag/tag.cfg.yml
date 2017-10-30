@@ -43,6 +43,14 @@ redis:
   # The configured timeout (in milliseconds) for redis connections in the connection pool.  (default: 2000)
   timeout: 2000
 
+metrics:
+  reporters:
+    - type: graphite
+      host: graphite
+      port: 2003
+      prefix: mybooks.tag
+      frequency: 20 seconds
+
 
 # the only required property is resourcePackage, for more config options see below
 # resourcePackage is comma delimited list of packages
