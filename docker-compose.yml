@@ -72,6 +72,8 @@ services:
      expose:
        - 8080
      restart: always
+     ports:
+      - 7081:8081
      logging:
        driver: "json-file"
      networks:

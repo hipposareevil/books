@@ -27,8 +27,6 @@ public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
    *
    * @param id
    *          UserBook
-   * @param segment
-   *          Offset and limit for query
    * @return Optional UserBook
    */
 	public Optional<DatabaseUserBook> findById(Integer id) {
@@ -42,7 +40,7 @@ public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
    *          ID of user
    * @param segment
    *          Segment describing start and offset
-   * @return
+   * @return List of user book
    */
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public List<DatabaseUserBook> findBooksByUserId(Integer userId,
