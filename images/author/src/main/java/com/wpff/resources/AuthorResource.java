@@ -25,6 +25,7 @@ import javax.ws.rs.core.UriInfo;
 // utils
 import org.apache.commons.beanutils.BeanUtils;
 
+import com.codahale.metrics.annotation.Timed;
 import com.wpff.common.drop.filter.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
@@ -76,6 +77,7 @@ public class AuthorResource {
   @GET
   @Path("/{author_id}")
   @TokenRequired
+  @Timed(absolute=true, name="getSingle")
   public AuthorResult getAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = false)
     @PathParam("author_id") 
@@ -112,7 +114,8 @@ public class AuthorResource {
                 )
   @GET
   @TokenRequired
-  public ResultWrapper<AuthorResult> getAuthor(
+  @Timed(absolute=true, name="getAll")  
+  public ResultWrapper<AuthorResult> getAuthors(
       @ApiParam(value = "Name or partial name of author to retrieve.", required = false)
       @QueryParam("name") String authorNameQuery,
     
@@ -178,6 +181,7 @@ public class AuthorResource {
                    message = "Author created.")
            })
   @TokenRequired
+  @Timed(absolute = true, name = "create")
   public AuthorResult createAuthor(
     @ApiParam(value = "Author information.", required = false)
     AuthorQuery authorBean,
@@ -246,6 +250,7 @@ public class AuthorResource {
   @ApiResponse(code = 409, message = "Duplicate value")
   @TokenRequired
   @Path("/{author_id}")
+  @Timed(absolute = true, name = "update")
   public AuthorResult updateAuthor(
     @ApiParam(value = "Author information.", required = false)
     AuthorQuery authorBean,
@@ -310,6 +315,7 @@ public class AuthorResource {
   @DELETE
   @Path("/{author_id}")
   @TokenRequired
+  @Timed(absolute = true, name = "delete")  
   public Response deleteAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = true)
     @PathParam("author_id") IntParam authorId,

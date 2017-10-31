@@ -1,9 +1,10 @@
 Table of Contents
 =================
 
-  * [Books](#books)
+   * [Books](#books)
    * [tldr](#tldr)
    * [Endpoints](#endpoints)
+      * [(frontend)](#frontend)
       * [query](#query)
       * [author](#author)
       * [book](#book)
@@ -15,6 +16,7 @@ Table of Contents
    * [Databases](#databases)
       * [MySQL](#mysql)
       * [Redis](#redis)
+   * [Metrics](#metrics)
    * [Prerequisites](#prerequisites)
    * [Building](#building)
       * [Docker images used](#docker-images-used)
@@ -57,7 +59,7 @@ The following endpoints are proxied via the API Gateway on port 8080 (configurab
 
 Endpoint | Purpose
 --- | ---
-/ | Frontend web application. (WIP)
+/ | Frontend single-page application.
 /query | Microservice to query openlibrary.org for book titles and authors.
 /author | Manage list of authors in database.
 /book | Manage list of books in database. 
@@ -67,8 +69,11 @@ Endpoint | Purpose
 /authorize | Authorize access to endpoints.
 /swagger/ | [swagger](http://swagger.io) documentation describing the REST APIs.
 
-## /
-Frontend web application. This uses the microservices to manage the books, authors, users, user lists, and tags. Utilizes the [vue](https://vuejs.org/) framework and [bulma](http://bulma.io/) framework.
+## (frontend) 
+Frontend web application at **/**. This uses the microservices to manage the books, authors, users, user lists, and tags. Utilizes the [vue](https://vuejs.org/) framework and [bulma](https://bulma.io/) framework.
+
+See [frontend](https://github.com/hipposareevil/books/blob/master/images/frontend/README.md) for more information. 
+
 
 ## query
 REST microservice that queries openlibrary for new authors and book titles. Would be used by frontend to add new entries to application.
@@ -125,7 +130,15 @@ See [mysql](https://github.com/hipposareevil/books/blob/master/mysql/README.md) 
 
 
 ## Redis
-[Redis](https://redis.io/) is used to store and manage authorization tokens. The various services utilize redis to authorize a caller for an operation.
+[Redis](https://redis.io/) is used to store and manage authorization tokens. The various services utilize redis to authorize a caller for an o
+peration.
+
+# Metrics
+
+Metrics are provided via [graphite](https://graphiteapp.org/) and [grafana](https://grafana.com/).
+
+See [metrics](https://github.com/hipposareevil/books/blob/master/metrics/README.md) for more information.
+
 
 # Prerequisites
 
@@ -160,11 +173,13 @@ openjdk:8-jdk-alpine | Base image for web services.
 
 ## Frameworks used
 
-* [bulma css](http://bulma.io/)
-* [vue javascript](https://vuejs.org/)
 * [dropwizard](http://www.dropwizard.io/)
 * [spring boot](https://projects.spring.io/spring-boot/)
 * [swagger](http://swagger.io)
+* [bulma css](http://bulma.io/)
+* [vue javascript](https://vuejs.org/)
+* [graphite](https://graphiteapp.org)
+* [grafana](https://grafana.com)
 
 # Customizing application deployment
 Docker compose utilizes an *.env* file where environment variables can be located. This project has the following variables.

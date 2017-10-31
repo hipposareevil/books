@@ -45,6 +45,8 @@ import io.swagger.annotations.ApiResponses;
 // Jedis
 import redis.clients.jedis.Jedis;
 
+import com.codahale.metrics.annotation.Timed;
+
 /**
  * Resource at /user that manages users.
  *
@@ -90,6 +92,7 @@ public class UserResource {
   @Path("/{user_id}")
   @UnitOfWork
   @TokenRequired
+	@Timed(absolute=true, name="get")
   public User getUser(
       @Context SecurityContext context, 
       @ApiParam(value = "ID of user to retrieve.", required = false) 
@@ -125,20 +128,26 @@ public class UserResource {
   @GET
   @UnitOfWork
   @TokenRequired
-  public ResultWrapper<VisableUser> getUsers(@Context SecurityContext context,
+	@Timed(absolute=true, name="getAll")
+  public ResultWrapper<VisableUser> getUsers(
+      @Context SecurityContext
+      context,
 
       @ApiParam(value = "Where to start the returned data segment from the full result.",
-          required = false) @QueryParam("offset") Integer offset,
+          required = false) @QueryParam("offset")
+      Integer offset,
 
       @ApiParam(value = "size of the returned data segment.",
-          required = false) @QueryParam("limit") Integer limit,
+          required = false) @QueryParam("limit")
+      Integer limit,
 
-      @ApiParam(value = "Bearer authorization", required = true) @HeaderParam(
-          value = "Authorization") String authDummy) {
+      @ApiParam(value = "Bearer authorization", required = true)
+      @HeaderParam(value = "Authorization")
+      String authDummy) {
     // Start
     verifyAdminUser(context);
     
-    	Segment segment = new Segment(offset, limit);
+    Segment segment = new Segment(offset, limit);
  
     // Get list of all Users.
     List<User> users = userDAO.findAll(segment);
@@ -185,13 +194,18 @@ public class UserResource {
   @POST
   @UnitOfWork
   @TokenRequired
-  public User createUser(@ApiParam(value = "User information.", required = true) PostUser userBean,
-      @Context Jedis jedis,
+	@Timed(absolute=true, name="create")
+  public User createUser(
+    @ApiParam(value = "User information.", required = true)
+    PostUser userBean,
 
-      @Context SecurityContext context, @Context UriInfo uriInfo,
+    @Context Jedis jedis,
 
-      @ApiParam(value = "Bearer authorization", required = true) @HeaderParam(
-          value = "Authorization") String authDummy) {
+    @Context SecurityContext context, @Context UriInfo uriInfo,
+    
+    @ApiParam(value = "Bearer authorization", required = true)
+    @HeaderParam(value = "Authorization")
+    String authDummy) {
     // START
     verifyAdminUser(context);
 
@@ -203,8 +217,8 @@ public class UserResource {
           "User '" + userBean.getName() + "' already exists.",
           Response.Status.CONFLICT);
     }
-    // No existing user, go ahead and create
 
+    // No existing user, go ahead and create
     try {
       // Make a new User from incoming userBean (which is a PostBook)
       User user = new User();
@@ -243,6 +257,7 @@ public class UserResource {
   @Path("/{user_id}")
   @UnitOfWork
   @TokenRequired
+	@Timed(absolute=true, name="update")
   public Response update(
       @ApiParam(value = "ID of user to update.", required = true) 
       @PathParam("user_id") 
@@ -315,6 +330,7 @@ public class UserResource {
   @Path("/{user_id}")
   @UnitOfWork
   @TokenRequired
+	@Timed(absolute=true, name="delete")
   public Response delete(
       @ApiParam(value = "ID of user to delete.", required = true) 
       @PathParam("user_id") Integer userId, 

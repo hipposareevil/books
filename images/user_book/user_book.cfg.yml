@@ -34,6 +34,16 @@ logging:
     org.hibernate:
       level: OFF
 
+metrics:
+  reporters:
+    - type: graphite
+      host: graphite
+      port: 2003
+      prefix: mybooks.user_book
+      frequency: 20 seconds
+
+
+
 redis:
   # The redis server's address
   endpoint: token_db:6379

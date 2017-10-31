@@ -53,6 +53,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import com.codahale.metrics.annotation.Timed;
 
 /**
  * Resource for the /book url. Manages books.
@@ -87,6 +88,7 @@ public class BookResource {
   @Path("/{book_id}")
   @UnitOfWork
   @TokenRequired
+	@Timed(absolute=true, name="get")
   public BookResult getBook(
     @ApiParam(value = "ID of book to retrieve.", required = false)	
     @PathParam("book_id") 	
@@ -129,7 +131,8 @@ public class BookResource {
   @GET
   @UnitOfWork
   @TokenRequired
-  public ResultWrapper<BookResult> getBook(
+	@Timed(absolute=true, name="getAll")
+  public ResultWrapper<BookResult> getBooks(
     @ApiParam(value = "Title or partial title of book to retrieve.", required = false)
     @QueryParam("title") String titleQuery,
     
@@ -237,6 +240,7 @@ public class BookResource {
       @ApiResponse(code = 200, 
                    message = "Book created.")
            })  
+	@Timed(absolute=true, name="create")
   public BookResult createBook(
     @ApiParam(value = "Book information.", required = true)
     BookQuery bookBean,
@@ -318,6 +322,7 @@ public class BookResource {
   @UnitOfWork
   @TokenRequired
   @Path("/{book_id}")
+	@Timed(absolute=true, name="update")
   public BookResult updateBook(
     @ApiParam(value = "Book information.", required = true)
     BookQuery bookBean,
@@ -398,6 +403,7 @@ public class BookResource {
   @Path("/{book_id}")
   @UnitOfWork
   @TokenRequired
+	@Timed(absolute=true, name="delete")
   public Response deleteBook(
     @ApiParam(value = "ID of book to retrieve.", required = true)
     @PathParam("book_id") 

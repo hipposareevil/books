@@ -20,6 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <dropwizard.version>1.1.1</dropwizard.version>
+        <metrics.version>3.2.3</metrics.version>
         <mainClass>com.wpff.UserApplication</mainClass>
     </properties>
 
@@ -92,6 +93,21 @@
           <artifactId>dropwizard-swagger</artifactId>
           <version>1.0.0-1</version>
         </dependency>
+
+        <!-- metrics -->
+        <dependency>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-core</artifactId>
+          <version>${metrics.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.dropwizard/dropwizard-metrics-graphite -->
+        <dependency>
+          <groupId>io.dropwizard</groupId>
+          <artifactId>dropwizard-metrics-graphite</artifactId>
+          <version>1.2.0</version>
+        </dependency>
+
 
     </dependencies>
 

@@ -26,6 +26,13 @@ database:
   # whether or not idle connections should be validated
   checkConnectionWhileIdle: false
 
+metrics:
+  reporters:
+    - type: graphite
+      host: graphite
+      port: 2003
+      prefix: mybooks.author
+      frequency: 20 seconds
 
 redis:
   # The redis server's address

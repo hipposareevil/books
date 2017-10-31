@@ -88,7 +88,7 @@ public class TagResource {
 	@GET
 	@UnitOfWork
 	@TokenRequired
-	@Timed(absolute=true, name="getTags")
+	@Timed(absolute=true, name="getAll")
 	public ResultWrapper<Tag> getTags(
 	    @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 
 			@QueryParam("offset") 
@@ -138,7 +138,7 @@ public class TagResource {
 	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
-	@Timed(absolute=true, name="getSingleTag")
+	@Timed(absolute=true, name="getSingle")
 	public Tag getTag(
 			@Context SecurityContext context,
 			@ApiParam(value = "ID of tag to retrieve.", required = false) 
@@ -175,7 +175,7 @@ public class TagResource {
 	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
-	@Timed(absolute=true, name="deleteTag")
+	@Timed(absolute=true, name="delete")
 	public Response delete(
 			@ApiParam(value = "Name of tag to delete.", required = true) 
 			@PathParam("tag_id") 
@@ -221,7 +221,7 @@ public class TagResource {
 	@Path("/{tag_id}")
 	@UnitOfWork
 	@TokenRequired
-	@Timed(absolute=true, name="updateTag")
+	@Timed(absolute=true, name="update")
 	public Response update(
 			@PathParam("tag_id") 
 			Integer tagId,
@@ -292,7 +292,7 @@ public class TagResource {
 	@POST
 	@UnitOfWork
 	@TokenRequired
-  @Timed(absolute=true, name="createTag")
+  @Timed(absolute=true, name="create")
 	public Tag createTag(
 			@ApiParam(value = "Tag information.", required = true) 
 			PostTag tagBean,

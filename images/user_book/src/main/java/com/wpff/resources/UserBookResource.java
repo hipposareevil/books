@@ -42,6 +42,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import com.codahale.metrics.annotation.Timed;
+
 /**
  * Resource at /user_book that manages user's books
  */
@@ -86,18 +88,21 @@ public class UserBookResource {
 	@DELETE
 	@Path("/{user_id}/{user_book_id}")
 	@TokenRequired
-	public Response deleteUserBook(@Context SecurityContext context, 
-	    @ApiParam(value = "ID of user.", required = false) 
-     	@PathParam("user_id") 
-	    IntParam userId,
-
-			@ApiParam(value = "ID of userBook.", required = false) 
-	    @PathParam("user_book_id") 
-	    IntParam userBookId,
-
-			@ApiParam(value = "Bearer authorization", required = true) 
-	    @HeaderParam(value = "Authorization") 
-	    String authDummy) 
+	@Timed(absolute=true, name="delete")
+	public Response deleteUserBook(
+    @Context SecurityContext context, 
+	  
+    @ApiParam(value = "ID of user.", required = false) 
+    @PathParam("user_id") 
+    IntParam userId,
+    
+    @ApiParam(value = "ID of userBook.", required = false) 
+    @PathParam("user_book_id") 
+    IntParam userBookId,
+    
+    @ApiParam(value = "Bearer authorization", required = true) 
+    @HeaderParam(value = "Authorization") 
+    String authDummy) 
 	{
 		// Start
 
@@ -128,6 +133,7 @@ public class UserBookResource {
 	@GET
 	@Path("/{user_id}/{user_book_id}")
 	@TokenRequired
+	@Timed(absolute=true, name="get")
 	public FullUserBook getUserBook(
 	    @Context SecurityContext context, 
 	    
@@ -184,6 +190,7 @@ public class UserBookResource {
 	@GET
 	@Path("/{user_id}")
 	@TokenRequired
+	@Timed(absolute=true, name="getAll")
 	public ResultWrapper<FullUserBook> getUserBooks(
 	    @Context SecurityContext context, 
 	    @ApiParam(value = "ID of user.", required = false) 
@@ -296,6 +303,7 @@ public class UserBookResource {
 	@POST
 	@TokenRequired
 	@Path("/{user_id}")
+	@Timed(absolute=true, name="create")
 	public FullUserBook createUserBook(
 	    @Context SecurityContext context, 
 	    @Context UriInfo uriInfo,
@@ -400,6 +408,7 @@ public class UserBookResource {
 	@PUT
 	@TokenRequired
 	@Path("/{user_id}/{user_book_id}")
+	@Timed(absolute=true, name="update")
 	public FullUserBook updateUserBook(
 	    @Context 
 	    SecurityContext context,
