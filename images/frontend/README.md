@@ -4,6 +4,7 @@
 
 **/** is a single-page application written in [vue](https://vuejs.org/) using [bulma](http://bulma.io/) for style.
 
+## Screen grab of front page
 ![Frontend](https://github.com/hipposareevil/books/blob/master/images/frontend/pngs/frontPage.png)
 
 
