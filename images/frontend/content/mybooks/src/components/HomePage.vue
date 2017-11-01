@@ -86,6 +86,7 @@
               headers: { Authorization: authString },
               params: params })
               .then((response) => {
+                // Got the user books
                 self.userBooks = response.data.data
               })
           })

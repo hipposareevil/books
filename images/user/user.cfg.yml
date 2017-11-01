@@ -27,6 +27,14 @@ database:
   checkConnectionWhileIdle: false
 
 
+logging:
+  loggers:
+    org.hibernate:
+      level: OFF
+    com.codahale:
+      level: OFF
+
+
 metrics:
   reporters:
     - type: graphite

@@ -43,6 +43,13 @@ redis:
   # The configured timeout (in milliseconds) for redis connections in the connection pool.  (default: 2000)
   timeout: 2000
 
+logging:
+  loggers:
+    org.hibernate:
+      level: OFF
+    com.codahale:
+      level: OFF
+
 metrics:
   reporters:
     - type: graphite

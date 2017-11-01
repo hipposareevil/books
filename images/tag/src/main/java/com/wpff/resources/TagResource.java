@@ -24,7 +24,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.codahale.metrics.annotation.Timed;
-import com.wpff.common.drop.filter.TokenRequired;
+import com.wpff.common.auth.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.common.result.Segment;
@@ -87,7 +87,7 @@ public class TagResource {
 	    )
 	@GET
 	@UnitOfWork
-	@TokenRequired
+	@com.wpff.common.auth.TokenRequired
 	@Timed(absolute=true, name="getAll")
 	public ResultWrapper<Tag> getTags(
 	    @ApiParam(value = "Where to start the returned data segment from the full result.", required = false) 

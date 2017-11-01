@@ -16,7 +16,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
-import com.wpff.common.drop.filter.TokenRequiredFeature;
+import com.wpff.common.auth.TokenRequiredFeature;
+import com.wpff.common.cache.Cache;
+import com.wpff.common.cache.CacheFactory;
 import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
@@ -88,9 +90,9 @@ public class UserBookApplication extends Application<UserBookConfiguration> {
 			public JedisFactory getJedisFactory(UserBookConfiguration configuration) {
 				return configuration.getJedisFactory();
 			}
-		});
+		});		
 	}
-
+	
 	@Override
 	public void run(final UserBookConfiguration configuration, final Environment environment) {
     // Set up Jedis. Currently JedisFactory doesn't inject into a filter, just Resources.
@@ -98,17 +100,20 @@ public class UserBookApplication extends Application<UserBookConfiguration> {
 
 		java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
 
-		// UserBook DAO
+		// DAOs for the UserBookHelper
 		final UserBookDAO userBookDao = new UserBookDAO(hibernateBundle.getSessionFactory());
 		final UserDAO userDao = new UserDAO(hibernateBundle.getSessionFactory());
 		final TagDAO tagDao = new TagDAO(hibernateBundle.getSessionFactory());
 		final TagMappingDAO tagMapDao = new TagMappingDAO(hibernateBundle.getSessionFactory());
+		
+		// Cache
+		Cache cache = CacheFactory.createCache(jedisPool);
 
 		// Helper for UnitOfWork
 		UserBookHelper ubHelper = new UnitOfWorkAwareProxyFactory(hibernateBundle)
 		    .create(UserBookHelper.class,
-		        new Class[] { UserBookDAO.class, UserDAO.class, TagDAO.class, TagMappingDAO.class },
-				new   Object[] { userBookDao, userDao, tagDao, tagMapDao });
+		    new Class[] { UserBookDAO.class, UserDAO.class, TagDAO.class, TagMappingDAO.class, Cache.class },
+				new Object[] { userBookDao, userDao, tagDao, tagMapDao, cache});
 
 		// Register endpoints
 		environment.jersey().register(new UserBookResource(ubHelper));

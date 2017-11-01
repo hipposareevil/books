@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
-import com.wpff.common.drop.filter.TokenRequiredFeature;
+import com.wpff.common.cache.Cache;
+import com.wpff.common.cache.CacheFactory;
 import com.wpff.core.Book;
 // Resources
 import com.wpff.db.BookDAO;
@@ -100,14 +101,18 @@ public class BookApplication extends Application<BookConfiguration> {
     // Set up Jedis. Currently JedisFactory doesn't inject into a filter, just Resources.
     JedisPool jedisPool = configuration.getJedisFactory().build(environment);
 
-    // book rest endpoint
-    final BookDAO dao = new BookDAO(hibernateBundle.getSessionFactory());
-    environment.jersey().register(new BookResource(dao));
+    	// Cache
+		Cache cache = CacheFactory.createCache(jedisPool);
+
+		// DAO
+    final BookDAO dao = new BookDAO(hibernateBundle.getSessionFactory()); 
+		
+    // Book endpoint
+    environment.jersey().register(new BookResource(dao, cache));
 
     // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired = new TokenRequiredFeature(jedisPool) ;
+    DynamicFeature tokenRequired = new com.wpff.common.auth.TokenRequiredFeature(jedisPool) ;
     environment.jersey().register(tokenRequired);
-
   }
 
 }

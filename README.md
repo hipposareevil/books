@@ -16,6 +16,8 @@ Table of Contents
    * [Databases](#databases)
       * [MySQL](#mysql)
       * [Redis](#redis)
+         * [Authentication](#authentication)
+         * [Cache](#cache)
    * [Metrics](#metrics)
    * [Prerequisites](#prerequisites)
    * [Building](#building)
@@ -130,8 +132,14 @@ See [mysql](https://github.com/hipposareevil/books/blob/master/mysql/README.md) 
 
 
 ## Redis
-[Redis](https://redis.io/) is used to store and manage authorization tokens. The various services utilize redis to authorize a caller for an o
-peration.
+
+[Redis](https://redis.io/) is used to store key/value pairs for the services.
+
+### Authentication
+Authentication tokens are created by the *authorize* service and stored in Redis. Redis is then used by all services to verify authentication.
+
+### Cache
+Redis is also used as a cache for the services. When a service makes a REST call to another service, the calling service stores the returned data in the cache. For example, the *book* service calls the *author* service to get the author's name for a book. The *book* service stores that in the cache for the next call. The *author* service will flush the cache when mutations to the author database have been made.
 
 # Metrics
 

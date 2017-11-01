@@ -25,7 +25,8 @@ import javax.ws.rs.core.UriInfo;
 // utils
 import org.apache.commons.beanutils.BeanUtils;
 
-import com.wpff.common.drop.filter.TokenRequired;
+import com.codahale.metrics.annotation.Timed;
+import com.wpff.common.auth.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.common.result.Segment;
@@ -44,8 +45,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 // Jedis
 import redis.clients.jedis.Jedis;
-
-import com.codahale.metrics.annotation.Timed;
 
 /**
  * Resource at /user that manages users.

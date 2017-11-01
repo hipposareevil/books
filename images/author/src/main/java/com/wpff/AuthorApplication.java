@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
-import com.wpff.common.drop.filter.TokenRequiredFeature;
+import com.wpff.common.cache.Cache;
+import com.wpff.common.cache.CacheFactory;
 import com.wpff.core.Author;
 // Resources
 import com.wpff.db.AuthorDAO;
@@ -102,19 +103,22 @@ public class AuthorApplication extends Application<AuthorConfiguration> {
     // Resources.
     JedisPool jedisPool = configuration.getJedisFactory().build(environment);
 
+    // Cache
+		Cache cache = CacheFactory.createCache(jedisPool);
+    
     // author rest endpoint
     final AuthorDAO authorDao = new AuthorDAO(hibernateBundle.getSessionFactory());
 
     // Helper for UnitOfWork
     AuthorHelper authorHelper = new UnitOfWorkAwareProxyFactory(hibernateBundle).create(
         AuthorHelper.class, 
-        new Class[] { AuthorDAO.class }, 
-        new Object[] { authorDao } );
+        new Class[] { AuthorDAO.class, Cache.class }, 
+        new Object[] { authorDao, cache } );
 
     environment.jersey().register(new AuthorResource(authorHelper));
 
     // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired = new TokenRequiredFeature(jedisPool);
+    DynamicFeature tokenRequired = new com.wpff.common.auth.TokenRequiredFeature(jedisPool);
     environment.jersey().register(tokenRequired);
   }
 

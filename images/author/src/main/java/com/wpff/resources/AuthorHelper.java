@@ -7,6 +7,7 @@ import javax.ws.rs.NotFoundException;
 
 import org.apache.commons.beanutils.BeanUtils;
 
+import com.wpff.common.cache.Cache;
 import com.wpff.common.result.Segment;
 import com.wpff.core.Author;
 import com.wpff.db.AuthorDAO;
@@ -14,18 +15,33 @@ import com.wpff.query.AuthorQuery;
 
 import io.dropwizard.hibernate.UnitOfWork;
 
+/**
+ * Helper for managing DAO
+ *
+ */
 public class AuthorHelper {
   
+  /**
+   * Author DAO
+   */
   private final AuthorDAO authorDAO;
 
+   /**
+   * Redis cache
+   */
+  private final Cache cache;
+  
   /**
    * Create new helper
    * 
    * @param authorDao
    *          DAO used by helper
+   * @param cache
+   *          Redis cache
    */
-  public AuthorHelper(AuthorDAO authorDao) {
+  public AuthorHelper(AuthorDAO authorDao, Cache cache) {
     this.authorDAO= authorDao;
+    this.cache = cache;
   }
   
   /**
@@ -135,7 +151,10 @@ public class AuthorHelper {
     // Make subjects in DB a CSV string
     authorToUpdate.setSubjectsAsCsv(convertListToCsv(authorBean.getSubjects()));
     
-    this.authorDAO.update(authorToUpdate);    
+    this.authorDAO.update(authorToUpdate);
+    
+    // Clear the cache
+    this.cache.clear("author.name", authorId);
     return authorToUpdate;
   }
 
@@ -149,6 +168,10 @@ public class AuthorHelper {
   @UnitOfWork
   void deleteAuthor(int authorId) {
     Author deleteMe = this.findById(authorId);
+            
+    // Clear the cache
+    this.cache.clear("author.name", authorId);
+    
     this.authorDAO.delete(deleteMe);
   }
   

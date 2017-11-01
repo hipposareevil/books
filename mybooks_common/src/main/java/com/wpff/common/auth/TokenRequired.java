@@ -1,4 +1,4 @@
-package com.wpff.common.drop.filter;
+package com.wpff.common.auth;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

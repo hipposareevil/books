@@ -24,7 +24,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
-import com.wpff.common.drop.filter.TokenRequired;
+import com.codahale.metrics.annotation.Timed;
+import com.wpff.common.auth.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.common.result.Segment;
@@ -41,8 +42,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
-import com.codahale.metrics.annotation.Timed;
 
 /**
  * Resource at /user_book that manages user's books
@@ -132,7 +131,7 @@ public class UserBookResource {
 			notes = "Requires authentication token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.")
 	@GET
 	@Path("/{user_id}/{user_book_id}")
-	@TokenRequired
+	@com.wpff.common.auth.TokenRequired
 	@Timed(absolute=true, name="get")
 	public FullUserBook getUserBook(
 	    @Context SecurityContext context, 
@@ -207,7 +206,7 @@ public class UserBookResource {
       @QueryParam("book_id") 
 	    Integer bookId,
 	    
-			@ApiParam(value = "Title of books within the user's books.Only the books with that matching title will be returned",
+			@ApiParam(value = "Title of books within the user's books. Only the books with that matching title will be returned",
 					required = false)
       @QueryParam("book_title") 
 	    String bookTitle,

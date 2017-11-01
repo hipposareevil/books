@@ -26,6 +26,13 @@ database:
   # whether or not idle connections should be validated
   checkConnectionWhileIdle: false
 
+logging:
+  loggers:
+    org.hibernate:
+      level: OFF
+    com.codahale:
+      level: OFF
+
 metrics:
   reporters:
     - type: graphite

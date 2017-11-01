@@ -5,7 +5,7 @@ import javax.ws.rs.container.DynamicFeature;
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
-import com.wpff.common.drop.filter.TokenRequiredFeature;
+import com.wpff.common.auth.TokenRequiredFeature;
 import com.wpff.core.User;
 import com.wpff.db.UserDAO;
 // Resources

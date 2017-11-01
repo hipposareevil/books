@@ -5,7 +5,6 @@ import javax.ws.rs.container.DynamicFeature;
 // Jedis
 import com.bendb.dropwizard.redis.JedisBundle;
 import com.bendb.dropwizard.redis.JedisFactory;
-import com.wpff.common.drop.filter.TokenRequiredFeature;
 import com.wpff.core.Tag;
 import com.wpff.db.TagDAO;
 // Resources
@@ -102,7 +101,7 @@ public class TagApplication extends Application<TagConfiguration> {
     environment.jersey().register(new TagResource(tagDao));
 
     // Add a container request filter for securing webservice endpoints.
-    DynamicFeature tokenRequired = new TokenRequiredFeature(jedisPool);
+    DynamicFeature tokenRequired = new com.wpff.common.auth.TokenRequiredFeature(jedisPool);
     environment.jersey().register(tokenRequired);
   }
 

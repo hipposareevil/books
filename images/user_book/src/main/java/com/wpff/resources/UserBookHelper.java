@@ -23,7 +23,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wpff.common.cache.Cache;
 import com.wpff.common.result.Segment;
+import com.wpff.common.util.TimeIt;
 import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
@@ -37,6 +39,7 @@ import com.wpff.db.UserDAO;
 
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.params.IntParam;
+
 
 /**
  * Helper for userbooks to deal with unitofwork issues
@@ -57,17 +60,24 @@ public class UserBookHelper {
 	 * DAO for users
 	 */
 	private final UserDAO userDAO;
+	
+	/**
+	 * Cache
+	 */
+	private final Cache cache;
 
 	/**
 	 * DAO for tagmap
 	 */
 	private final TagMappingDAO tagMappingDAO;
 
-	public UserBookHelper(UserBookDAO userBookDAO, UserDAO userDAO, TagDAO tagDAO, TagMappingDAO tagMapDAO) {
+	public UserBookHelper(UserBookDAO userBookDAO, UserDAO userDAO, TagDAO tagDAO, TagMappingDAO tagMapDAO,
+	    Cache cache) {
 		this.tagDAO = tagDAO;
 		this.userBookDAO = userBookDAO;
 		this.userDAO = userDAO;
 		this.tagMappingDAO = tagMapDAO;
+		this.cache = cache;
 	}
 
 	/**
@@ -157,16 +167,23 @@ public class UserBookHelper {
 	    Integer userId,
 	    Segment desiredSegment)
 	    throws IllegalAccessException, InvocationTargetException {
+	  
+	  TimeIt timer = TimeIt.mark();       
 		List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
 
 		// Get list of books in db
 		List<DatabaseUserBook> booksInDatabase = userBookDAO.findBooksByUserId(userId, desiredSegment);
 
+		System.out.println(timer.done("GetUserBookForUser dbcall: "));
+		timer = TimeIt.mark(); 
+		
 		// convert each book into a FullUserBook
 		for (DatabaseUserBook dbBook : booksInDatabase) {
 		  userBooks.add(convert(dbBook, authString));
 		}
-
+		
+		System.out.println(timer.done("GetUserBookForUser convert: "));
+		
 		return userBooks;
 	}
 	
@@ -293,6 +310,7 @@ public class UserBookHelper {
 		// Check names.
 		// If:
 		// user in security is in the 'admin' group
+		// or 
 		// userNameFromSecurity == name from id
 		// we can proceed
 
@@ -324,6 +342,9 @@ public class UserBookHelper {
    */
   private FullUserBook convert(DatabaseUserBook dbBook, String authString) throws IllegalAccessException,
       InvocationTargetException {
+    System.out.println("");
+    System.out.println(" -------------   CONVERT BOOK   " + dbBook.getBookId() + "    -------------------");
+    TimeIt time = TimeIt.mark();
     FullUserBook bookToReturn = new FullUserBook();
 
     // Copy over bean values - copy(destination, source)
@@ -336,15 +357,18 @@ public class UserBookHelper {
     String title = getTitle(authString, dbBook.getBookId());
     bookToReturn.setTitle(title);
 
+    System.out.println(time.done("Convert book: " + dbBook.getBookId()));
+    System.out.println(" ------------- DONE BOOK   " + dbBook.getBookId() + "  ------------");
     return bookToReturn;
   }
 
 	/**
 	 * Add tags from database to userbook
 	 *
+	 * @param userBook UserBook to add tags into 
 	 */
 	private void addTagsToUserBook(FullUserBook userBook) {
-		// Get tag mappings for user book
+	  // Get tag mappings for user book
 		List<TagMapping> tagMappings = this.tagMappingDAO.findTagMappings(userBook.getUserBookId());
 
 		// Get tag IDs for the user book
@@ -360,8 +384,7 @@ public class UserBookHelper {
 		userBook.setTags(tagNames);
 	}
 	
-	
-	
+
 	 /**
    * Retrieve the book title from the 'book' webservice for the incoming
    * book id
@@ -374,7 +397,17 @@ public class UserBookHelper {
    * @return
    */
   private String getTitle(String authString, int bookId) {
-    try {
+    String title = null;
+    try {   
+      // Try the cache
+      title = this.cache.get("book.title", bookId);
+      if (title != null) {
+        return title;
+      }
+      
+      /////////////////////
+      // Get from WS now
+      
       // Going to the 'book' web service directly
       String url = "http://book:8080/book/" + bookId;
       
@@ -400,8 +433,6 @@ public class UserBookHelper {
         result.append(line);
       }
       
-      String title= "";
-
       // Check result
       if (responseCode == 200) {
         // Convert into bean
@@ -421,11 +452,13 @@ public class UserBookHelper {
         System.out.println("Error content: " + result);
       }
 
-      return title;
-    } catch (Exception e) {
-      e.printStackTrace();
-      return "";
+      // Set cache
+      this.cache.set("book.title", bookId, title);
     }
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+    return title;    
   }
 
 }

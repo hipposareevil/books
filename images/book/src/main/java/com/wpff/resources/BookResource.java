@@ -34,8 +34,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wpff.common.drop.filter.TokenRequired;
+import com.wpff.common.auth.TokenRequired;
+import com.wpff.common.cache.Cache;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.common.result.Segment;
@@ -53,8 +55,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-import com.codahale.metrics.annotation.Timed;
-
 /**
  * Resource for the /book url. Manages books.
  */
@@ -63,10 +63,19 @@ import com.codahale.metrics.annotation.Timed;
 @Produces(MediaType.APPLICATION_JSON)
 public class BookResource {
 
+  /**
+   * Book DAO
+   */
   private final BookDAO bookDAO;
+  
+  /**
+   * Redis cache
+   */
+  private final Cache cache;
 
-  public BookResource(BookDAO bookDAO) {
+  public BookResource(BookDAO bookDAO, Cache cache) {
     this.bookDAO = bookDAO;
+    this.cache = cache;
   }
 
   /**
@@ -367,6 +376,9 @@ public class BookResource {
       // Update
       this.bookDAO.update(bookToUpdate);
       
+      // Clear cache
+      this.cache.clear("book.title", bookId.get());
+ 
       // The authorization string is passed in so we can get the author name 
       // from the 'author' webservice      
       return this.convertToBean(authorizationKey, bookToUpdate);
@@ -402,7 +414,7 @@ public class BookResource {
   @DELETE
   @Path("/{book_id}")
   @UnitOfWork
-  @TokenRequired
+  @com.wpff.common.auth.TokenRequired
 	@Timed(absolute=true, name="delete")
   public Response deleteBook(
     @ApiParam(value = "ID of book to retrieve.", required = true)
@@ -420,6 +432,9 @@ public class BookResource {
 
       // Is OK to remove book
       bookDAO.delete(findSafely(bookId.get()));
+      
+      // Clear cache
+      this.cache.clear("book.title", bookId.get());
       return Response.ok().build();
     }
     catch (org.hibernate.HibernateException he) {
@@ -543,6 +558,14 @@ public class BookResource {
    */
   private String getAuthorName(String authString, int authorId) {
     try {
+      String authorName = null;
+      
+      // Try the cache
+      authorName = this.cache.get("author.name", authorId);
+      if (authorName != null) {
+        return authorName;
+      }
+      
       // Going to the 'author' web service directly
       String url = "http://author:8080/author/" + authorId;
       
@@ -568,9 +591,7 @@ public class BookResource {
         result.append(line);
       }
       
-      String authorName = "";
-
-      // Check result
+       // Check result
       if (responseCode == 200) {
         // Convert into bean
         ObjectMapper mapper = new ObjectMapper();
@@ -589,6 +610,9 @@ public class BookResource {
         System.out.println("Error content: " + result);
       }
 
+      // Set cache
+      this.cache.set("author.name", authorId, authorName);
+      
       return authorName;
     } catch (Exception e) {
       e.printStackTrace();

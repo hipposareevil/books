@@ -26,7 +26,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.codahale.metrics.annotation.Timed;
-import com.wpff.common.drop.filter.TokenRequired;
+import com.wpff.common.auth.TokenRequired;
 import com.wpff.common.result.ResultWrapper;
 import com.wpff.common.result.ResultWrapperUtil;
 import com.wpff.common.result.Segment;
@@ -76,7 +76,7 @@ public class AuthorResource {
                 )
   @GET
   @Path("/{author_id}")
-  @TokenRequired
+  @com.wpff.common.auth.TokenRequired
   @Timed(absolute=true, name="getSingle")
   public AuthorResult getAuthor(
     @ApiParam(value = "ID of author to retrieve.", required = false)
@@ -148,10 +148,8 @@ public class AuthorResource {
         sorted().
         map( x -> this.convertToBean(x)).
         collect(Collectors.toList());
-    
    
     ResultWrapper<AuthorResult> result = ResultWrapperUtil.createWrapper(authorList, segment);
-    
     return result;
   }
 

@@ -33,6 +33,8 @@ logging:
   loggers:
     org.hibernate:
       level: OFF
+    com.codahale:
+      level: OFF
 
 metrics:
   reporters:
@@ -41,8 +43,6 @@ metrics:
       port: 2003
       prefix: mybooks.user_book
       frequency: 20 seconds
-
-
 
 redis:
   # The redis server's address
