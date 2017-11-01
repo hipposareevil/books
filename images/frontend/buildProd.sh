@@ -27,7 +27,10 @@ $our_directory/buildDev.sh
 ## 2
 # Run npm run build in container
 echo "Now building $imageName"
-docker run -it -v $our_directory/content/mybooks:/scratch ${imageName}:dev npm install run build
+# make directory that we own so it's not owned by root
+mkdir -p $our_directory/content/mybooks/dist
+docker run --rm -it -v $our_directory/content/mybooks:/scratch ${imageName}:dev npm install 
+docker run --rm -it -v $our_directory/content/mybooks:/scratch ${imageName}:dev npm run build
 
 # Get docker to skip the cache:
 thedate=$(date)
