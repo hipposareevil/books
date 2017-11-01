@@ -4,7 +4,7 @@
       My Book Library
     </div>
     <img class="boxshadow"
-         src="../assets/library_medium.jpg">
+         src="/static/library_medium.jpg">
 
     <br>
     <div class="title is-5 has-text-left"
