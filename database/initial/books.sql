@@ -121,5 +121,5 @@ CREATE TABLE `book` (
   `image_medium` varchar(1000) DEFAULT NULL,
   `image_large` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`book_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=808 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
