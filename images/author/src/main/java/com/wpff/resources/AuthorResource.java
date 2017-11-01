@@ -132,14 +132,16 @@ public class AuthorResource {
                                 ) {
     // Start
     Segment segment = new Segment(offset, limit);
-    segment.setTotalLength(this.authorHelper.getTotalNumberAuthors());
+    
     
     List<Author> authors = null;
     if (authorNameQuery != null) {
       authors = this.authorHelper.findByName(authorNameQuery, segment);
+      segment.setTotalLength((long) authors.size());
     }
     else {
       authors = this.authorHelper.findAll(segment);
+      segment.setTotalLength(this.authorHelper.getTotalNumberAuthors());
     }
     
     // Convert list of Authors (DB) to AuthorResults (bean)

@@ -1,14 +1,14 @@
 <template>
   <div>
-    <!-- Header for filter, search, list vs grid -->
-    <ViewHeader theThing="My Books"
+    <!-- Header for search, list vs grid -->
+    <ViewHeader theThing="Titles"
                 :numberOfThings="getCurrentLength"
                 :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
-                @filterString="filterStringUpdated"
+                @clearCalled="clearCalledFromHeader"
                 @grabAll="grabAll"
                 >
     </ViewHeader>
@@ -45,13 +45,9 @@
       <div class="column is-11">
         <!-- when 'books' changes, a watcher in bookslist and booksgrid updates their view -->
         <ShelfAsList v-if="ViewState.viewAsList"
-                     v-bind:filter="filterBookString"
-                     v-bind:tagFilter="ViewState.tagFilter"
                      v-bind:allTags="TagJson"
                      :userBooks="AllData.UserBooksJson"></ShelfAsList>
         <ShelfAsGrid v-else
-                     v-bind:filter="filterBookString"
-                     v-bind:tagFilter="ViewState.tagFilter"
                      v-bind:allTags="TagJson"
                      :userBooks="AllData.UserBooksJson"></ShelfAsGrid>
 
@@ -93,8 +89,6 @@
       return {
         // Error message
         errorMessage: '',
-        // string to filter books on
-        filterBookString: '',
         // string to search/query books on
         searchBookString: '',
         // tags from server
@@ -186,6 +180,9 @@
         if (this.searchBookString !== '') {
           url = url + '?book_title=' + this.searchBookString
         }
+        if (this.ViewState.tagFilter !== '') {
+          url = url + '?tag=' + this.ViewState.tagFilter
+        }
 
         this.$axios.get(url, {
           headers: { Authorization: authString },
@@ -266,6 +263,8 @@
         this.$axios.get('/tag/', { headers: { Authorization: authString } })
           .then((response) => {
             self.TagJson = response.data.data
+            // Sort
+            self.TagJson = _.sortBy(self.TagJson, ['name'])
           })
           .catch(function (error) {
             if (error.response.status === 401) {
@@ -280,11 +279,13 @@
        */
       setTagFilter (newfilter) {
         if (this.ViewState.tagFilter === newfilter) {
-          // Reset tag filter to empty
+          // If the highlighted tag was clicked, set it to off
           this.ViewState.tagFilter = ''
         } else {
           this.ViewState.tagFilter = newfilter
         }
+        this.AllData.reset()
+        this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
       },
       /**
        * Return true if the incoming tag is the same as the filter
@@ -319,16 +320,19 @@
         this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
       },
       /**
-       * The filter string has been updated
-      */
-      filterStringUpdated (value) {
-        this.filterBookString = value
+       * The clear button was clicked
+       */
+      clearCalledFromHeader () {
+        this.ViewState.tagFilter = ''
       },
       /**
        * Grab all values
        */
       grabAll () {
         this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
+        if (this.AllData.lengthToGet <= 0) {
+          this.AllData.lengthToGet = 15
+        }
         this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
         this.infiniteHandler(null)
       },

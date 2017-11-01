@@ -17,10 +17,19 @@ import javax.persistence.Table;
 @NamedQueries({ 
 	    @NamedQuery(name = "com.wpff.core.TagMapping.findAll", 
 	    		       query = "SELECT u FROM TagMapping u"),
-		@NamedQuery(name = "com.wpff.core.TagMapping.findByUserBookId",
-				   query = "SELECT u FROM TagMapping u WHERE u.user_book_id = :user_book_id"), 
-		@NamedQuery(name = "com.wpff.core.TagMapping.deleteUserBook",
-				    query = "DELETE FROM TagMapping u WHERE u.user_book_id = :user_book_id") 
+		
+	    @NamedQuery(name = "com.wpff.core.TagMapping.findByUserBookId",
+				   query = "SELECT u FROM TagMapping u "
+				       + "WHERE u.user_book_id = :user_book_id"), 
+
+	    @NamedQuery(name = "com.wpff.core.TagMapping.deleteUserBook",
+				    query = "DELETE FROM TagMapping u "
+				        + "WHERE u.user_book_id = :user_book_id"),
+		
+	    @NamedQuery(name = "com.wpff.core.TagMapping.getTagMappingsForUserAndTagIds",
+				    query = "SELECT u FROM TagMapping u "
+				        + "WHERE u.user_id = :user_id AND "
+				        + "u.tag_id = :tag_id")
 	    })
 /**
  * Class to map a UserBook to a set of Tags.  Uses the 'tagmapping' table.
@@ -37,11 +46,18 @@ public class TagMapping implements java.io.Serializable {
 	private int tag_id;
 
 	/**
-	 * user book ID.
+	 * User book ID.
 	 */
 	@Column(name = "user_book_id", nullable = false)
 	@Id
 	private int user_book_id;
+	
+	/**
+	 * User ID
+	 */
+	@Column(name = "user_id", nullable = false)
+	@Id
+	private int user_id;
 
 	/**
 	 * Default constructor
@@ -49,7 +65,8 @@ public class TagMapping implements java.io.Serializable {
 	public TagMapping() {
 	}
 
-	public TagMapping(int user_book_id, int tag_id) {
+	public TagMapping(int user_id, int user_book_id, int tag_id) {
+	  this.user_id = user_id;
 		this.user_book_id = user_book_id;
 		this.tag_id = tag_id;
 	}
@@ -58,6 +75,7 @@ public class TagMapping implements java.io.Serializable {
 		StringBuilder string = new StringBuilder();
 		string.append("TagMapping[");
 		string.append("userBookId='" + user_book_id + "',");
+		string.append("userId='" + user_id+ "',");		
 		string.append("tagId='" + tag_id + "' ");
 		string.append("]");
 		return string.toString();
@@ -75,9 +93,17 @@ public class TagMapping implements java.io.Serializable {
 		return this.user_book_id;
 	}
 
-	public void setUserBookId(int id) {
-		this.user_book_id = id;
-	}
+  public void setUserBookId(int id) {
+    this.user_book_id = id;
+  }
+
+  public int getUserId() {
+    return this.user_id;
+  }
+
+  public void setUserId(int id) {
+    this.user_id = id;
+  }
 
 	@Override
 	public boolean equals(Object o) {
@@ -90,13 +116,14 @@ public class TagMapping implements java.io.Serializable {
 
 		final TagMapping that = (TagMapping) o;
 
-		return Objects.equals(this.user_book_id, that.user_book_id) && Objects.equals(
-				this.tag_id, that.tag_id);
+		return Objects.equals(this.user_id, that.user_id)
+		    && Objects.equals(this.user_book_id, that.user_book_id)
+		    && Objects.equals(this.tag_id, that.tag_id);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.user_book_id, this.tag_id);
+		return Objects.hash(this.user_book_id, this.tag_id, this.user_id);
 	}
 
 }

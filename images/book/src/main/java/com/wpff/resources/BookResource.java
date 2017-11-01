@@ -191,6 +191,9 @@ public class BookResource {
 
     // If set of books is empty, grab all books
     if (bookSet.isEmpty() && (!paramsExist)) {
+      ////////
+      // Straight lookup
+      
        // Create desired segment from offset & limit
       Segment segment = new Segment(offset, limit);
       segment.setTotalLength(bookDAO.getNumberOfBooks());
@@ -208,6 +211,9 @@ public class BookResource {
       
       return ResultWrapperUtil.createWrapper(bookList, segment);
     } else {
+      ////////
+      // Query Exists
+      
       // Convert the set of Books to list of BookResults
       // The authorization string is passed in so we can get the author name
       // from the 'author' webservice

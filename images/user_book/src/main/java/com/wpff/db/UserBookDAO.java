@@ -43,7 +43,8 @@ public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
    * @return List of user book
    */
 	@SuppressWarnings({ "deprecation", "unchecked" })
-	public List<DatabaseUserBook> findBooksByUserId(Integer userId,
+	public List<DatabaseUserBook> findBooksByUserId(
+	    Integer userId,
 	    Segment segment) {
 	    Integer offset = segment.getOffset();
 	    Integer limit = segment.getLimit();

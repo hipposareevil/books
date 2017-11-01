@@ -39,10 +39,29 @@ public class TagMappingDAO extends AbstractDAO<TagMapping> {
   @SuppressWarnings("unchecked")
   public List<TagMapping> findTagMappings(int userBookId) {
     List<TagMapping> tagMap = list(
-        namedQuery("com.wpff.core.TagMapping.findByUserBookId").setParameter("user_book_id", userBookId));
+        namedQuery("com.wpff.core.TagMapping.findByUserBookId")
+        .setParameter("user_book_id", userBookId));
     return tagMap;
   }
 
+  /**
+   * Find tag mappings for the incoming user and tag id
+   * @param userId User ID
+   * @param tagId Tag ID
+   * @return List of matching user books
+   */
+   @SuppressWarnings("unchecked")
+  public List<TagMapping> findTagMappingsByTagId(int userId, int tagId) {
+    List<TagMapping> tagMap = list(
+        namedQuery("com.wpff.core.TagMapping.getTagMappingsForUserAndTagIds")
+        .setParameter("user_id", userId)
+        .setParameter("tag_id", tagId));
+    
+    return tagMap;
+  }
+
+  
+  
 	/**
 	 * Add a new tag mapping to the database.
 	 * 

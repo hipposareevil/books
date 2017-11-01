@@ -28,8 +28,6 @@
           v-for="currentUserBook in UserBooksJson"
           v-bind:allTags="allTags"
           v-bind:userBook="currentUserBook"
-          v-bind:filter="filter"
-          v-bind:tagFilter="tagFilter"
           :key="currentUserBook.userBookId"
           >
         </UserBookRow>
@@ -52,11 +50,9 @@
      * Props for this component
      *
      * userBooks: Json of all userbooks
-     * filter: String to filter titles/authors by
-     * tagFilter: Currently selected tag in left column
      * allTags: list of all tags (id,name,data)
      */
-    props: [ 'userBooks', 'filter', 'tagFilter', 'allTags' ],
+    props: [ 'userBooks', 'allTags' ],
     // Components we depend on
     components: { UserBookRow },
     // Data for this component

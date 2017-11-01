@@ -25,7 +25,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wpff.common.cache.Cache;
 import com.wpff.common.result.Segment;
-import com.wpff.common.util.TimeIt;
 import com.wpff.core.DatabaseUserBook;
 import com.wpff.core.Tag;
 import com.wpff.core.TagMapping;
@@ -167,26 +166,72 @@ public class UserBookHelper {
 	    Integer userId,
 	    Segment desiredSegment)
 	    throws IllegalAccessException, InvocationTargetException {
-	  
-	  TimeIt timer = TimeIt.mark();       
 		List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
 
 		// Get list of books in db
 		List<DatabaseUserBook> booksInDatabase = userBookDAO.findBooksByUserId(userId, desiredSegment);
 
-		System.out.println(timer.done("GetUserBookForUser dbcall: "));
-		timer = TimeIt.mark(); 
-		
 		// convert each book into a FullUserBook
 		for (DatabaseUserBook dbBook : booksInDatabase) {
 		  userBooks.add(convert(dbBook, authString));
 		}
 		
-		System.out.println(timer.done("GetUserBookForUser convert: "));
-		
 		return userBooks;
 	}
 	
+	
+	/**
+   * Get all UserBooks for the incoming UserId and tagId
+   * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
+   * @param userId
+   *          ID of user to get books for
+   * @param tagId
+   *          ID of tag to get user book for
+   * @return List of user books
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   */
+	@UnitOfWork
+	List<FullUserBook> getUserBooksByUserAndTag(
+	    String authString,
+	    Integer userId,
+	    int tagId) 
+	 throws IllegalAccessException, InvocationTargetException {
+	  // Get TagMappings for this user and tag ID
+	  List<TagMapping> mappings = this.tagMappingDAO.findTagMappingsByTagId(userId, tagId);
+	  
+	  List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
+	  for (TagMapping mapping : mappings) {
+	    int userBookId = mapping.getUserBookId();
+	    FullUserBook current = getUserBookByUserBookId(authString, userBookId);
+	    
+	    userBooks.add(current);
+	  }
+
+	  return userBooks;
+	}
+
+	@UnitOfWork
+	List<FullUserBook> getUserBooksByTitle(
+      String authString,
+	    Integer userId,
+	    String titleQuery) 
+	 throws IllegalAccessException, InvocationTargetException {
+	  List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
+
+	  // List of book IDs
+	  List<Integer> ids = this.getBookIdsForTitleQuery(authString, titleQuery);
+	  for (Integer userBookId : ids) {
+	        FullUserBook current = getUserBookByUserBookId(authString, userBookId);
+	    
+	    userBooks.add(current);
+	  }
+	  
+	  return userBooks;
+	}
 	
 	/**
 	 * Get UserBook from database. This will contain the UserBooks tags
@@ -201,7 +246,8 @@ public class UserBookHelper {
 	 * @throws IllegalAccessException
 	 */
 	@UnitOfWork
-	FullUserBook getUserBookById(String authString, int userBookId) throws IllegalAccessException, InvocationTargetException {
+	FullUserBook getUserBookByUserBookId(String authString, int userBookId) 
+	    throws IllegalAccessException, InvocationTargetException {
 	  // Get db book
 		DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
 				() -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
@@ -342,9 +388,6 @@ public class UserBookHelper {
    */
   private FullUserBook convert(DatabaseUserBook dbBook, String authString) throws IllegalAccessException,
       InvocationTargetException {
-    System.out.println("");
-    System.out.println(" -------------   CONVERT BOOK   " + dbBook.getBookId() + "    -------------------");
-    TimeIt time = TimeIt.mark();
     FullUserBook bookToReturn = new FullUserBook();
 
     // Copy over bean values - copy(destination, source)
@@ -356,9 +399,6 @@ public class UserBookHelper {
     // Get title
     String title = getTitle(authString, dbBook.getBookId());
     bookToReturn.setTitle(title);
-
-    System.out.println(time.done("Convert book: " + dbBook.getBookId()));
-    System.out.println(" ------------- DONE BOOK   " + dbBook.getBookId() + "  ------------");
     return bookToReturn;
   }
 
@@ -376,7 +416,10 @@ public class UserBookHelper {
 
 		// Get all tags in database and convert into a map keyed by tagID
 		Map<String, Tag> allTags = this.tagDAO.findAll();
-		Map<Integer, Tag> tagsIndexById = allTags.values().stream().collect(Collectors.toMap(Tag::getId, p -> p));
+		Map<Integer, Tag> tagsIndexById = allTags
+		    .values()
+		    .stream()
+		    .collect(Collectors.toMap(Tag::getId, p -> p));
 
 		// Correlate tag ids from tagMappings into tag names
 		List<String> tagNames = tagIds.stream().map(e -> tagsIndexById.get(e).getName()).collect(Collectors.toList());
@@ -385,9 +428,8 @@ public class UserBookHelper {
 	}
 	
 
-	 /**
-   * Retrieve the book title from the 'book' webservice for the incoming
-   * book id
+	/**
+   * Retrieve the book title from the 'book' webservice for the incoming book id.
    * 
    * @param authString
    *          Authentication header which is necessary for a REST call to 'book'
@@ -461,4 +503,77 @@ public class UserBookHelper {
     return title;    
   }
 
+  
+  /**
+   * Retrieve BookIds that match the incoming title query.
+   * 
+   * This makes call to /book?title=TITLE_QUERY 
+   * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
+   * @param titleQuery
+   *          Title query to make 
+   * @return
+   */
+  private List<Integer> getBookIdsForTitleQuery(String authString, String titleQuery) {
+    List<Integer> bookIds = new ArrayList<Integer>();
+        
+    try {   
+      /////////////////////
+      // Get from WS now
+      
+      // Going to the 'book' web service directly
+      String url = "http://book:8080/book?title=" + titleQuery;
+      
+      HttpClient client = HttpClientBuilder.create().build();
+      HttpGet request = new HttpGet(url);
+
+      // add request header
+      request.addHeader("User-Agent", "BookAgent");
+      request.addHeader("content-type", "application/json");
+      request.addHeader("Authorization", authString);
+      
+      // Execute request
+      HttpResponse response = client.execute(request);
+
+      // Get code
+      int responseCode = response.getStatusLine().getStatusCode();
+      
+      // Convert body of result
+      BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+      StringBuffer result = new StringBuffer();
+      String line = "";
+      while ((line = rd.readLine()) != null) {
+        result.append(line);
+      }
+      
+      // Check result
+      if (responseCode == 200) {
+        // Convert into bean
+        ObjectMapper mapper = new ObjectMapper();
+        BookBeanList bookBeanList = null;
+        try {
+          bookBeanList = mapper.readValue(result.toString(), BookBeanList.class);
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+        }
+        
+        for (BookBean bean : bookBeanList.getData()) {
+          // Add book id
+          bookIds.add(bean.getId());
+        }        
+      }
+      else {
+        System.out.println("Error code: " + responseCode);
+        System.out.println("Error content: " + result);
+      }
+
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+    
+    return bookIds;
+  }
 }

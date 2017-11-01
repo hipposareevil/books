@@ -5,49 +5,6 @@
 
       <div class="level-left">
         <div class="level-item has-text-centered">
-          <div class="field has-addons">
-            <!-- filter input -->
-            <input class="input"
-                   style="width: 7em;"
-                   type="text"
-                   placeholder="filter"
-                   v-model="filterString">
-            <!-- clear button -->
-            <p class="control">
-              <button class="button"
-                      title="Clear filter"
-                      @click="filterString = ''">
-                Clear
-              </button>
-            </p>
-
-            <!-- grab all -->
-            <p class="control">
-              <button class="button"
-                      title="Get all"
-                      @click="grabAll()">
-                <span class="has-text-danger">
-                  Get All
-                </span>
-              </button>
-            </p>
-            
-            <!-- list the number of things -->
-            <p class="control"
-              v-if="numberOfThings">
-              <a class="button is-static">
-                ({{ numberOfThings }}<span v-if="totalNumber">&nbsp;of {{ totalNumber }}</span>)
-              </a>
-            </p>
-
-          </div>
-        </div>
-      </div>
-
-
-      <div class="level-right">
-
-        <div class="level-item has-text-centered">
 
           <div class="level-item">
 
@@ -66,10 +23,41 @@
                   Clear
                 </button>
               </p>
-            </div>
+
+              <!-- grab all -->
+              <p class="control">
+                <button class="button"
+                        title="Get all"
+                        @click="grabAll()">
+                  <span class="has-text-info">
+                    Get All
+                  </span>
+                </button>
+              </p>
+            </div> <!-- search and clear -->
           </div>
+        </div> 
+      </div> <!-- level left -->
+
+
+      <div class="level-right">
+
+        <div class="level-item has-text-centered">
+
           <div class="level-item">
             <div class="field has-addons">
+
+            <!-- list the number of things -->
+            <p class="control"
+               style="margin-right: 1em;"
+              v-if="numberOfThings">
+              <a class="button is-static">
+                <span class="is-size-7">
+                ({{ numberOfThings }}
+                <span v-if="totalNumber">&nbsp;of {{ totalNumber }})</span>
+                </span>
+              </a>
+            </p>
 
               <!-- List -->
               <button class="button"
@@ -113,8 +101,6 @@
       return {
         // String to search on
         searchString: '',
-        // String to filter on
-        filterString: '',
         // when true, view as list
         showList: this.showAsList
       }
@@ -153,6 +139,7 @@
       clearSearch () {
         this.searchString = ''
         this.$emit('searchString', this.searchString)
+        this.$emit('clearCalled')
       },
       /**
        * Signal to grab everything
@@ -173,12 +160,6 @@
     watch: {
       showAsList: function (val, oldVal) {
         this.showList = val
-      },
-      filterString: function (val, oldVal) {
-        this.$emit('filterString', val)
-      },
-      XXsearchString: function (val, oldVal) {
-        this.$emit('searchString', val)
       }
     }
   }

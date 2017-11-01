@@ -3,7 +3,7 @@
   <div>
 
     <!-- Header for filter, search, list vs grid -->
-    <ViewHeader theThing="Books"
+    <ViewHeader theThing="Titles"
                 :numberOfThings="lengthOfViewableBooks"
                 :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
@@ -180,6 +180,7 @@
             self.AllData.end = start + length
             self.AllData.dataStart = start + self.AllData.lengthToGet
             self.AllData.totalNumData = totalSize
+            self.AllData.lengthToGet = 15
 
             // save to $store
             this.$store.commit('setAllBooks', self.AllData)
@@ -240,6 +241,9 @@
        */
       grabAll () {
         this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
+        if (this.AllData.lengthToGet <= 0) {
+          this.AllData.lengthToGet = 15
+        }
         this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
         this.infiniteHandler(null)
       },

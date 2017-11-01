@@ -10,8 +10,7 @@ import java.util.Date;
  * This is used instead of normal UserBook as UserBook has no tags.
  *
  */
-public class FullUserBook extends PostUserBook {
-
+public class FullUserBook extends PostUserBook  implements Comparable {
 	private int userBookId;
 
 	private int userId;
@@ -72,6 +71,14 @@ public class FullUserBook extends PostUserBook {
    */
   public void setDateAdded(Date dateAdded) {
     this.dateAdded = dateAdded;
+  }
+
+  @Override
+  public int compareTo(Object o) {
+   final FullUserBook that = (FullUserBook) o;
+    if (this == that) return 0;
+
+    return (this.userBookId- that.userBookId);
   }
 
 }

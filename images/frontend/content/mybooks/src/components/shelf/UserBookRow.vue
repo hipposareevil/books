@@ -1,7 +1,7 @@
 <!-- This represent a single userbook as a row in a table -->
 
 <template>
-  <tr v-if="showRow">
+  <tr>
 
     <!-- cover -->
     <td style=" outline-style: none; background-transparent;">
@@ -94,7 +94,6 @@
 
 <script>
   import Auth from '../../auth'
-  import _ from 'lodash'
   import UpdateTagsModal from './UpdateTagsModal.vue'
 
   /**
@@ -107,11 +106,9 @@
      * Props for this userbook row:
      *
      * userBook: UserBook to be displayed
-     * filter: String to filter titles/authors by
-     * tagFilter: Currently selected tag in left column
      * allTags: list of all tags (id,name,data)
      */
-    props: [ 'userBook', 'filter', 'tagFilter', 'allTags' ],
+    props: [ 'userBook', 'allTags' ],
     /**
      * Data for this user book row
      */
@@ -254,46 +251,6 @@
         this.$router.push('/authors/' + this.book.authorId)
       }
     },
-    /**
-     * Computed value for 'showRow'.
-     * This returns true if the row should be shown.
-     * If the filter or tagFilter strings are non-null, we check
-     * those against the title, author, date and the tags
-     */
-    computed: {
-      showRow: function () {
-        let firstFilter = true
-        let secondFilter = true
-
-        // Check filter
-        if (this.filter) {
-          // lower case the filter
-          let filterString = _.lowerCase(this.filter)
-
-          // Check the filter string against:
-          // title, author, and date
-          let titleString = _.lowerCase(this.book.title)
-          let authorString = _.lowerCase(this.book.authorName)
-          let dateString = String(this.book.firstPublishedYear)
-
-          firstFilter = _.includes(authorString, filterString) ||
-              _.includes(titleString, filterString) ||
-              _.includes(dateString, filterString)
-        }
-
-        // Check tag filter
-        if (this.tagFilter) {
-          secondFilter = _.includes(this.userBook.tags, this.tagFilter)
-        }
-
-        // If both filters say show, then show it
-        if (firstFilter && secondFilter) {
-          return true
-        } else {
-          return false
-        }
-      }
-    }, // end computed
     /**
      * Prevent double clicking from highlighting the next table item
      */

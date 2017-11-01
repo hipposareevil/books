@@ -30,8 +30,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BookBean {
-
+  
+  /**
+   * Title of Book
+   */
   private String title;
+  
+  /**
+   * book_id
+   */
+  private int id;
 
   /**
    * @return the title
@@ -46,6 +54,20 @@ public class BookBean {
    */
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  /**
+   * @return the id
+   */
+  public int getId() {
+    return id;
+  }
+
+  /**
+   * @param id the id to set
+   */
+  public void setId(int id) {
+    this.id = id;
   }
 
 }

@@ -41,10 +41,9 @@ DROP TABLE IF EXISTS `tagmapping`;
 
 CREATE TABLE `tagmapping` (
   `user_book_id`  int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `tag_id`  int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-
 
 
 -- USER
