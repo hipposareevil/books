@@ -43,19 +43,40 @@
      * When mounted, get the user books
      */
     mounted: function () {
-      this.getUserBooks()
+      // Only try to get userbooks if we are logged in
+      if (Auth.isAuthenticated()) {
+        this.getUserBooks()
+      }
+    },
+    /**
+     * Setup when created
+     */
+    created () {
+      Event.$on('loggedOut', () => this.loggedOut())
+      Event.$on('loggedIn', () => this.getUserBooks())
     },
     /**
      * Methods
      */
     methods: {
       /**
+       * The user was logged out, so refresh our data
+       */
+      loggedOut () {
+        if (!Auth.isAuthenticated()) {
+          // Not logged in, so remove the user books
+          this.userBooks = []
+        }
+      },
+      /**
        * send the router to a single book
-       *
        */
       gotoBook (current) {
         this.$router.push('/books/' + current.bookId)
       },
+      /**
+       * send the router to the shelves
+       */
       gotoMyBooks () {
         this.$router.push('/shelves')
       },

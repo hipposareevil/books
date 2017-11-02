@@ -107,7 +107,7 @@
           password: this.credentials.password
         }
         // Log in, this may call 'emitMessage' later
-        Auth.login(this, credentials, '')
+        Auth.login(this, credentials, '/')
 
         // Send notification to the enclosing app
         this.$emit('dunsaved')

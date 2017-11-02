@@ -74,7 +74,6 @@ export default {
    * redirect: Location to redirect to after login. Uses the $router.
    */
   login (context, creds, redirect) {
-    console.log('log in! ')
     context.$axios.post(LOGIN_URL, {
       name: creds.name,
       password: creds.password
@@ -93,6 +92,7 @@ export default {
       this.user.group = response.data.groupName
 
       console.log('Auth.login: finished processing login information')
+      Event.$emit('loggedIn')
 
       // Redirect to some page/tab
       if (redirect) {
@@ -147,6 +147,7 @@ export default {
     // clear out the vue-x storage
     // context.$store.commit('clearEverything')
     Event.$emit('clearEverything')
+    Event.$emit('loggedOut')
 
     // Go back to main page
     context.$router.push('/')
