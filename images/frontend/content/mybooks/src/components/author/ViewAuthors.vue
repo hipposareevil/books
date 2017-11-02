@@ -265,14 +265,20 @@
                 // We got the number of authors
                 let numAuthors = response.data.total
 
+                if (self.AllData.AuthorsJson.length === numAuthors) {
+                  // We already have the appropriate number of authors
+                  // skip doing a reload
+                  return
+                }
+
                 // Now get all those authors
                 self.AllData.lengthToGet = numAuthors
                 self.AllData.dataStart = 0
 
                 // Reset the scrolling like in grabAll
-                this.AllData.getAll = true
-                this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
-                this.infiniteHandler(null)
+                self.AllData.getAll = true
+                self.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+                self.infiniteHandler(null)
               })
               .catch(function (error) {
                 if (error.response.status === 401) {

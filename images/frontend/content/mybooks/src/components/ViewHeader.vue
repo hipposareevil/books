@@ -18,7 +18,7 @@
                        v-model="searchString">
               </p>
               <p class="control">
-                <button class="button"
+                <button class="button is-link"
                         v-bind:class="{'is-loading' : showLoading }"
                         @click="search">
                   Search

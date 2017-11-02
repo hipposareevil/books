@@ -74,7 +74,7 @@
           // Index of data to query for
           dataStart: 0,
           // Length of data to get
-          lengthToGet: 15,
+          lengthToGet: 2,
           // Current end of our data length
           end: -1,
           // Total number of datum to get
@@ -276,14 +276,20 @@
                 // We got the number of user books
                 let numBooks = response.data.total
 
+                if (self.AllData.BooksJson.length === numBooks) {
+                  // We already have the appropriate number of books
+                  // skip doing a reload
+                  return
+                }
+
                 // Now get all those books
                 self.AllData.lengthToGet = numBooks
                 self.AllData.dataStart = 0
 
                 // Reset the scrolling like in grabAll
-                this.AllData.getAll = true
-                this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
-                this.infiniteHandler(null)
+                self.AllData.getAll = true
+                self.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+                self.infiniteHandler(null)
               })
               .catch(function (error) {
                 if (error.response.status === 401) {

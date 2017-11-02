@@ -93,6 +93,7 @@ services:
    frontend:
      container_name: frontend
      image: ${BOOK_REPOSITORY}books.frontend:dev
+#     image: ${BOOK_REPOSITORY}books.frontend:prod
      restart: always
      logging:
        driver: "json-file"
