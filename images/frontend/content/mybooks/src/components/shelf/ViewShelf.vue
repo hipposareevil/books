@@ -29,6 +29,7 @@
             <li v-for="current in TagJson"
                 style="margin-left: -0.5em;">
               <a @click="setTagFilter(current.name)"
+                 class="isclickable"
                 v-bind:class="{ 'is-size-6': isSelected(current), highlighted: isSelected(current) }">
                 <span>
                   {{ current.name }}
@@ -104,11 +105,13 @@
           // Index of data to query for
           dataStart: 0,
           // Length of data to get
-          lengthToGet: 15,
+          lengthToGet: 30,
           // Current end of our data length
           end: -1,
           // Total number of datum to get
           totalNumData: -1,
+          // The GetAll button was clicked
+          getAll: false,
           // Reset the data
           reset: function () {
             this.UserBooksJson = []
@@ -138,6 +141,9 @@
       if (temp && temp.UserBooksJson) {
         this.AllData = temp
       }
+
+      // Check status of filters and maybe get all values
+      this.checkFilterStatus()
 
       // Get list/grid status
       temp = this.$store.state.userBooksView
@@ -175,15 +181,14 @@
           offset: self.AllData.dataStart,
           limit: self.AllData.lengthToGet
         }
-        let url = '/user_book/' + Auth.user.id
-
         if (this.searchBookString !== '') {
-          url = url + '?book_title=' + this.searchBookString
+          params.book_title = this.searchBookString
         }
         if (this.ViewState.tagFilter !== '') {
-          url = url + '?tag=' + this.ViewState.tagFilter
+          params.tag = this.ViewState.tagFilter
         }
 
+        let url = '/user_book/' + Auth.user.id
         this.$axios.get(url, {
           headers: { Authorization: authString },
           params: params })
@@ -199,8 +204,6 @@
 
             // Has the dataset size changed?
             if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {
-              console.log('ViewShelf: Dataset length for userbooks has changed. Resetting.')
-
               self.AllData.reset()
               self.AllData.totalNumData = totalSize
 
@@ -281,6 +284,8 @@
         if (this.ViewState.tagFilter === newfilter) {
           // If the highlighted tag was clicked, set it to off
           this.ViewState.tagFilter = ''
+          // Signal that tag was cleared
+          this.checkFilterStatus()
         } else {
           this.ViewState.tagFilter = newfilter
         }
@@ -324,15 +329,64 @@
        */
       clearCalledFromHeader () {
         this.ViewState.tagFilter = ''
+        // Check if all filters are clear
+        this.checkFilterStatus()
+      },
+      /**
+       * If all filters have been cleared
+       * AND the getAll flag is true, re-fetch all
+       */
+      checkFilterStatus () {
+        if (this.ViewState.tagFilter === '' &&
+             this.searchBookString === '') {
+          if (this.AllData.getAll) {
+            // Search is empty and the GetAll was previously clicked
+            let self = this
+
+            const authString = Auth.getAuthHeader()
+            // Make query to just get # of user books
+            let params = {
+              limit: 0
+            }
+            let url = '/user_book/' + Auth.user.id
+            this.$axios.get(url, {
+              headers: { Authorization: authString },
+              params: params })
+              .then((response) => {
+                // We got the number of user books
+                let numBooks = response.data.total
+
+                // Now get all those books
+                self.AllData.lengthToGet = numBooks
+                self.AllData.dataStart = 0
+
+                // Reset the scrolling like in grabAll
+                this.AllData.getAll = true
+                this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+                this.infiniteHandler(null)
+              })
+              .catch(function (error) {
+                if (error.response.status === 401) {
+                  Event.$emit('got401')
+                } else {
+                  console.log(error)
+                }
+              })
+          }
+        }
       },
       /**
        * Grab all values
        */
       grabAll () {
+        // Calculate the length to get in order to grab all data
         this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
         if (this.AllData.lengthToGet <= 0) {
-          this.AllData.lengthToGet = 15
+          this.AllData.lengthToGet = 30
         }
+        this.AllData.getAll = true
+
+        // Reset the scrolling
         this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
         this.infiniteHandler(null)
       },
@@ -355,4 +409,7 @@
   .highlighted {
   background-color: lightgray;
   }
+.isclickable {
+    cursor: pointer;
+}
 </style>

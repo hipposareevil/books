@@ -2,28 +2,28 @@
   <!-- Main container -->
   <div>
 
-    <!-- Header for filter, search, list vs grid -->
+    <!-- Header for search, list vs grid -->
     <ViewHeader theThing="Authors"
-                :numberOfThings="lengthOfViewableAuthors"
+                :numberOfThings="getCurrentLength"
                 :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
-                @filterString="filterStringUpdated"
+                @clearCalled="clearCalledFromHeader"
                 @grabAll="grabAll"
                 >
     </ViewHeader>
 
     <AuthorsList v-if="ViewState.viewAsList" 
-                 :authors="authorList"></AuthorsList>
+                 :authors="AllData.AuthorsJson"></AuthorsList>
     <AuthorsGrid v-else 
-                 :authors="authorList"></AuthorsGrid>
+                 :authors="AllData.AuthorsJson"></AuthorsGrid>
 
 
     <infinite-loading @infinite="infiniteHandler" ref="infiniteLoading">
       <span slot="no-more">
-        -- end authors ({{ lengthOfViewableAuthors }}) --
+        -- end authors ({{ getCurrentLength }}) --
       </span>
       <span slot="no-results">
         -- no results --
@@ -54,10 +54,6 @@
       return {
         // string to search/query authors on
         searchAuthorString: '',
-        // string to filter on
-        filterAuthorString: '',
-        // length of viewable authors
-        lengthOfViewableAuthors: 0,
         /**
          * Contains the JSON for Authors
          * and the status of the infinite scrolling, e.g.
@@ -74,6 +70,8 @@
           end: -1,
           // Total number of datum to get
           totalNumData: 0,
+          // The GetAll button was clicked
+          getAll: false,
           // Reset the data
           reset: function () {
             this.AuthorsJson = []
@@ -92,6 +90,14 @@
       }
     },
     /**
+     * Get length of the author json
+     */
+    computed: {
+      getCurrentLength: function () {
+        return this.AllData.AuthorsJson.length
+      }
+    },
+    /**
      * When mounted, get the stored data
      *
      */
@@ -101,6 +107,9 @@
       if (temp && temp.AuthorsJson) {
         this.AllData = temp
       }
+
+      // Check status of filters and maybe get all values
+      this.checkFilterStatus()
 
       // Get list/grid status
       temp = this.$store.state.authorsView
@@ -143,8 +152,6 @@
 
             // Has the dataset size changed?
             if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {
-              console.log('ViewAuthors: Dataset length for userbooks has changed. Resetting.')
-
               self.AllData.reset()
               self.AllData.totalNumData = totalSize
 
@@ -220,37 +227,66 @@
         this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
       },
       /**
-       * The filter string has been updated
-      */
-      filterStringUpdated (value) {
-        this.filterAuthorString = value
+       * The clear button was clicked
+       */
+      clearCalledFromHeader () {
+        this.searchAuthorString = ''
+        // Check if all filters are clear
+        this.checkFilterStatus()
+      },
+      /**
+       * If all filters have been cleared
+       * AND the getAll flag is true, re-fetch all
+       */
+      checkFilterStatus () {
+        if (this.searchAuthorString === '') {
+          if (this.AllData.getAll) {
+            // Search is empty and the GetAll was previously clicked
+            let self = this
+
+            const authString = Auth.getAuthHeader()
+            // Make query to just get # of authors
+            let params = {
+              limit: 0
+            }
+            let url = '/author'
+            this.$axios.get(url, {
+              headers: { Authorization: authString },
+              params: params })
+              .then((response) => {
+                // We got the number of authors
+                let numAuthors = response.data.total
+
+                // Now get all those authors
+                self.AllData.lengthToGet = numAuthors
+                self.AllData.dataStart = 0
+
+                // Reset the scrolling like in grabAll
+                this.AllData.getAll = true
+                this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+                this.infiniteHandler(null)
+              })
+              .catch(function (error) {
+                if (error.response.status === 401) {
+                  Event.$emit('got401')
+                } else {
+                  console.log(error)
+                }
+              })
+          }
+        }
       },
       /**
        * Grab all values
        */
       grabAll () {
+        // Calculate the length to get in order to grab all data
         this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
+        this.AllData.getAll = true
+
+        // Reset the scrolling
         this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
         this.infiniteHandler(null)
-      }
-    },
-    computed: {
-      authorList: function () {
-        let result = this.AllData.AuthorsJson
-        this.lengthOfViewableAuthors = result.length
-
-        if (!this.filterAuthorString) {
-          return result
-        }
-
-        const filterValue = this.filterAuthorString.toLowerCase()
-
-        const filter = event =>
-          event.name.toLowerCase().includes(filterValue)
-
-        let filteredResult = result.filter(filter)
-        this.lengthOfViewableAuthors = filteredResult.length
-        return filteredResult
       }
     }
   }

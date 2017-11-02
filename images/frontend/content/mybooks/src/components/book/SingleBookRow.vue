@@ -72,7 +72,7 @@
           flag: false
         },
         // Flag signalling if current book (row) is in the user's shelf
-        currentBookIsOnAShelf: false
+        currentBookIsOnAShelf: true
       }
     },
     /**
@@ -122,9 +122,11 @@
           params: ourParams
         })
           .then((response) => {
-            let length = response.data.data.length
+            let length = response.data.total
             if (length === 1) {
               self.currentBookIsOnAShelf = true
+            } else {
+              self.currentBookIsOnAShelf = false
             }
           })
           .catch(function () {

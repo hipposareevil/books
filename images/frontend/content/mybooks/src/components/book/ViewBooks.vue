@@ -2,28 +2,28 @@
   <!-- Main container -->
   <div>
 
-    <!-- Header for filter, search, list vs grid -->
+    <!-- Header for search, list vs grid -->
     <ViewHeader theThing="Titles"
-                :numberOfThings="lengthOfViewableBooks"
+                :numberOfThings="getCurrentLength"
                 :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
-                @filterString="filterStringUpdated"
+                @clearCalled="clearCalledFromHeader"
                 @grabAll="grabAll"
                 >
     </ViewHeader>
 
     <!-- when 'books' changes, a watcher in BooksAsList and BooksAsGrid updates their view -->
     <BooksAsList v-if="ViewState.viewAsList"
-               :books="bookList"></BooksAsList>
+               :books="AllData.BooksJson"></BooksAsList>
     <BooksAsGrid v-else
-               :books="bookList"></BooksAsGrid>
+               :books="AllData.BooksJson"></BooksAsGrid>
 
     <infinite-loading @infinite="infiniteHandler" ref="infiniteLoading">
       <span slot="no-more">
-        -- end books ({{ lengthOfViewableBooks }}) --
+        -- end books ({{ getCurrentLength }}) --
       </span>
       <span slot="no-results">
         -- no results --
@@ -58,14 +58,10 @@
     // Data for this component
     data () {
       return {
-        // string to filter books on
-        filterBookString: '',
         // string to search/query books on
         searchBookString: '',
         // animated message content
         messageToUser: '',
-        // how many books are viewable
-        lengthOfViewableBooks: 0,
         /**
          * Contains the JSON for Books
          * and the status of the infinite scrolling, e.g.
@@ -82,6 +78,8 @@
           end: -1,
           // Total number of datum to get
           totalNumData: 0,
+          // The GetAll button was clicked
+          getAll: false,
           reset: function () {
             this.BooksJson = []
             this.dataStart = 0
@@ -99,6 +97,14 @@
       }
     },
     /**
+     * Get length of the books' json
+     */
+    computed: {
+      getCurrentLength: function () {
+        return this.AllData.BooksJson.length
+      }
+    },
+    /**
      * When mounted, get list of users from database.
      * Add event listeners
      */
@@ -108,6 +114,9 @@
       if (temp && temp.BooksJson) {
         this.AllData = temp
       }
+
+      // Check status of filters and maybe get all values
+      this.checkFilterStatus()
 
       // Get list/grid status
       temp = this.$store.state.booksView
@@ -133,11 +142,11 @@
           offset: self.AllData.dataStart,
           limit: self.AllData.lengthToGet
         }
-        let url = '/book'
         if (this.searchBookString !== '') {
-          url = url + '?title=' + this.searchBookString
+          params.title = this.searchBookString
         }
 
+        let url = '/book'
         this.$axios.get(url, {
           headers: { Authorization: authString },
           params: params })
@@ -153,8 +162,6 @@
 
             // Has the dataset size changed?
             if (self.AllData.totalNumData >= 0 && totalSize !== self.AllData.totalNumData) {
-              console.log('ViewBooks: Dataset length for userbooks has changed. Resetting.')
-
               self.AllData.reset()
               self.AllData.totalNumData = totalSize
 
@@ -231,19 +238,67 @@
         this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
       },
       /**
-       * The filter string has been updated
-      */
-      filterStringUpdated (value) {
-        this.filterBookString = value
+       * The clear button was clicked
+       */
+      clearCalledFromHeader () {
+        this.searchBookString = ''
+        // Check if all filters are clear
+        this.checkFilterStatus()
+      },
+      /**
+       * If all filters have been cleared
+       * AND the getAll flag is true, re-fetch all
+       */
+      checkFilterStatus () {
+        if (this.searchBookString === '') {
+          if (this.AllData.getAll) {
+            // Search is empty and the GetAll was previously clicked
+            let self = this
+
+            const authString = Auth.getAuthHeader()
+            // Make query to just get # of books
+            let params = {
+              limit: 0
+            }
+            let url = '/book/'
+            this.$axios.get(url, {
+              headers: { Authorization: authString },
+              params: params })
+              .then((response) => {
+                // We got the number of user books
+                let numBooks = response.data.total
+
+                // Now get all those books
+                self.AllData.lengthToGet = numBooks
+                self.AllData.dataStart = 0
+
+                // Reset the scrolling like in grabAll
+                this.AllData.getAll = true
+                this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+                this.infiniteHandler(null)
+              })
+              .catch(function (error) {
+                if (error.response.status === 401) {
+                  Event.$emit('got401')
+                } else {
+                  console.log(error)
+                }
+              })
+          }
+        }
       },
       /**
        * Grab all values
        */
       grabAll () {
+        // Calculate the length to get in order to grab all data
         this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
         if (this.AllData.lengthToGet <= 0) {
           this.AllData.lengthToGet = 15
         }
+        this.AllData.getAll = true
+
+        // Reset the scrolling
         this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
         this.infiniteHandler(null)
       },
@@ -265,33 +320,6 @@
       conflictError (serverError) {
         console.log('Got server error:' + serverError)
         this.printMessage(serverError)
-      }
-    },
-    /**
-     * A computed value for bookList, based on BookJson and
-     * filtering by title name.
-     */
-    computed: {
-      bookList: function () {
-        let result = this.AllData.BooksJson
-        this.lengthOfViewableBooks = result.length
-
-        if (!this.filterBookString) {
-          return result
-        }
-
-        // What to filter on
-        const filterValue = this.filterBookString.toLowerCase()
-
-        // create a filter for the books json
-        const filter = event =>
-              event.title.toLowerCase().includes(filterValue) ||
-              event.authorName.toLowerCase().includes(filterValue) ||
-              String(event.firstPublishedYear).includes(filterValue)
-
-        let filteredResult = result.filter(filter)
-        this.lengthOfViewableBooks = filteredResult.length
-        return filteredResult
       }
     }
   }

@@ -66,6 +66,7 @@
         let self = this
 
         const authString = Auth.getAuthHeader()
+        // Make query to just get the # of books
         let params = {
           limit: 0
         }
