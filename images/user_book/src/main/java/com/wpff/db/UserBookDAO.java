@@ -1,7 +1,6 @@
 package com.wpff.db;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
@@ -25,12 +24,24 @@ public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
 	/**
    * Look up an UserBook by id.
    *
-   * @param id
-   *          UserBook
+   * @param userId
+   *          ID of User
+   * @param userBookId
+   *          UserBook ID
    * @return Optional UserBook
    */
-	public Optional<DatabaseUserBook> findById(Integer id) {
-		return Optional.ofNullable(get(id));
+	public DatabaseUserBook findByUserBookId(
+	    int userId,
+	    Integer userBookId) {
+	  // Get matching book
+	  DatabaseUserBook result = get(userBookId);
+    int booksUserId = result.getUser_id();
+    if (booksUserId != userId) {
+      // This book isn't owned by the incoming user
+      result = null;
+    }
+
+    return result;
 	}
 
 	/**

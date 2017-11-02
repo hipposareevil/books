@@ -110,6 +110,8 @@ public class UserBookHelper {
    * 
    * @param userBookBean
    *          Bean with new data
+   * @param userId
+   *          ID of user
    * @param userBookId
    *          ID of user book
    * @return
@@ -118,11 +120,13 @@ public class UserBookHelper {
    * @throws InvocationTargetException
    */
   @UnitOfWork
-  DatabaseUserBook updateUserBook(PostUserBook userBookBean, int userBookId) throws IllegalAccessException,
-      IllegalArgumentException, InvocationTargetException {
+  DatabaseUserBook updateUserBook(PostUserBook userBookBean, int userId, int userBookId) 
+      throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     // Grab existing user book
-    DatabaseUserBook userBookToUpdate = this.userBookDAO.findById(userBookId).orElseThrow(
-        () -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
+    DatabaseUserBook userBookToUpdate = this.userBookDAO.findByUserBookId(userId, userBookId);
+    if (userBookToUpdate == null) {
+       throw new NotFoundException("No UserBook by id '" + userBookId + "'");
+    }
 
     // Copy non null values over
     BeanUtils.copyProperty(userBookToUpdate, "data", userBookBean.getData());
@@ -199,14 +203,31 @@ public class UserBookHelper {
     List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
     for (TagMapping mapping : mappings) {
       int userBookId = mapping.getUserBookId();
-      FullUserBook current = getUserBookByUserBookId(authString, userBookId);
 
-      userBooks.add(current);
+      // get book by the userbook ID
+      FullUserBook current = getUserBookByUserBookId(authString, userId, userBookId);
+      if (current != null) {
+        userBooks.add(current);
+      }
     }
 
     return userBooks;
   }
 
+  /**
+   * Get books by the incoming title query.
+   * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
+   * @param userId
+   *          ID of user
+   * @param titleQuery
+   *          Title Query
+   * @return list of matching user books
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   */
   @UnitOfWork
   List<FullUserBook> getUserBooksByTitle(String authString, Integer userId, String titleQuery)
       throws IllegalAccessException, InvocationTargetException {
@@ -214,33 +235,41 @@ public class UserBookHelper {
 
     // List of book IDs
     List<Integer> ids = this.getBookIdsForTitleQuery(authString, titleQuery);
-    for (Integer userBookId : ids) {
-      FullUserBook current = getUserBookByUserBookId(authString, userBookId);
 
-      userBooks.add(current);
+    for (Integer userBookId : ids) {
+      // get book by the userbook ID
+      FullUserBook current = getUserBookByUserBookId(authString, userId, userBookId);
+
+      // The book may exist, but not be
+      if (current != null) {
+        userBooks.add(current);
+      }
     }
 
     return userBooks;
   }
 
   /**
-   * Get UserBook from database. This will contain the UserBooks tags
+   * Get UserBook from database. If the userBookId doesn't belong to the
+   * incoming user (by userId), then the book is not added.
    *
+   * @param userId
+   *          ID of the user for this user book
    * @param userBookId
    *          ID of user book to retrieve
    * @param authString
    *          Authentication header which is necessary for a REST call to 'book'
    *          web service
-   * @return GetUserBook containing all UserBook info and tags
+   * @return GetUserBook containing all UserBook info and tags, or null if none exists
    * @throws InvocationTargetException
    * @throws IllegalAccessException
    */
   @UnitOfWork
-  FullUserBook getUserBookByUserBookId(String authString, int userBookId) throws IllegalAccessException,
+  FullUserBook getUserBookByUserBookId(String authString, int userId, int userBookId) throws IllegalAccessException,
       InvocationTargetException {
     // Get db book
-    DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
-        () -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
+    DatabaseUserBook bookInDb = this.userBookDAO
+        .findByUserBookId(userId, userBookId);
 
     return convert(bookInDb, authString);
   }
@@ -249,14 +278,19 @@ public class UserBookHelper {
    * Delete a user book. It is assumed the caller of this function has already
    * verified the user IDs match up to the owner of this user book.
    * 
+   * @param userId
+   *          ID of the user for this user book
    * @param userBookId
    *          ID of user_book to delete
    */
   @UnitOfWork
-  void deleteUserBookById(int userBookId) {
+  void deleteUserBookById(int userId, int userBookId) {
     // Get book in db
-    DatabaseUserBook bookInDb = this.userBookDAO.findById(userBookId).orElseThrow(
-        () -> new NotFoundException("No UserBook by id '" + userBookId + "'"));
+    DatabaseUserBook bookInDb = this.userBookDAO.findByUserBookId(userId, userBookId);
+    
+    if (bookInDb == null) {
+       throw new NotFoundException("No UserBook for user '" + userId + "' by id '" + userBookId + "'");
+    }
 
     this.userBookDAO.delete(bookInDb);
 
@@ -376,6 +410,10 @@ public class UserBookHelper {
    */
   private FullUserBook convert(DatabaseUserBook dbBook, String authString) throws IllegalAccessException,
       InvocationTargetException {
+    if (dbBook == null) {
+      return null;
+    }
+    
     FullUserBook bookToReturn = new FullUserBook();
 
     // Copy over bean values - copy(destination, source)

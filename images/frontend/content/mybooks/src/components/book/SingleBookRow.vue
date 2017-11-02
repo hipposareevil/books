@@ -29,7 +29,7 @@
 
     <!-- actions -->
     <td>
-      <div v-if="isOnAShelf">
+      <div v-if="isOnAShelf()">
         <!-- book already on shelf -->
         <button class="button is-info is-small is-static">
           <span>Add To My Books</span>
@@ -70,7 +70,8 @@
         // Flag showing error for userbook being added
         userBookWasAddedError: {
           flag: false
-        }
+        },
+        onshelf: false
       }
     },
     /**
@@ -78,8 +79,12 @@
      */
     mounted: function () {
       // Check if this has already been loaded.
-      // If not, grab the matching userbook
-      if (!this.currentBook.wasAlreadyLoaded) {
+      // If NOT, grab the matching userbook
+      if (this.currentBook.wasAlreadyLoaded) {
+        // book was already loaded
+        this.onshelf = this.currentBook.isOnAShelf
+      } else {
+        // Not ever loaded, go grab it
         this.getMatchingUserBook()
       }
     },
@@ -91,8 +96,7 @@
        * Is this book on a shelf?
        */
       isOnAShelf () {
-        console.log('Is on shelf? ' + this.currentBook.id + ' --> ' + this.currentBook.isOnAShelf)
-        return this.currentBook.isOnAShelf
+        return this.onshelf
       },
       /**
        * send the router to a single book
@@ -135,12 +139,15 @@
             self.currentBook.wasAlreadyLoaded = true
 
             let length = response.data.total
+
             // Add flag to the currentBook denoting if
             // it's on a shelf already.
             if (length === 1) {
               self.currentBook.isOnAShelf = true
+              self.onshelf = true
             } else {
               self.currentBook.isOnAShelf = false
+              self.onshelf = false
             }
           })
           .catch(function () {

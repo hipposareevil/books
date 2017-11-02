@@ -103,7 +103,7 @@ public class UserBookResource {
     // Verify the username matches the userid or is 'admin'
     ubHelper.verifyUserIdHasAccess(context, userId.get());
 
-    ubHelper.deleteUserBookById(userBookId.get());
+    ubHelper.deleteUserBookById(userId.get(), userBookId.get());
 
     return Response.ok().build();
   }
@@ -142,7 +142,7 @@ public class UserBookResource {
       // Verify the username matches the userid or is 'admin'
       ubHelper.verifyUserIdHasAccess(context, userId.get());
 
-      return ubHelper.getUserBookByUserBookId(authString, userBookId.get());
+      return ubHelper.getUserBookByUserBookId(authString, userId.get(), userBookId.get());
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
       throw new WebApplicationException(
           "Error in getting UserBook for user: " + userId.get() + ", user book id: " + userBookId.get(),
@@ -223,7 +223,6 @@ public class UserBookResource {
 
         // Query by TAG
         if (!tagQuery.isEmpty()) {
-          System.out.println("look at tag query: " + tagQuery);
           // Get tagIDs for all matching tags in the database
           Map<String, Tag> tagsInDbMap = ubHelper.getAllTags();
 
@@ -246,7 +245,6 @@ public class UserBookResource {
         
         // Query by TITLE
         if (bookTitle != null) {
-          System.out.println("look at title query: " + bookTitle);
            List<FullUserBook> booksForTitle= ubHelper.getUserBooksByTitle(authString, userId.get(), bookTitle);
            titleBookSet.addAll(booksForTitle);
            
@@ -258,9 +256,10 @@ public class UserBookResource {
         
         // Query by BookId
         if (bookId != null) {
-          System.out.println("look at bookid query: " + bookId);
-          FullUserBook book = ubHelper.getUserBookByUserBookId(authString, bookId);
-          idBookSet.add(book);
+          FullUserBook book = ubHelper.getUserBookByUserBookId(authString, userId.get(), bookId);
+          if (book != null) {
+            idBookSet.add(book);
+          }
           
           bookSet = idBookSet;
           if (!tagQuery.isEmpty()) {
@@ -270,11 +269,7 @@ public class UserBookResource {
             bookSet.retainAll(titleBookSet);
           }
         }
-        
-        System.out.println("id: " + idBookSet);
-        System.out.println("title: " + titleBookSet);
-        System.out.println("tag: " + tagBookSet);
-                        
+
         // Wrap the results with the desired offset and limit
         List<FullUserBook> bookList = new ArrayList<FullUserBook>(bookSet);
         ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(bookList, offset, limit);
@@ -284,11 +279,14 @@ public class UserBookResource {
         // There are no queries, so it is a straight call
         Segment segment = new Segment(offset, limit);
 
+        System.out.println("Making query for " + limit + " user books for user " + userId.get());
         List<FullUserBook> userBooks = ubHelper.getUserBooksForUser(authString, userId.get(), segment);
         
         // Set overall size
         segment.setTotalLength(ubHelper.getTotalNumberUserBooks(userId.get()));
       
+        System.out.println("result: " + userBooks);
+        
         ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(userBooks, segment);
         return result;
       }   
@@ -394,7 +392,7 @@ public class UserBookResource {
       // Marshall back from database
 
       // Copy values into new 'UserBook' class
-      FullUserBook userBookToReturn = this.ubHelper.getUserBookByUserBookId(authString, newUserBook.getUserBookId());
+      FullUserBook userBookToReturn = this.ubHelper.getUserBookByUserBookId(authString, userId.get(), newUserBook.getUserBookId());
 
       return userBookToReturn;
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
@@ -447,7 +445,7 @@ public class UserBookResource {
 
       //////////////////
       // Get existing userbook from database
-      ubHelper.updateUserBook(userBookBean, userBookId.get());
+      ubHelper.updateUserBook(userBookBean, userId.get(), userBookId.get());
 
       List<String> tags = userBookBean.getTags();
 
@@ -498,7 +496,7 @@ public class UserBookResource {
       // Marshall back from database
 
       // Copy values into new 'UserBook' class
-      FullUserBook userBookToReturn = this.ubHelper.getUserBookByUserBookId(authString, userBookId.get());
+      FullUserBook userBookToReturn = this.ubHelper.getUserBookByUserBookId(authString, userId.get(), userBookId.get());
       return userBookToReturn;
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
       throw new WebApplicationException(

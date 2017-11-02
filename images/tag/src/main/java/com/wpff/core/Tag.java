@@ -32,30 +32,19 @@ public class Tag {
 	private String name;
 
 	/**
-	 * Data for the tag. May be empty
-	 */
-	@Column(name = "data", nullable = true)
-	private String data;
-
-	/**
 	 * Default constructor
 	 */
 	public Tag() {
 	}
 
-	public Tag(String name, int id, String data) {
+	public Tag(String name, int id) {
 		this.name = name;
 		this.id = id;
-		this.data = data;
 	}
 
 	public String toString() {
 		return "Tag[id=" + id + ", " +
 				"name=" + name + "]";
-	}
-
-	public String getData() {
-		return data;
 	}
 
 	public int getId() {
@@ -74,9 +63,7 @@ public class Tag {
 		this.id = id;
 	}
 
-	public void setData(String data) {
-		this.data = data;
-	}
+
 
 	@Override
 	public boolean equals(Object o) {
@@ -90,12 +77,11 @@ public class Tag {
 		final Tag that = (Tag) o;
 
 		return Objects.equals(this.name, that.name) &&
-				Objects.equals(this.id, that.id) &&
-				Objects.equals(this.data, that.data);
+				Objects.equals(this.id, that.id);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.name, this.id, this.data);
+		return Objects.hash(this.name, this.id);
 	}
 }

@@ -4,15 +4,14 @@ DROP TABLE IF EXISTS `tag`;
 
 CREATE TABLE `tag` (
   `tag_id`  int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL UNIQUE,
-  `data` varchar(2048) DEFAULT NULL,
+  `name` varchar(255) NOT NULL UNIQUE
   PRIMARY KEY (`tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 LOCK TABLES `tag` WRITE;
 
-INSERT INTO `tag` VALUES (1, "sci-fi", "Science Fiction & Fantasy" );
-INSERT INTO `tag` VALUES (2, "e-book", "Electronic books" );
+INSERT INTO `tag` VALUES (1, "sci-fi");
+INSERT INTO `tag` VALUES (2, "e-book");
 
 UNLOCK TABLES;
 

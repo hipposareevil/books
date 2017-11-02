@@ -246,9 +246,6 @@ public class TagResource {
 				BeanUtils.copyProperty(tagInDatabase,
 						"name",
 						tagBean.getName());
-				BeanUtils.copyProperty(tagInDatabase,
-						"data",
-						tagBean.getData());
 			} catch (Exception bean) {
 				throw new WebApplicationException("Error in updating database for tag " + tagId + ".",
 						Response.Status.INTERNAL_SERVER_ERROR);
