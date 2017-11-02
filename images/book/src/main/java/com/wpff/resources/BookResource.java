@@ -383,7 +383,7 @@ public class BookResource {
       this.bookDAO.update(bookToUpdate);
       
       // Clear cache
-      this.cache.clear("book.title", bookId.get());
+      this.cache.clear("book.info", bookId.get());      
  
       // The authorization string is passed in so we can get the author name 
       // from the 'author' webservice      

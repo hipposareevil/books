@@ -5,16 +5,27 @@
            class="table main-width is-narrow is-stripped">
       <thead>
         <tr>
-          <th style="width: 15%;"
+          <th style="width: 13%;"
               title="Cover">Cover</th>
-          <th style="width: 25%;"
+
+          <th style="width: 30%;"
+              class="clickable"
+              @click="sortBy('title')"
               title="Title">Title</th>
-          <th style="width: 15%;"
+
+          <th style="width: 18%;"
+              class="clickable"
+              @click="sortBy('authorName')"
               title="Author">Author</th>
+
           <th style="width: 5%;"
+              class="clickable"
+              @click="sortBy('firstPublishedYear')"
               title="Year">Year</th>
+
           <th style="width: 4%;"
               title="Year">Rating</th>
+
           <th style="width: 18%;"
               class="has-text-centered"
               title="Actions">Tags</th>
@@ -25,7 +36,7 @@
 
         <!-- userbookrow creates a tr -->
         <UserBookRow
-          v-for="currentUserBook in UserBooksJson"
+          v-for="currentUserBook in bookList"
           v-bind:allTags="allTags"
           v-bind:userBook="currentUserBook"
           :key="currentUserBook.userBookId"
@@ -41,6 +52,7 @@
 
 <script>
   import UserBookRow from './UserBookRow.vue'
+  import _ from 'lodash'
 
   /**
    * Default data
@@ -58,18 +70,52 @@
     // Data for this component
     data () {
       return {
-        // books to display
-        UserBooksJson: this.userBooks
+        // Books to display
+        UserBooksJson: this.userBooks,
+        // How to sort the columns
+        SortColumns: {
+          order: 'asc',
+          columnName: ''
+        }
       }
     },
+    /**
+     * Methods
+     */
     methods: {
+      /**
+       * Sort the books by the incoming column
+       *
+       */
+      sortBy (column) {
+        // flip order or sorting
+        if (this.SortColumns.order === 'asc') {
+          this.SortColumns.order = 'desc'
+        } else {
+          this.SortColumns.order = 'asc'
+        }
+
+        this.SortColumns.columnName = column
+      }
     },
-   /**
-    * Watch a property and update our model accordingly
-    */
+    /**
+     * Watch a property and update our model accordingly
+     */
     watch: {
       userBooks: function (val, oldVal) {
         this.UserBooksJson = val
+      }
+    },
+    /**
+     * Compute values
+     */
+    computed: {
+      /**
+       * Compute the book list
+       */
+      bookList: function () {
+        let newlist = _.orderBy(this.UserBooksJson, [this.SortColumns.columnName], [this.SortColumns.order])
+        return newlist
       }
     }
   }
@@ -81,13 +127,15 @@
 }
 
 .main-width {
-  width: 65%
+  width: 80%
 }
 
 .book {
    cursor: pointer
 }
-
+.clickable  {
+    cursor: pointer
+}
 .taglist {
     border: solid lightgray 1px;
     margin-left: 1em;

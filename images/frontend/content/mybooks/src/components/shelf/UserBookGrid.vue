@@ -7,12 +7,12 @@
       <!-- cover -->
       <a @click="gotoBook">
         <figure class="image is-128x128 grid-figure">
-          <img v-if="book.imageMedium"
+          <img v-if="userBook.imageMedium"
                class="boxshadow grid-image"
-               :src="book.imageMedium">
+               :src="userBook.imageMedium">
         </figure>
         <span style="overflow-wrap: break-word;">
-          {{book.title}}
+          {{userBook.title}}
         </span>
       </a>
 
@@ -22,8 +22,6 @@
 </template>
 
 <script>
-  import Auth from '../../auth'
-
   /**
    * Default data
    */
@@ -40,47 +38,18 @@
      */
     data () {
       return {
-        // Data for the current book, this is retrieved once
-        // we are mounted via this.getFullBook
-        book: {}
       }
-    },
-    /**
-     * When mounted, get the user books
-     *
-     */
-    mounted: function () {
-      this.getFullBook()
     },
     /**
      * Methods
      */
     methods: {
       /**
-       * Get get book for id
-       */
-      getFullBook () {
-        const authString = Auth.getAuthHeader()
-        let self = this
-        let url = '/book/' + this.userBook.bookId
-        this.$axios.get(url, { headers: { Authorization: authString } })
-          .then((response) => {
-            self.book = response.data
-          })
-          .catch(function (error) {
-            if (error.response.status === 401) {
-              this.$emit('got401')
-            } else {
-              console.log(error)
-            }
-          })
-      },
-      /**
        * send the router to a single book
        *
        */
       gotoBook () {
-        this.$router.push('/books/' + this.book.id)
+        this.$router.push('/books/' + this.userBook.id)
       },
       /**
        * send the router to a single author

@@ -40,6 +40,29 @@ public class BookBean {
    * book_id
    */
   private int id;
+  
+  /**
+   * Year of book
+   */
+  private int firstPublishedYear;
+  
+  /**
+   * Author of book
+   */
+  private String authorName;
+  
+  /**
+   * Author id
+   */
+  	private int authorId;
+
+  	private String imageSmall;
+
+  	private String imageMedium;
+
+  	private String imageLarge;
+
+  	
 
   /**
    * @return the title
@@ -68,6 +91,92 @@ public class BookBean {
    */
   public void setId(int id) {
     this.id = id;
+  }
+
+
+
+  /**
+   * @return the author
+   */
+  public String getAuthorName() {
+    return authorName;
+  }
+
+  /**
+   * @param author the author to set
+   */
+  public void setAuthorName(String author) {
+    this.authorName = author;
+  }
+
+  /**
+   * @return the firstPublishedYear
+   */
+  public int getFirstPublishedYear() {
+    return firstPublishedYear;
+  }
+
+  /**
+   * @param firstPublishedYear the firstPublishedYear to set
+   */
+  public void setFirstPublishedYear(int firstPublishedYear) {
+    this.firstPublishedYear = firstPublishedYear;
+  }
+
+  /**
+   * @return the authorId
+   */
+  public int getAuthorId() {
+    return authorId;
+  }
+
+  /**
+   * @param authorId the authorId to set
+   */
+  public void setAuthorId(int authorId) {
+    this.authorId = authorId;
+  }
+
+  /**
+   * @return the imageSmall
+   */
+  public String getImageSmall() {
+    return imageSmall;
+  }
+
+  /**
+   * @param imageSmall the imageSmall to set
+   */
+  public void setImageSmall(String imageSmall) {
+    this.imageSmall = imageSmall;
+  }
+
+  /**
+   * @return the imageMedium
+   */
+  public String getImageMedium() {
+    return imageMedium;
+  }
+
+  /**
+   * @param imageMedium the imageMedium to set
+   */
+  public void setImageMedium(String imageMedium) {
+    this.imageMedium = imageMedium;
+  }
+
+  /**
+   * @return the imageLarge
+   */
+  public String getImageLarge() {
+    return imageLarge;
+  }
+
+  /**
+   * @param imageLarge the imageLarge to set
+   */
+  public void setImageLarge(String imageLarge) {
+    this.imageLarge = imageLarge;
   }
 
 }

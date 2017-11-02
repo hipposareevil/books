@@ -7,10 +7,10 @@
     <td style=" outline-style: none; background-transparent;">
       <a @click="gotoBook">
       <figure class="image is-128x128">
-        <img v-if="book.imageMedium"
+        <img v-if="userBook.imageMedium"
              class="boxshadow"
              style="width: auto; max-height: 128px;"
-             :src="book.imageMedium">
+             :src="userBook.imageMedium">
       </figure>
       </a>
     </td>
@@ -18,20 +18,20 @@
     <!-- title -->
     <th>
       <a @click="gotoBook">
-        {{ book.title }} 
+        {{ userBook.title }} 
       </a>
     </th>
 
     <!-- author  -->
     <td>
       <a @click="gotoAuthor">
-      {{ book.authorName }}
+      {{ userBook.authorName }}
       </a>
     </td>
 
     <!-- year -->
     <td>
-      {{ book.firstPublishedYear }}
+      {{ userBook.firstPublishedYear }}
     </td>
 
     <!-- rating -->
@@ -130,44 +130,18 @@
       }
     },
     /**
-     * When mounted, get the user books
-     *
-     */
-    mounted: function () {
-      this.getFullBook()
-    },
-    /**
      * Methods
      */
     methods: {
-      /**
-       * Get get book for id
-       */
-      getFullBook () {
-        const authString = Auth.getAuthHeader()
-        let self = this
-        let url = '/book/' + this.userBook.bookId
-        this.$axios.get(url, { headers: { Authorization: authString } })
-          .then((response) => {
-            self.book = response.data
-          })
-          .catch(function (error) {
-            if (error.response.status === 401) {
-              this.$emit('got401')
-            } else {
-              console.log(error)
-            }
-          })
-      },
       /**
        * The tag section was double clicked
        */
       tagClicked () {
         this.showTagModal = true
       },
-     /**
-      * Tags were updated via the modal
-      */
+      /**
+       * Tags were updated via the modal
+       */
       tagsUpdatedByModal (newtags) {
         this.showTagModal = false
         console.log('Tags were updated: ' + newtags)
@@ -241,14 +215,14 @@
        *
        */
       gotoBook () {
-        this.$router.push('/books/' + this.book.id)
+        this.$router.push('/books/' + this.userBook.bookId)
       },
       /**
        * send the router to a single author
        *
        */
       gotoAuthor () {
-        this.$router.push('/authors/' + this.book.authorId)
+        this.$router.push('/authors/' + this.userBook.authorId)
       }
     },
     /**
