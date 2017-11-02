@@ -213,10 +213,17 @@ public class UserBookResource {
         /////////////////////////
         // A query is being used
                 
-        Set<FullUserBook> bookSet = new TreeSet<FullUserBook>(); 
+        // The set of books to return to user
+        // This is an intersection of the 3 following sets
+        Set<FullUserBook> bookSet = new TreeSet<FullUserBook>();
+        
+        Set<FullUserBook> tagBookSet = new TreeSet<FullUserBook>();
+        Set<FullUserBook> titleBookSet = new TreeSet<FullUserBook>();
+        Set<FullUserBook> idBookSet = new TreeSet<FullUserBook>();
 
         // Query by TAG
         if (!tagQuery.isEmpty()) {
+          System.out.println("look at tag query: " + tagQuery);
           // Get tagIDs for all matching tags in the database
           Map<String, Tag> tagsInDbMap = ubHelper.getAllTags();
 
@@ -231,22 +238,43 @@ public class UserBookResource {
           for (Tag t : matchingTags) {
             int tagId = t.getId();
             List<FullUserBook> booksForTag = ubHelper.getUserBooksByUserAndTag(authString, userId.get(), tagId);
-            bookSet.addAll(booksForTag);
-          }          
+            tagBookSet.addAll(booksForTag);
+          }
+          
+          bookSet = tagBookSet;          
         }
         
         // Query by TITLE
         if (bookTitle != null) {
-           List<FullUserBook> booksForTag = ubHelper.getUserBooksByTitle(authString, userId.get(), bookTitle);
-            bookSet.addAll(booksForTag);
+          System.out.println("look at title query: " + bookTitle);
+           List<FullUserBook> booksForTitle= ubHelper.getUserBooksByTitle(authString, userId.get(), bookTitle);
+           titleBookSet.addAll(booksForTitle);
+           
+           bookSet = titleBookSet;
+           if (!tagQuery.isEmpty()) {
+             bookSet.retainAll(tagBookSet);
+           }
         }
         
         // Query by BookId
         if (bookId != null) {
+          System.out.println("look at bookid query: " + bookId);
           FullUserBook book = ubHelper.getUserBookByUserBookId(authString, bookId);
-          bookSet.add(book);
+          idBookSet.add(book);
+          
+          bookSet = idBookSet;
+          if (!tagQuery.isEmpty()) {
+            bookSet.retainAll(tagBookSet);
+          }
+          if (bookTitle != null) {
+            bookSet.retainAll(titleBookSet);
+          }
         }
-
+        
+        System.out.println("id: " + idBookSet);
+        System.out.println("title: " + titleBookSet);
+        System.out.println("tag: " + tagBookSet);
+                        
         // Wrap the results with the desired offset and limit
         List<FullUserBook> bookList = new ArrayList<FullUserBook>(bookSet);
         ResultWrapper<FullUserBook> result = ResultWrapperUtil.createWrapper(bookList, offset, limit);
@@ -272,6 +300,7 @@ public class UserBookResource {
     }
   }
 
+  
   /**
    * Create a userbook in the database. This requires an authorization token to be
    * present in the headers.
