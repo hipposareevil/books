@@ -19,6 +19,13 @@
               </p>
               <p class="control">
                 <button class="button"
+                        v-bind:class="{'is-loading' : showLoading }"
+                        @click="search">
+                  Search
+                </button>
+              </p>
+              <p class="control">
+                <button class="button"
                         @click="clearSearch">
                   Clear
                 </button>
@@ -95,14 +102,16 @@
    */
   export default {
     // Props for this component
-    props: [ 'theThing', 'numberOfThings', 'showAsList', 'totalNumber' ],
+    props: [ 'theThing', 'numberOfThings', 'showAsList', 'totalNumber', 'isLoading' ],
     // Data for this component
     data () {
       return {
         // String to search on
         searchString: '',
         // when true, view as list
-        showList: this.showAsList
+        showList: this.showAsList,
+        // when true, the clear button is loading
+        showLoading: this.isLoading
       }
     },
     methods: {
@@ -160,6 +169,9 @@
     watch: {
       showAsList: function (val, oldVal) {
         this.showList = val
+      },
+      isLoading: function (val, oldVal) {
+        this.showLoading = val
       }
     }
   }

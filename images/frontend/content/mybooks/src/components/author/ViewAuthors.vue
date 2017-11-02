@@ -7,6 +7,7 @@
                 :numberOfThings="getCurrentLength"
                 :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
+                :isLoading="isLoading"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
@@ -79,6 +80,8 @@
             this.end = -1
           }
         },
+        // flag denoting loading or not
+        isLoading: false,
         /**
          * Current state of the view
          */
@@ -132,15 +135,19 @@
           offset: self.AllData.dataStart,
           limit: self.AllData.lengthToGet
         }
-        let url = '/author'
         if (this.searchAuthorString !== '') {
-          url = url + '?name=' + this.searchAuthorString
+          params.name = this.searchAuthorString
         }
 
+        let url = '/author'
+        this.isLoading = true
+
+        // Make call
         this.$axios.get(url, {
           headers: { Authorization: authString },
           params: params })
           .then((response) => {
+            this.isLoading = false
             // Get data segment information
             let incomingData = response.data.data
             // start of data inside total set
@@ -192,6 +199,7 @@
             }
           })
           .catch(function (error) {
+            this.isLoading = false
             if ($state) {
               $state.complete()
             }

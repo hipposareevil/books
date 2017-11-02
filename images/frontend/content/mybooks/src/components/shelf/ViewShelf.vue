@@ -5,6 +5,7 @@
                 :numberOfThings="getCurrentLength"
                 :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
+                :isLoading="isLoading"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
@@ -30,7 +31,7 @@
                 style="margin-left: -0.5em;">
               <a @click="setTagFilter(current.name)"
                  class="isclickable"
-                v-bind:class="{ 'is-size-6': isSelected(current), highlighted: isSelected(current) }">
+                 v-bind:class="{ 'is-size-6': isSelected(current), highlighted: isSelected(current) }">
                 <span>
                   {{ current.name }}
                 </span>
@@ -119,6 +120,8 @@
             this.end = -1
           }
         },
+        // flag denoting loading or not
+        isLoading: false,
         /**
          * Current state of the view
          */
@@ -189,10 +192,14 @@
         }
 
         let url = '/user_book/' + Auth.user.id
+        this.isLoading = true
+
+        // Make call
         this.$axios.get(url, {
           headers: { Authorization: authString },
           params: params })
           .then((response) => {
+            this.isLoading = false
             // Get data segment information
             let incomingData = response.data.data
             // start of data inside total set
@@ -244,6 +251,7 @@
             }
           })
           .catch(function (error) {
+            this.isLoading = false
             if ($state) {
               $state.complete()
             }
