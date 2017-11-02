@@ -9,7 +9,7 @@
     <br>
     <div class="title is-5 has-text-left"
          style="padding-top: 1em;">
-      <span style="">
+      <span v-if="userBooks.length > 0" >
         Last books added to
         <a class="clickable"
            @click="gotoMyBooks" >My Books</a>:
@@ -106,6 +106,14 @@
 </script>
 
 <style>
+a {
+  color: #4a4a4a;
+}
+a:hover {
+  background-color: rgb(245,245,245)
+}
+
+
 .boxshadow {
     box-shadow: 2px 2px 1px 1px rgba(0, 0, 0, .1);
 }

@@ -301,9 +301,6 @@
 </script>
 
 <style>
-a:hover {
-    color: black;
-}
 
 .fade-enter-active, .fade-leave-active {
   transition: opacity 5s
@@ -316,6 +313,4 @@ a:hover {
 .author {
    cursor: pointer
 }
-
-
 </style>

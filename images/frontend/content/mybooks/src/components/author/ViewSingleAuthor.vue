@@ -78,6 +78,7 @@
 <script>
   import Auth from '../../auth'
   import Modal from '../GetSingleValueModal.vue'
+  import _ from 'lodash'
 
   export default {
     // Components
@@ -139,6 +140,8 @@
         this.$axios.get('/book?author_id=' + this.authorId, { headers: { Authorization: authString } })
           .then((response) => {
             self.bookData = response.data.data
+            // Sort
+            self.bookData = _.sortBy(self.bookData, ['title'])
           })
           .catch(function (error) {
             if (error.response.status === 401) {

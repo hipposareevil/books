@@ -414,7 +414,7 @@
 </script>
 
 <style lang="css">
-  .highlighted {
+.highlighted {
   background-color: lightgray;
   }
 .isclickable {
