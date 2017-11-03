@@ -1,3 +1,4 @@
+<!-- Modal to add a book or author  -->
 <template>
   <div v-on:keyup.esc="cancel" v-bind:class="{ 'is-active': isActive }" class="modal">
 
@@ -7,9 +8,9 @@
     <div class="modal-card">
 
       <header class="modal-card-head" style="text-align: center;">
-        <p class="modal-card-title">Add {{typeOfThing}}
+        <p class="modal-card-title">Add Author
           <br>
-          <span class="is-size-3">"{{theThing}}"</span>
+          <span class="is-size-3">"{{authorName}}"</span>
           <br>
           to database?</p>
         <button @click="cancel" class="delete" aria-label="close"></button>
@@ -28,12 +29,14 @@
    export default {
     /**
      * active: is this modal active
-     * whatType: What type of thing we are adding; book, author
-     * thing: Name of thing being added
+     * name: Name of author
      */
-     props: [ 'active', 'whatType', 'thing' ],
+     props: [ 'active', 'name' ],
      data () {
-       return { isActive: '', theThing: '', typeOfThing: this.whatType }
+       return {
+         isActive: '',
+         authorName: ''
+       }
      },
      methods: {
       /**
@@ -70,8 +73,8 @@
        active: function (val, oldVal) {
          this.isActive = val
        },
-       thing: function (val, oldVal) {
-         this.theThing = val
+       name: function (val, oldVal) {
+         this.authorName = val
        }
      },
     /**

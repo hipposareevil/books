@@ -252,8 +252,6 @@ public class BookResource {
   @TokenRequired
   @ApiResponses( value = {
       @ApiResponse(code = 409, message = "Book already exists."),
-      @ApiResponse(code = 200, 
-                   message = "Book created.")
            })  
 	@Timed(absolute=true, name="create")
   public BookResult createBook(

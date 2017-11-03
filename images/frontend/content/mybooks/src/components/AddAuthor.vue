@@ -7,11 +7,11 @@
     </p>
 
     <!-- Modal. dunsaved called when user clicks on Save -->
-    <modal @dunsaved="saveCalled" 
+    <AuthorModal @dunsaved="saveCalled" 
            @duncanceled="cancelCalled" 
            v-bind:active="showmodal"
-           whatType="author"
-           v-bind:thing="currentAuthor.name"></modal>
+           v-bind:name="currentAuthor.name">
+    </AuthorModal>
 
     <!-- Main container -->
     <nav class="level">
@@ -127,12 +127,12 @@
 
 <script>
   import _ from 'lodash'
-  import Modal from './AddThingModal.vue'
+  import AuthorModal from './AddAuthorModal.vue'
   import Auth from '../auth'
   import UpdateDb from '../updatedb'
 
   export default {
-    components: { Modal },
+    components: { AuthorModal },
     data () {
       return {
         // currently chosen author
@@ -231,10 +231,10 @@
         UpdateDb.tryAddAuthor(this, this.currentAuthor)
 
         // When we get booksaved event, print out message
-        Event.$on('updatedb.authorcreated', (message) => this.printMessage(message))
+        Event.$on('updatedb_authorcreated', (message) => this.printMessage(message))
 
         // If we get booksaved error, print out error
-        Event.$on('updatedb.error', (error) => this.printError(error))
+        Event.$on('updatedb_error', (error) => this.printError(error))
       },
       /**
        * Cancel was called via the popup modal

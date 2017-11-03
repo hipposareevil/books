@@ -1,17 +1,19 @@
 <template>
   <div>
 
+{{ showmodal }}
+
     <p class="subtitle is-4"
        style="border-bottom: solid lightgray 1px;">
       Add book to database
     </p>
 
     <!-- Modal. dunsaved called when user clicks on Save -->
-    <modal @dunsaved="saveCalled" 
-           @duncanceled="cancelCalled" 
+    <BookModal @saveClicked="saveCalled" 
+           @cancelClicked="cancelCalled" 
            :active="showmodal"
-           whatType="book"
-           :thing="currentBook.title"></modal>
+           :title="currentBook.title">
+    </BookModal>
 
     <!-- Main container -->
     <nav class="level">
@@ -150,14 +152,14 @@
   import Auth from '../auth'
   import _ from 'lodash'
   import Message from './Message.vue'
-  import Modal from './AddThingModal.vue'
+  import BookModal from './AddBookModal.vue'
   import UpdateDb from '../updatedb'
 
   export default {
     /**
      * Components used
      */
-    components: { Message, Modal },
+    components: { Message, BookModal },
     /**
      * Data for AddBook
      */
@@ -211,8 +213,15 @@
       /**
        * Save was called via the popup modal.
        * Try to save the book to the DB
+       *
+       * params:
+       * AddUserBookInformation- struct of format:
+       * {
+       * addFlag: true/false
+       * tags: {}
+       * }
        */
-      saveCalled (value) {
+      saveCalled (AddUserBookInformation) {
         this.showmodal = false
 
         // Clear inputs except for author name
@@ -224,17 +233,64 @@
         newTitle = _.startCase(_.toLower(newTitle))
         this.currentBook.title = newTitle
 
-        console.log('>> ' + this.currentBook.title)
-        UpdateDb.addBook(this, this.currentBook)
+        // Send the current book and the AddUserBookInformation about the book
+        UpdateDb.addBook(this, this.currentBook, AddUserBookInformation)
 
         // When we get booksaved event, print out message
-        Event.$on('updatedb.bookcreated', (message) => this.printMessage(message))
+        // Send the AddUserBookInformation bean along.
+        Event.$on('updatedb_bookcreated', (message, AddUserBookInformation) => this.bookCreated(message, AddUserBookInformation))
 
         // Error on book saved
-        Event.$on('updatedb.book.409', (message) => this.printMessage(message))
+        Event.$on('updatedb_book_409', (message) => this.printMessage(message))
 
         // If we get booksaved error, print out error
-        Event.$on('updatedb.error', (error) => this.printError(error))
+        Event.$on('updatedb_error', (error) => this.printError(error))
+      },
+      /**
+       * The book was created. See if we need to add it to the users shelf
+       *
+       */
+      bookCreated (message, AddUserBookInformation) {
+        if (AddUserBookInformation.addFlag === true) {
+          // Add book to the user shelf with the incoming tags
+          this.addBookToList(AddUserBookInformation)
+        }
+
+        this.printMessage(message)
+      },
+      /**
+       * Add a book to a shelf.
+       */
+      addBookToList (AddUserBookInformation) {
+        // Get user id from Auth
+        let userId = Auth.user.id
+
+        let self = this
+        let ourHeaders = {
+          'Authorization': Auth.getAuthHeader()
+        }
+
+        // Data to update in database
+        let data = { }
+        data.bookId = AddUserBookInformation.bookId
+        if (AddUserBookInformation.tags.length > 0) {
+          data.tags = AddUserBookInformation.tags
+        }
+
+        // Try to create a new user_book
+        let url = '/user_book/' + userId
+        this.$axios.post(url, data, { headers: ourHeaders })
+          .then((response) => {
+            self.printMessage('Book "' + AddUserBookInformation.title + '" added to My Books.')
+          })
+          .catch(function (error) {
+            self.loading = false
+            if (error.response.status === 401) {
+              Event.$emit('got401')
+            } else {
+              console.log(error)
+            }
+          })
       },
       /**
        * Cancel was called via the popup modal

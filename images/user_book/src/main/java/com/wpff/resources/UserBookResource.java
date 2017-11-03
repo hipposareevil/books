@@ -291,6 +291,7 @@ public class UserBookResource {
         return result;
       }   
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException error) {
+      error.printStackTrace();
       throw new WebApplicationException(
           "Error in getting UserBooks for user: " + userId.get(),
           error,
@@ -382,8 +383,6 @@ public class UserBookResource {
               newUserBook.getUserBookId(), 
               tag.getId());
           
-          System.out.println("Create tagmapping: " + mapping);
-
           ubHelper.createTagMapping(mapping);
         }
       }

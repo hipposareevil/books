@@ -147,7 +147,7 @@
           headers: { Authorization: authString },
           params: params })
           .then((response) => {
-            this.isLoading = false
+            self.isLoading = false
             // Get data segment information
             let incomingData = response.data.data
             // start of data inside total set
@@ -186,7 +186,7 @@
             self.AllData.totalNumData = totalSize
 
             // save to $store
-            this.$store.commit('setAllAuthors', self.AllData)
+            self.$store.commit('setAllAuthors', self.AllData)
 
             if ($state) {
               $state.loaded()
@@ -199,7 +199,7 @@
             }
           })
           .catch(function (error) {
-            this.isLoading = false
+            self.isLoading = false
             if ($state) {
               $state.complete()
             }

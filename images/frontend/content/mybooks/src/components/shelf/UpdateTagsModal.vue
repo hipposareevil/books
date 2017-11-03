@@ -80,6 +80,9 @@
           * Make a copy of the list so we don't mutate the parent's UserBook.
           */
          userBookTags: this.userBook.tags.slice(),
+         /**
+          * all incoming tag names
+          */
          allTagsAsList: this.allTags.map(function (o) { return o.name })
        }
      },
@@ -101,7 +104,7 @@
          this.isActive = false
        },
        /**
-        * Ad tag to the currentUserBook
+        * Add tag to the currentUserBook
         */
        addTag (tagName) {
          // only add if it isn't already in lsit

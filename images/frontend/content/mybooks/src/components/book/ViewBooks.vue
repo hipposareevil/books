@@ -127,8 +127,8 @@
         this.ViewState = temp
       }
 
-      Event.$on('updatedb.book.409', (eventmessage) => this.conflictError(eventmessage))
-      Event.$on('updatedb.user_book.409', (eventmessage) => this.conflictError(eventmessage))
+      Event.$on('updatedb_book_409', (eventmessage) => this.conflictError(eventmessage))
+      Event.$on('updatedb_user_book_409', (eventmessage) => this.conflictError(eventmessage))
     },
     /**
      * Methods
@@ -150,14 +150,14 @@
         }
 
         let url = '/book'
-        this.isLoading = true
+        self.isLoading = true
 
         // Make call
         this.$axios.get(url, {
           headers: { Authorization: authString },
           params: params })
           .then((response) => {
-            this.isLoading = false
+            self.isLoading = false
             // Get data segment information
             let incomingData = response.data.data
             // start of data inside total set
@@ -197,7 +197,7 @@
             self.AllData.lengthToGet = 15
 
             // save to $store
-            this.$store.commit('setAllBooks', self.AllData)
+            self.$store.commit('setAllBooks', self.AllData)
 
             if ($state) {
               $state.loaded()
@@ -210,7 +210,7 @@
             }
           })
           .catch(function (error) {
-            this.isLoading = false
+            self.isLoading = false
             if ($state) {
               $state.complete()
             }

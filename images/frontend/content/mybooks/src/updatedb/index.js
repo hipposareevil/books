@@ -33,7 +33,7 @@ export default {
         if (listOfAuthors.length <= 0) {
           self.addAuthor(context, author)
         } else {
-          window.Event.$emit('updatedb.authorcreated', 'Author ' + author.name + ' already exists. Continuing.')
+          window.Event.$emit('updatedb_authorcreated', 'Author ' + author.name + ' already exists. Continuing.')
         }
       })
       .catch(function (error) {
@@ -57,10 +57,10 @@ export default {
     // Make POST call to /author
     context.$axios.post(url, author, { headers: { Authorization: authString } })
       .then((response) => {
-        window.Event.$emit('updatedb.authorcreated', 'Author ' + author.name + ' created!')
+        window.Event.$emit('updatedb_authorcreated', 'Author ' + author.name + ' created!')
       })
       .catch(function (error) {
-        window.Event.$emit('updatedb.error', 'Unable to create author "' + author.name + '": ' + error)
+        window.Event.$emit('updatedb_error', 'Unable to create author "' + author.name + '": ' + error)
         console.log(error)
       })
   },
@@ -70,8 +70,9 @@ export default {
    * params:
    * context- Vue component that contains $axios
    * book- Book bean
+   * bookInformation- Metadata on book, add to userbook flag and tags
    */
-  addBook (context, book) {
+  addBook (context, book, bookInformation) {
     console.log('add book ' + book.title)
     console.log('add book ' + book.authorName)
     console.log('add book ' + book.authorKey)
@@ -87,13 +88,13 @@ export default {
         let listOfAuthors = response.data.data
         if (listOfAuthors.length <= 0) {
           // no author
-          self.addBook_noauthor(context, book)
+          self.addBook_noauthor(context, book, bookInformation)
         } else {
           // author exists
           // Get the first author from array.
           let authorId = listOfAuthors[0].id
           console.log('author already exists: ' + authorId)
-          self.addBook_authorcreated(context, book, authorId)
+          self.addBook_authorcreated(context, book, authorId, bookInformation)
         }
       })
       .catch(function (error) {
@@ -106,7 +107,7 @@ export default {
    * and then post that to /author to create.
    *
    */
-  addBook_noauthor (context, book) {
+  addBook_noauthor (context, book, bookInformation) {
     let self = this
     let authString = Auth.getAuthHeader()
 
@@ -130,11 +131,11 @@ export default {
             let authorId = response.data.id
             console.log('AUTHOR: ' + response.data)
             console.log('Created author: ' + authorId)
-            self.addBook_authorcreated(context, book, authorId)
+            self.addBook_authorcreated(context, book, authorId, bookInformation)
           })
           .catch(function (error) {
             // Couldn't create author. error out
-            window.Event.$emit('updatedb.error', 'Unable to create author "' + book.authorName + '": ' + error)
+            window.Event.$emit('updatedb_error', 'Unable to create author "' + book.authorName + '": ' + error)
             console.log(error)
           })
       })
@@ -150,8 +151,10 @@ export default {
    * context - Vue component
    * book- Book bean
    * authorId- ID of author
+   * bookInformation- Bean with information about the book from the user
+   *  (add to user books flag and tags)
    */
-  addBook_authorcreated (context, book, authorid) {
+  addBook_authorcreated (context, book, authorid, bookInformation) {
     console.log('create book for existing author ' + authorid)
 
     const authString = Auth.getAuthHeader()
@@ -176,19 +179,20 @@ export default {
     console.log('create with workurl: ' + book.openlibraryWorkUrl)
     context.$axios.post(url, data, { headers: { Authorization: authString } })
       .then((response) => {
-        console.log('Created book!: ' + response.data)
-        window.Event.$emit('updatedb.bookcreated', 'Book ' + book.title + ' saved!')
+        bookInformation.bookId = response.data.id
+        bookInformation.title = response.data.title
+        window.Event.$emit('updatedb_bookcreated', 'Book ' + book.title + ' saved!', bookInformation)
       })
       .catch(function (error) {
         if (error.response) {
           if (error.response.status === 409) {
             // duplidate book
-            window.Event.$emit('updatedb.book.409', 'Book "' + book.title + '" already exists')
+            window.Event.$emit('updatedb_book_409', 'Book "' + book.title + '" already exists')
           } else {
-            window.Event.$emit('updatedb.error', 'Unable to create book "' + book.title + '": ' + error)
+            window.Event.$emit('updatedb_error', 'Unable to create book "' + book.title + '": ' + error)
           }
         } else {
-          window.Event.$emit('updatedb.error', 'Unable to create book "' + book.title + '": ' + error)
+          window.Event.$emit('updatedb_error', 'Unable to create book "' + book.title + '": ' + error)
           console.log(error)
         }
       })

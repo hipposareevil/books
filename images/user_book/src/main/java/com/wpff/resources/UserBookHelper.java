@@ -174,6 +174,7 @@ public class UserBookHelper {
 
     // convert each book into a FullUserBook
     for (DatabaseUserBook dbBook : booksInDatabase) {
+      System.out.println("Converting dbbook: " + dbBook.getBookId());
       userBooks.add(convert(dbBook, authString));
     }
 
@@ -424,7 +425,9 @@ public class UserBookHelper {
 
     // Get extra book info from /book
     BookBean bookInfo = getBookInfo(authString, dbBook.getBookId());
-    BeanUtils.copyProperties(bookToReturn, bookInfo);
+    if (bookInfo != null) {
+      BeanUtils.copyProperties(bookToReturn, bookInfo);
+    }
     return bookToReturn;
   }
 
