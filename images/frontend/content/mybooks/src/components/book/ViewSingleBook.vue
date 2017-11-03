@@ -32,9 +32,9 @@
                 style="cursor: pointer;"
                 title="Double click to update."
                 @dblclick="changeImage">
-          <img v-if="bookData.imageLarge"
+          <img v-if="bookData.imageMedium"
                class="boxshadow"
-               :src="bookData.imageLarge">
+               :src="bookData.imageMedium">
         </figure>
 
       </div>
@@ -142,6 +142,12 @@
       }
     },
     /**
+     * When mounted, get extra info
+     */
+    mounted: function () {
+      this.getBook()
+    },
+    /**
      * Methods
      */
     methods: {
@@ -160,7 +166,7 @@
         this.bookData = {}
 
         let url = '/book/' + this.bookId
-
+        console.log('Get book from ' + url)
         this.$axios.get(url, { headers: { Authorization: authString } })
           .then((response) => {
             self.bookData = response.data
@@ -309,12 +315,6 @@
             console.log(error)
           })
       }
-    },
-    /**
-     * When mounted, get list of users from database
-     */
-    mounted: function () {
-      this.getBook()
     }
   }
 </script>

@@ -49,7 +49,7 @@
        *
        */
       gotoBook () {
-        this.$router.push('/books/' + this.userBook.id)
+        this.$router.push('/books/' + this.userBook.bookId)
       },
       /**
        * send the router to a single author
