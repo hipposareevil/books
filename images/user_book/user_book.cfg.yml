@@ -26,8 +26,15 @@ database:
   # the maximum number of connections to keep open
   maxSize: 32
 
-  # whether or not idle connections should be validated
-  checkConnectionWhileIdle: false
+  # check connections
+  checkConnectionWhileIdle: true
+
+  checkConnectionOnBorrow: true
+
+  checkConnectionOnConnect: true
+
+  checkConnectionOnReturn: true
+
 
 logging:
   loggers:
