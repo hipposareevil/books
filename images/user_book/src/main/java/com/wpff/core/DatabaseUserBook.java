@@ -46,12 +46,6 @@ public class DatabaseUserBook {
 	private boolean rating;
 
 	/**
-	 * Data for the UserBook. May be empty
-	 */
-	@Column(name = "data", nullable = true)
-	private String data;
-	
-	/**
 	 * Date user book was added
 	 */
 	@Column(name = "date_added", nullable = true)
@@ -63,12 +57,11 @@ public class DatabaseUserBook {
 	public DatabaseUserBook() {
 	}
 
-	public DatabaseUserBook(int id, int user_id, int bookId, boolean rating, String data) {
+	public DatabaseUserBook(int id, int user_id, int bookId, boolean rating) {
 		this.userBookId = id;
 		this.user_id = user_id;
 		this.book_id = bookId;
 		this.rating = rating;
-		this.data = data;
 	}
 
 	public String toString() {
@@ -107,13 +100,7 @@ public class DatabaseUserBook {
 		return this.user_id;
 	}
 
-	public void setData(String data) {
-		this.data = data;
-	}
-
-	public String getData() {
-		return data;
-	}
+	
 
 	public void setRating(boolean rating) {
 		this.rating = rating;
@@ -135,13 +122,12 @@ public class DatabaseUserBook {
 		final DatabaseUserBook that = (DatabaseUserBook) o;
 
 		return Objects.equals(this.userBookId, that.userBookId) && Objects.equals(this.user_id, that.user_id)
-				&& Objects.equals(this.book_id, that.book_id) && Objects.equals(this.rating, that.rating)
-				&& Objects.equals(this.data, that.data);
+				&& Objects.equals(this.book_id, that.book_id) && Objects.equals(this.rating, that.rating);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.userBookId, this.book_id, this.user_id, this.rating, this.data);
+		return Objects.hash(this.userBookId, this.book_id, this.user_id, this.rating);
 	}
 
   /**

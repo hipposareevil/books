@@ -48,7 +48,6 @@ public class FullUserBook extends PostUserBook  implements Comparable {
 	private int firstPublishedYear;
 	
 	
-	
   	private String imageSmall;
 
   	private String imageMedium;
