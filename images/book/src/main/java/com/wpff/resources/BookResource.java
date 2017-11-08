@@ -76,6 +76,9 @@ public class BookResource {
   public BookResource(BookDAO bookDAO, Cache cache) {
     this.bookDAO = bookDAO;
     this.cache = cache;
+    
+    this.cache.clear("book.title");
+    this.cache.clear("book.info");
   }
 
   /**
@@ -109,7 +112,13 @@ public class BookResource {
                         ) {
     // The authorization string is passed in so we can get the author name
     // from the 'author' webservice
-    return this.convertToBean(authorizationKey, findSafely(bookId.get()));	 
+    Book book = findSafely(bookId.get());
+    System.out.println("got book: " + book);
+    BookResult converted = this.convertToBean(authorizationKey, book);
+    System.out.println("converted book: " + converted);
+    
+    
+    return converted;
   }	
   /**	
    * Get list of books.	
@@ -275,11 +284,15 @@ public class BookResource {
          throw new WebApplicationException("Book '" + bookBean.getTitle() + "' already exists.", Response.Status.CONFLICT);
       }
       
+      if (bookBean.getDescription().length() > 10000) {
+        bookBean.setDescription(bookBean.getDescription().substring(0, 9999));
+      }
+      
       // Make new Book from bookBean (which is a PostBook)
       Book bookInDatabase = new Book();
       // copy(destination, source)
       BeanUtils.copyProperties(bookInDatabase, bookBean);
-      
+            
       // the bookBean's subjects is a list, convert it into a CSV string
       BeanUtils.copyProperty(bookInDatabase, "subject", convertListToCsv(bookBean.getSubjects()));
       
@@ -467,7 +480,8 @@ public class BookResource {
     bookSet.addAll(bookDAO.findByName(bookBean.getTitle()));
     
     for (Book current : bookSet) {
-      if (current.getAuthorId() == bookBean.getAuthorId()) {
+      if (current.getAuthorId() == bookBean.getAuthorId() &&
+          current.getTitle().equalsIgnoreCase(bookBean.getTitle())) {
         return true;
       }
     }
@@ -526,7 +540,7 @@ public class BookResource {
       // the dbBook has 'getSubject' and 'getIsbn', both singular,
       // while the result bean has 'getSubjects' and 'getIsbns', both plural.
       // If they had the same name, the above copyProperties would die as 
-      // it's copying a List to a String and vica versa.
+      // it's copying a List to a String and vica-versa.
       
       // dbBook's 'subjects' is a csv, convert into a list
       if (dbBook.getSubject() != null) {

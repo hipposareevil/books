@@ -42,6 +42,8 @@ public class AuthorHelper {
   public AuthorHelper(AuthorDAO authorDao, Cache cache) {
     this.authorDAO= authorDao;
     this.cache = cache;
+    
+    this.cache.clear("author.name");
   }
   
   /**
