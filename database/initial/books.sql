@@ -10,7 +10,7 @@ CREATE TABLE `tag` (
 
 LOCK TABLES `tag` WRITE;
 
-INSERT INTO `tag` VALUES (1, "sci-fi");
+INSERT INTO `tag` VALUES (1, "science-fiction");
 INSERT INTO `tag` VALUES (2, "e-book");
 
 UNLOCK TABLES;
@@ -27,7 +27,6 @@ CREATE TABLE `userbook` (
   `book_id`  int(11) NOT NULL,
   `rating` tinyint(1) DEFAULT NULL,
   `date_added` DATETIME DEFAULT NULL,
-  `data` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`user_book_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

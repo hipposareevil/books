@@ -15,7 +15,6 @@ public class PostUserBook {
 
 	protected Boolean rating;
 
-	protected String data;
 
 	protected List<String> tags = null;
 
@@ -38,13 +37,7 @@ public class PostUserBook {
 		return this.bookId;
 	}
 
-	public void setData(String data) {
-		this.data = data;
-	}
 
-	public String getData() {
-		return data;
-	}
 
 	public void setRating(Boolean rating) {
 		this.rating = rating;

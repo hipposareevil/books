@@ -129,7 +129,6 @@ public class UserBookHelper {
     }
 
     // Copy non null values over
-    BeanUtils.copyProperty(userBookToUpdate, "data", userBookBean.getData());
     if (userBookBean.getRating() != null) {
       BeanUtils.copyProperty(userBookToUpdate, "rating", userBookBean.getRating());
     }
@@ -237,9 +236,9 @@ public class UserBookHelper {
     // List of book IDs
     List<Integer> ids = this.getBookIdsForTitleQuery(authString, titleQuery);
 
-    for (Integer userBookId : ids) {
+    for (Integer bookId: ids) {
       // get book by the userbook ID
-      FullUserBook current = getUserBookByUserBookId(authString, userId, userBookId);
+      FullUserBook current = getUserBookByBookId(authString, userId, bookId);
 
       // The book may exist, but not be
       if (current != null) {
@@ -251,17 +250,41 @@ public class UserBookHelper {
   }
 
   /**
-   * Get UserBook from database. If the userBookId doesn't belong to the
-   * incoming user (by userId), then the book is not added.
-   *
-   * @param userId
-   *          ID of the user for this user book
-   * @param userBookId
-   *          ID of user book to retrieve
+   * Get UserBook from database.
+   * 
    * @param authString
    *          Authentication header which is necessary for a REST call to 'book'
    *          web service
-   * @return GetUserBook containing all UserBook info and tags, or null if none exists
+   * @param userId
+   *          ID of the user for this user book
+   * @param bookID
+   *          ID of Book to retrieve
+   * @return FullUserBook or null if non exist
+   * @throws InvocationTargetException
+   * @throws IllegalAccessException
+   */
+  @UnitOfWork
+  FullUserBook getUserBookByBookId(String authString, int userId, int bookId) throws IllegalAccessException,
+      InvocationTargetException {
+    // Get db book
+    DatabaseUserBook bookInDb = this.userBookDAO
+        .findByBookId(userId, bookId);
+
+    return convert(bookInDb, authString);
+  }
+  
+    /**
+   * Get UserBook from database. If the userBookId doesn't belong to the
+   * incoming user (by userId), then the book is not added.
+   * 
+   * @param authString
+   *          Authentication header which is necessary for a REST call to 'book'
+   *          web service
+   * @param userId
+   *          ID of the user for this user book
+   * @param userBookID
+   *          ID of User Book to retrieve
+   * @return FullUserBook or null if non exist
    * @throws InvocationTargetException
    * @throws IllegalAccessException
    */
@@ -543,7 +566,7 @@ public class UserBookHelper {
    *          web service
    * @param titleQuery
    *          Title query to make
-   * @return
+   * @return list of Book IDs for the incoming title
    */
   private List<Integer> getBookIdsForTitleQuery(String authString, String titleQuery) {
     List<Integer> bookIds = new ArrayList<Integer>();

@@ -256,7 +256,7 @@ public class UserBookResource {
         
         // Query by BookId
         if (bookId != null) {
-          FullUserBook book = ubHelper.getUserBookByUserBookId(authString, userId.get(), bookId);
+          FullUserBook book = ubHelper.getUserBookByBookId(authString, userId.get(), bookId);
           if (book != null) {
             idBookSet.add(book);
           }

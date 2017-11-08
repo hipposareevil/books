@@ -33,17 +33,47 @@ public class UserBookDAO extends AbstractDAO<DatabaseUserBook> {
 	public DatabaseUserBook findByUserBookId(
 	    int userId,
 	    Integer userBookId) {
+	  System.out.println("Looking for userId: " + userId + " --userbookid --> " + userBookId);
+	  
 	  // Get matching book
 	  DatabaseUserBook result = get(userBookId);
-    int booksUserId = result.getUser_id();
-    if (booksUserId != userId) {
-      // This book isn't owned by the incoming user
-      result = null;
+    if (result == null) {
+      System.out.println("Got null userbook for userbookid: " + userBookId);
+    }
+    else {
+      int booksUserId = result.getUser_id();
+      System.out.println("userid for user book: " + booksUserId);
+      if (booksUserId != userId) {
+        // This book isn't owned by the incoming user
+        result = null;
+      }
     }
 
     return result;
 	}
 
+	/**
+   * Look up an UserBook by BOOK id.
+   *
+   * @param userId
+   *          ID of User
+   * @param bookId
+   *          Book ID
+   * @return Optional UserBook
+   */
+	public DatabaseUserBook findByBookId(
+	    int userId,
+	    Integer bookId) {
+	    Criteria criteria = currentSession()
+				.createCriteria(DatabaseUserBook.class)
+				.add(Restrictions.eq("user_id", userId))
+				.add(Restrictions.eq("book_id", bookId));
+
+	    DatabaseUserBook result = (DatabaseUserBook) criteria.uniqueResult();
+	    return result;
+	}
+
+	
 	/**
    * Find user books for incoming user
    * 

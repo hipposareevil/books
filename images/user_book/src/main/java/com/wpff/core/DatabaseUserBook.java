@@ -37,7 +37,7 @@ public class DatabaseUserBook {
 	 * ID of book
 	 */
 	@Column(name = "book_id", unique = false, nullable = false)
-	private int bookId;
+	private int book_id;
 
 	/**
 	 * Rating of book. false=down/true=up
@@ -55,7 +55,7 @@ public class DatabaseUserBook {
 	 * Date user book was added
 	 */
 	@Column(name = "date_added", nullable = true)
-	private Date dateAdded;
+	private Date date_added;
 
 	/**
 	 * Default constructor
@@ -66,7 +66,7 @@ public class DatabaseUserBook {
 	public DatabaseUserBook(int id, int user_id, int bookId, boolean rating, String data) {
 		this.userBookId = id;
 		this.user_id = user_id;
-		this.bookId = bookId;
+		this.book_id = bookId;
 		this.rating = rating;
 		this.data = data;
 	}
@@ -76,7 +76,7 @@ public class DatabaseUserBook {
 		string.append("UserBook[");
 		string.append("id=" + userBookId);
 		string.append(", user_id=" + user_id);
-		string.append(", bookId=" + bookId);
+		string.append(", bookId=" + book_id);
 		string.append(", rating=" + rating);
 		string.append("]");
 
@@ -92,11 +92,11 @@ public class DatabaseUserBook {
 	}
 
 	public void setBookId(int bookId) {
-		this.bookId = bookId;
+		this.book_id = bookId;
 	}
 
 	public int getBookId() {
-		return this.bookId;
+		return this.book_id;
 	}
 
 	public void setUserId(int user_id) {
@@ -135,13 +135,13 @@ public class DatabaseUserBook {
 		final DatabaseUserBook that = (DatabaseUserBook) o;
 
 		return Objects.equals(this.userBookId, that.userBookId) && Objects.equals(this.user_id, that.user_id)
-				&& Objects.equals(this.bookId, that.bookId) && Objects.equals(this.rating, that.rating)
+				&& Objects.equals(this.book_id, that.book_id) && Objects.equals(this.rating, that.rating)
 				&& Objects.equals(this.data, that.data);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.userBookId, this.bookId, this.user_id, this.rating, this.data);
+		return Objects.hash(this.userBookId, this.book_id, this.user_id, this.rating, this.data);
 	}
 
   /**
@@ -162,13 +162,13 @@ public class DatabaseUserBook {
    * @return the dateAdded
    */
   public Date getDateAdded() {
-    return dateAdded;
+    return date_added;
   }
 
   /**
    * @param dateAdded the dateAdded to set
    */
   public void setDateAdded(Date dateAdded) {
-    this.dateAdded = dateAdded;
+    this.date_added = dateAdded;
   }
 }
