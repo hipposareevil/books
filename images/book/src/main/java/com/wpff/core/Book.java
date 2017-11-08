@@ -44,7 +44,7 @@ public class Book implements Comparable {
   
   // goodreads URL for book
   @Column(name = "goodreads_url", unique=false, nullable = true)
-  private String goodreads_url;
+  private String goodreadsUrl;
   
 
   // small image URL
@@ -295,6 +295,8 @@ public class Book implements Comparable {
     this.subject = subject;
   }
 
+ 
+
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
@@ -317,6 +319,8 @@ public class Book implements Comparable {
     builder.append(subject);
     builder.append(", olWorks=");
     builder.append(olWorks);
+    builder.append(", goodreads_url=");
+    builder.append(goodreadsUrl);
     builder.append(", imageSmall=");
     builder.append(imageSmall);
     builder.append(", imageMedium=");
@@ -328,17 +332,17 @@ public class Book implements Comparable {
   }
 
   /**
-   * @return the goodreads_url
+   * @return the goodreadsUrl
    */
-  public String getGoodreads_url() {
-    return goodreads_url;
+  public String getGoodreadsUrl() {
+    return goodreadsUrl;
   }
 
   /**
-   * @param goodreads_url the goodreads_url to set
+   * @param goodreadsUrl the goodreadsUrl to set
    */
-  public void setGoodreads_url(String goodreads_url) {
-    this.goodreads_url = goodreads_url;
+  public void setGoodreadsUrl(String goodreadsUrl) {
+    this.goodreadsUrl = goodreadsUrl;
   }
 
 

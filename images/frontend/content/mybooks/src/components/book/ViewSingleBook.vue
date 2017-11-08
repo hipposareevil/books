@@ -86,11 +86,12 @@
           <footer class="card-footer">
             <p class="card-footer-item">
               <span v-if="bookData.openlibraryWorkUrl">
-                View on <a :href="bookData.openlibraryWorkUrl">openlibrary.org</a>
+                <a :href="bookData.openlibraryWorkUrl">openlibrary.org</a>
               </span>
             </p>
             <p class="card-footer-item">
-              <span>&nbsp;
+              <span v-if="bookData.goodreadsUrl">
+                <a :href="bookData.goodreadsUrl">goodreads.com</a>
               </span>
             </p>
           </footer>

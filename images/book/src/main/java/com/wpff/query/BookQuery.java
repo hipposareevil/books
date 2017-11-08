@@ -185,6 +185,21 @@ public class BookQuery {
     this.imageLarge = imageLarge;
   }
 
+
+  /**
+   * @return the goodreadsUrl
+   */
+  public String getGoodreadsUrl() {
+    return goodreadsUrl;
+  }
+
+  /**
+   * @param goodreadsUrl the goodreadsUrl to set
+   */
+  public void setGoodreadsUrl(String goodreadsUrl) {
+    this.goodreadsUrl = goodreadsUrl;
+  }
+
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
@@ -205,6 +220,8 @@ public class BookQuery {
     builder.append(description);
     builder.append(", openlibraryWorkUrl=");
     builder.append(openlibraryWorkUrl);
+    builder.append(", goodreadsUrl=");
+    builder.append(goodreadsUrl);
     builder.append(", imageSmall=");
     builder.append(imageSmall);
     builder.append(", imageMedium=");
@@ -213,20 +230,6 @@ public class BookQuery {
     builder.append(imageLarge);
     builder.append("]");
     return builder.toString();
-  }
-
-  /**
-   * @return the goodreadsUrl
-   */
-  public String getGoodreadsUrl() {
-    return goodreadsUrl;
-  }
-
-  /**
-   * @param goodreadsUrl the goodreadsUrl to set
-   */
-  public void setGoodreadsUrl(String goodreadsUrl) {
-    this.goodreadsUrl = goodreadsUrl;
   }  
 
 

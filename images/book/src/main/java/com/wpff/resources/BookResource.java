@@ -536,6 +536,9 @@ public class BookResource {
       
       // open library url
       BeanUtils.copyProperty(result, "openlibraryWorkUrl", dbBook.getOlWorks());
+      
+      // goodreads
+      //BeanUtils.copyProperty(result, "goodreadsUrl", dbBook.getGoodreads_url());
 
       // published year
       BeanUtils.copyProperty(result, "firstPublishedYear", dbBook.getYear());
