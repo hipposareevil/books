@@ -288,7 +288,7 @@ public class BookResource {
         bookBean.setDescription(bookBean.getDescription().substring(0, 9999));
       }
       
-      // Make new Book from bookBean (which is a PostBook)
+      // Make new Book from bookBean (which is a BookQuery)
       Book bookInDatabase = new Book();
       // copy(destination, source)
       BeanUtils.copyProperties(bookInDatabase, bookBean);
@@ -304,6 +304,9 @@ public class BookResource {
       
       // open library url is different too
       BeanUtils.copyProperty(bookInDatabase, "olWorks", bookBean.getOpenlibraryWorkUrl());
+      
+      // good reads url
+      BeanUtils.copyProperty(bookInDatabase,"goodreads_url", bookBean.getGoodreadsUrl()); 
       
       // The authorization string is passed in so we can get the author name 
       // from the 'author' webservice      
@@ -376,6 +379,7 @@ public class BookResource {
       copyProperty(bookToUpdate, "title", bookBean.getTitle());
       copyProperty(bookToUpdate, "description", bookBean.getDescription());
       copyProperty(bookToUpdate, "olWorks", bookBean.getOpenlibraryWorkUrl());
+      copyProperty(bookToUpdate, "goodreads_url", bookBean.getGoodreadsUrl());
       copyProperty(bookToUpdate, "imageSmall", bookBean.getImageSmall());
       copyProperty(bookToUpdate, "imageMedium", bookBean.getImageMedium());
       copyProperty(bookToUpdate, "imageLarge", bookBean.getImageLarge());

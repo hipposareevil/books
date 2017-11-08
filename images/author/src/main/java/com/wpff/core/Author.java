@@ -41,6 +41,10 @@ public class Author implements Comparable {
   @Column(name = "ol_key", unique=false, nullable = true)
   private String olKey;
 
+  // goodreads URL for author
+  @Column(name = "goodreads_url", unique=false, nullable = true)
+  private String goodreadsUrl;
+
   // openlibrary.org 'author key' location
   @Column(name = "subjects", unique=false, nullable = true)
   private String subjectsAsCsv;
@@ -190,6 +194,21 @@ public class Author implements Comparable {
     builder.append("]");
     return builder.toString();
   }
+
+  /**
+   * @return the goodreadsUrl
+   */
+  public String getGoodreadsUrl() {
+    return goodreadsUrl;
+  }
+
+  /**
+   * @param goodreadsUrl the goodreadsUrl to set
+   */
+  public void setGoodreadsUrl(String goodreadsUrl) {
+    this.goodreadsUrl = goodreadsUrl;
+  }
+
 
 
 }

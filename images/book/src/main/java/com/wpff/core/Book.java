@@ -41,6 +41,11 @@ public class Book implements Comparable {
   // openlibrary.org 'works' location
   @Column(name = "ol_works", unique=false, nullable = true)
   private String olWorks;
+  
+  // goodreads URL for book
+  @Column(name = "goodreads_url", unique=false, nullable = true)
+  private String goodreads_url;
+  
 
   // small image URL
   @Column(name = "image_small", unique=false, nullable = true)
@@ -320,6 +325,20 @@ public class Book implements Comparable {
     builder.append(imageLarge);
     builder.append("]");
     return builder.toString();
+  }
+
+  /**
+   * @return the goodreads_url
+   */
+  public String getGoodreads_url() {
+    return goodreads_url;
+  }
+
+  /**
+   * @param goodreads_url the goodreads_url to set
+   */
+  public void setGoodreads_url(String goodreads_url) {
+    this.goodreads_url = goodreads_url;
   }
 
 

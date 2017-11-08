@@ -16,6 +16,11 @@ public class AuthorQuery {
    * openlibrary.org author key.
    */
   private String olKey;
+  
+  /**
+   * URL to goodreads for author
+   */
+  private String goodreadsUrl;
 
   private String imageSmall;
 
@@ -147,6 +152,20 @@ public class AuthorQuery {
     builder.append(subjects);
     builder.append("]");
     return builder.toString();
+  }
+
+  /**
+   * @return the goodreadsUrl
+   */
+  public String getGoodreadsUrl() {
+    return goodreadsUrl;
+  }
+
+  /**
+   * @param goodreadsUrl the goodreadsUrl to set
+   */
+  public void setGoodreadsUrl(String goodreadsUrl) {
+    this.goodreadsUrl = goodreadsUrl;
   }
   
 }

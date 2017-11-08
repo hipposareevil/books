@@ -33,6 +33,11 @@ public class BookQuery {
    * openlibrary.org 'works' identifier
    */
   private String openlibraryWorkUrl;
+  
+  /**
+   * goodreads URL
+   */
+  private String goodreadsUrl;
 
   private String imageSmall;
 
@@ -208,6 +213,20 @@ public class BookQuery {
     builder.append(imageLarge);
     builder.append("]");
     return builder.toString();
+  }
+
+  /**
+   * @return the goodreadsUrl
+   */
+  public String getGoodreadsUrl() {
+    return goodreadsUrl;
+  }
+
+  /**
+   * @param goodreadsUrl the goodreadsUrl to set
+   */
+  public void setGoodreadsUrl(String goodreadsUrl) {
+    this.goodreadsUrl = goodreadsUrl;
   }  
 
 

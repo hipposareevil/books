@@ -146,6 +146,7 @@ public class AuthorHelper {
     copyProperty(authorToUpdate, "name", authorBean.getName());
     copyProperty(authorToUpdate, "birthDate", authorBean.getBirthDate());
     copyProperty(authorToUpdate, "olKey", authorBean.getOlKey());
+    copyProperty(authorToUpdate, "goodreads_url", authorBean.getGoodreadsUrl());
     copyProperty(authorToUpdate, "imageSmall", authorBean.getImageSmall());
     copyProperty(authorToUpdate, "imageLarge", authorBean.getImageLarge());
     copyProperty(authorToUpdate, "imageMedium", authorBean.getImageMedium());

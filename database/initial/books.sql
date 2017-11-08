@@ -10,7 +10,7 @@ CREATE TABLE `tag` (
 
 LOCK TABLES `tag` WRITE;
 
-INSERT INTO `tag` VALUES (1, "science-fiction");
+INSERT INTO `tag` VALUES (1, "sci-fi");
 INSERT INTO `tag` VALUES (2, "e-book");
 
 UNLOCK TABLES;
@@ -86,6 +86,7 @@ CREATE TABLE `author` (
   `image_small` varchar(250) DEFAULT NULL,
   `image_medium` varchar(250) DEFAULT NULL,
   `image_large` varchar(250) DEFAULT NULL,
+  `goodreads_url` varchar(500) DEFAULT NULL,
   `ol_key` char(100) DEFAULT NULL,
   PRIMARY KEY (`author_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
@@ -113,6 +114,7 @@ CREATE TABLE `book` (
   `isbn` varchar(1200) DEFAULT NULL,
   `subjects` varchar(2000) DEFAULT NULL,
   `ol_works` char(100) DEFAULT NULL,
+  `goodreads_url` varchar(500) DEFAULT NULL,
   `description` varchar(3000) DEFAULT NULL,
   `image_small` varchar(1000) DEFAULT NULL,
   `image_medium` varchar(1000) DEFAULT NULL,
