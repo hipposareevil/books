@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -232,7 +233,8 @@ public class UserBookHelper {
   List<FullUserBook> getUserBooksByTitle(String authString, Integer userId, String titleQuery)
       throws IllegalAccessException, InvocationTargetException {
     List<FullUserBook> userBooks = new ArrayList<FullUserBook>();
-
+System.out.println("getUserBooksByTitle: " + titleQuery);
+    
     // List of book IDs
     List<Integer> ids = this.getBookIdsForTitleQuery(authString, titleQuery);
 
@@ -529,7 +531,7 @@ public class UserBookHelper {
         if (responseCode == 200) {
           bookBeanString = result.toString();
         } else {
-          System.out.println("Unable to get book's title for id: " + bookId);
+          System.out.println("Unable to get book's information for id: " + bookId);
           System.out.println("Error code: " + responseCode);
           System.out.println("Error content: " + result);
           return null;
@@ -576,11 +578,16 @@ public class UserBookHelper {
       // Get from WS now
 
       // Going to the 'book' web service directly
-      String url = "http://book:8080/book?title=" + titleQuery;
+      String queryString = URLEncoder.encode(titleQuery, "UTF-8");
+      
+      //String url = "http://book:8080/book?title=" + titleQuery;
+      String url = "http://book:8080/book?title=" + queryString;
+
+      System.out.println("making query to url: " + url);
 
       HttpClient client = HttpClientBuilder.create().build();
       HttpGet request = new HttpGet(url);
-
+      
       // add request header
       request.addHeader("User-Agent", "BookAgent");
       request.addHeader("content-type", "application/json");
@@ -610,8 +617,10 @@ public class UserBookHelper {
         } catch (IOException ioe) {
           ioe.printStackTrace();
         }
+System.out.println("Got back " + bookBeanList.getData().size() + " beans for title: " + titleQuery);
 
         for (BookBean bean : bookBeanList.getData()) {
+          System.out.println("looking at bean: " + bean);
           // Add book id
           bookIds.add(bean.getId());
         }

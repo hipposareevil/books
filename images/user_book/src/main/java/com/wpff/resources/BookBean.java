@@ -179,4 +179,30 @@ public class BookBean {
     this.imageLarge = imageLarge;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("BookBean [title=");
+    builder.append(title);
+    builder.append(", id=");
+    builder.append(id);
+    builder.append(", firstPublishedYear=");
+    builder.append(firstPublishedYear);
+    builder.append(", authorName=");
+    builder.append(authorName);
+    builder.append(", authorId=");
+    builder.append(authorId);
+    builder.append(", imageSmall=");
+    builder.append(imageSmall);
+    builder.append(", imageMedium=");
+    builder.append(imageMedium);
+    builder.append(", imageLarge=");
+    builder.append(imageLarge);
+    builder.append("]");
+    return builder.toString();
+  }
+
 }

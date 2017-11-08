@@ -185,7 +185,7 @@
           limit: self.AllData.lengthToGet
         }
         if (this.searchBookString !== '') {
-          params.book_title = this.searchBookString
+          params.title = this.searchBookString
         }
         if (this.ViewState.tagFilter !== '') {
           params.tag = this.ViewState.tagFilter

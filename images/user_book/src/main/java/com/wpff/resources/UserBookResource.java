@@ -192,7 +192,7 @@ public class UserBookResource {
 
       @ApiParam(
           value = "Title of books within the user's books. Only the books with that matching title will be returned",
-          required = false) @QueryParam("book_title") String bookTitle,
+          required = false) @QueryParam("title") String bookTitle,
 
       @ApiParam(value = "Where to start the returned data segment from the full result.",
           required = false) @QueryParam("offset") Integer offset,
