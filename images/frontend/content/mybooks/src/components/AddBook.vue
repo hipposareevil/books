@@ -1,16 +1,15 @@
 <template>
   <div>
 
-{{ showmodal }}
-
     <p class="subtitle is-4"
        style="border-bottom: solid lightgray 1px;">
       Add book to database
     </p>
 
     <!-- Modal. dunsaved called when user clicks on Save -->
-    <BookModal @saveClicked="saveCalled" 
-           @cancelClicked="cancelCalled" 
+    <BookModal key=""
+           v-on:saveClicked="saveCalled" 
+           v-on:cancelClicked="cancelCalled" 
            :active="showmodal"
            :title="currentBook.title">
     </BookModal>
@@ -161,6 +160,32 @@
      */
     components: { Message, BookModal },
     /**
+     * When created
+     */
+    created: function () {
+      console.log('CREATED')
+      // When we get booksaved event, print out message
+      // Send the AddUserBookInformation bean along.
+      Event.$on('updatedb_bookcreated', (message, AddUserBookInformation) => this.bookCreated(message, AddUserBookInformation))
+
+      // Error on book saved
+      Event.$on('updatedb_book_409', (message) => this.printMessage(message))
+
+      // If we get booksaved error, print out error
+      Event.$on('updatedb_error', (error) => this.printError(error))
+
+      this.debouncedSearch = _.debounce(this.search, 250)
+    },
+    destroyed: function () {
+      Event.$off('updatedb_bookcreated')
+
+      // Error on book saved
+      Event.$off('updatedb_book_409')
+
+      // If we get booksaved error, print out error
+      Event.$off('updatedb_error')
+    },
+    /**
      * Data for AddBook
      */
     data () {
@@ -235,16 +260,6 @@
 
         // Send the current book and the AddUserBookInformation about the book
         UpdateDb.addBook(this, this.currentBook, AddUserBookInformation)
-
-        // When we get booksaved event, print out message
-        // Send the AddUserBookInformation bean along.
-        Event.$on('updatedb_bookcreated', (message, AddUserBookInformation) => this.bookCreated(message, AddUserBookInformation))
-
-        // Error on book saved
-        Event.$on('updatedb_book_409', (message) => this.printMessage(message))
-
-        // If we get booksaved error, print out error
-        Event.$on('updatedb_error', (error) => this.printError(error))
       },
       /**
        * The book was created. See if we need to add it to the users shelf
@@ -397,9 +412,6 @@
           self.userMessage = ''
         }, 2000)
       }
-    },
-    created: function () {
-      this.debouncedSearch = _.debounce(this.search, 250)
     }
   }
 </script> 

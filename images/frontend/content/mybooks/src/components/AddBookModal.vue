@@ -74,6 +74,9 @@
      * title: title of book
      */
      props: [ 'active', 'title' ],
+    /**
+     * When mounted
+     */
      mounted: function () {
        // Get tags
        this.getTags()
@@ -144,7 +147,6 @@
         * Delete tag from the currentUserBook
         */
        deleteTag (tagName) {
-         console.log('remove tag: ' + tagName)
          let index = this.tagsToAdd.indexOf(tagName)
          this.tagsToAdd.splice(index, 1)
        },
@@ -158,6 +160,7 @@
            tags: this.tagsToAdd
          }
          this.$emit('saveClicked', AddUserBookInformation)
+         this.tagsToAdd = []
          this.isActive = false
        },
       /**

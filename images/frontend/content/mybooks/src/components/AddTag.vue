@@ -152,8 +152,7 @@
         const authString = Auth.getAuthHeader()
         let self = this
         let data = {
-          name: this.forminput.name,
-          data: ''
+          name: this.forminput.name
         }
         let url = '/tag'
         this.$axios.post(url, data, { headers: { Authorization: authString } })
