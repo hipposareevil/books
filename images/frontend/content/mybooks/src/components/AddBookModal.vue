@@ -1,4 +1,4 @@
-<!-- Modal to add a book or author  -->
+<!-- Modal to add a book  -->
 <template>
   <div v-on:keyup.esc="cancel"
        v-bind:class="{ 'is-active': isActive }" 
@@ -28,31 +28,11 @@
           </p>
         </div>
 
-        <div class="title is-5">Current tags</div>
-        <div class="tags">
-          <span v-for="current in tagsToAdd"
-                class="tag is-info">
-            {{current}}
-            <button class="delete is-small"
-                    @click="deleteTag(current)">
-            </button>
-          </span>
-        </div>
+        <TagsForBookModal
+          v-bind:checked="checked"
+          v-on:tagListUpdated="tagListUpdated">
+        </TagsForBookModal>
 
-
-        <!-- All Tags in system -->
-        <div class="title is-5">All tags</div>
-        <div class="tags">
-          <span v-for="current in currentTagList"
-                title="click to add to tags"
-                @click="addTag(current)"
-                class="tag clickable">
-            {{current}}
-          </span>
-        </div>
-        <!-- end of tag list -->
-
-        
       </section>
 
       <footer class="modal-card-foot">
@@ -65,10 +45,13 @@
 </template>
 
 <script>
-   import Auth from '../auth'
-   import _ from 'lodash'
+   import TagsForBookModal from './TagsForBookModal.vue'
 
    export default {
+    /**
+     * Components used
+     */
+     components: { TagsForBookModal },
     /**
      * active: is this modal active
      * title: title of book
@@ -78,8 +61,6 @@
      * When mounted
      */
      mounted: function () {
-       // Get tags
-       this.getTags()
      },
      /**
       * Data
@@ -92,17 +73,11 @@
          bookTitle: this.title,
          // Is add-to-user-books clicked
          checked: true,
-         // All Tags
-         TagJson: {},
          /**
           * Get list of userbook's tags.
           * Make a copy of the list so we don't mutate the parent's UserBook.
           */
-         tagsToAdd: [],
-         /**
-          * all incoming tag names
-          */
-         allTagsAsList: []
+         tagsToAdd: []
        }
      },
      /**
@@ -110,47 +85,11 @@
       */
      methods: {
        /**
-        * Get tags from database
+        * list of selected tags was updated via TagsForBooKModal
         */
-       getTags () {
-         const authString = Auth.getAuthHeader()
-         let self = this
-         this.TagJson = {}
-         this.$axios.get('/tag/', { headers: { Authorization: authString } })
-           .then((response) => {
-             self.TagJson = response.data.data
-             // Sort
-             self.TagJson = _.sortBy(self.TagJson, ['name'])
-
-             // Set all tags as a list of just tag names
-             self.allTagsAsList = this.TagJson.map(function (o) { return o.name })
-           })
-           .catch(function (error) {
-             if (error.response.status === 401) {
-               Event.$emit('got401')
-             } else {
-               console.log(error)
-             }
-           })
+       tagListUpdated (taglist) {
+         this.tagsToAdd = taglist
        },
-       /**
-        * Add tag to the currentUserBook
-        */
-       addTag (tagName) {
-         // only add if it isn't already in lsit
-         let result = _.includes(this.tagsToAdd, tagName)
-         if (!result) {
-           this.tagsToAdd.push(tagName)
-         }
-       },
-       /**
-        * Delete tag from the currentUserBook
-        */
-       deleteTag (tagName) {
-         let index = this.tagsToAdd.indexOf(tagName)
-         this.tagsToAdd.splice(index, 1)
-       },
-
        /**
        * Save was clicked, send message to the owning component
        */
@@ -178,15 +117,6 @@
          if (event.which === 27) {
            this.cancel()
          }
-       }
-     },
-     /**
-      * Computed values
-      */
-     computed: {
-       currentTagList: function () {
-         let result = _.difference(this.allTagsAsList, this.tagsToAdd)
-         return result
        }
      },
      /**

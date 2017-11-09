@@ -14,6 +14,14 @@
            :title="currentBook.title">
     </BookModal>
 
+    <!-- Modal. dunsaved called when user clicks on Save -->
+    <ManualBookModal
+      v-on:saveClicked="manualSaveCalled" 
+      v-on:cancelClicked="manualCancelCalled" 
+      v-bind:active="showManualModal">
+    </ManualBookModal>
+
+
     <!-- Main container -->
     <nav class="level">
       <!-- Left side -->
@@ -51,15 +59,34 @@
             </button>
             
           </p>
-          
           <p class="control">
             <button class="button is-light"
                     @click="clearInputs">
               Clear
             </button>
           </p>
+
         </div>
       </div>
+      <!-- end left -->
+
+      <!-- right -->
+      <div class="level-right">
+        <div class="level-item">
+
+         <!-- manual -->
+         <p class="control"
+            style="padding-left: 1em;">
+           <button class="button is-primary"
+                   @click="addManual">
+             Manual Add
+           </button>
+         </p>
+
+         </div>
+
+       </div>
+      <!-- end right -->
 
     </nav>
 
@@ -152,18 +179,18 @@
   import _ from 'lodash'
   import Message from './Message.vue'
   import BookModal from './AddBookModal.vue'
+  import ManualBookModal from './AddManualBookModal.vue'
   import UpdateDb from '../updatedb'
 
   export default {
     /**
      * Components used
      */
-    components: { Message, BookModal },
+    components: { Message, BookModal, ManualBookModal },
     /**
      * When created
      */
     created: function () {
-      console.log('CREATED')
       // When we get booksaved event, print out message
       // Send the AddUserBookInformation bean along.
       Event.$on('updatedb_bookcreated', (message, AddUserBookInformation) => this.bookCreated(message, AddUserBookInformation))
@@ -208,6 +235,8 @@
         loading: false,
         // show the modal for adding a book
         showmodal: false,
+        // show the manual add book modal
+        showManualModal: false,
         // Error message
         errorMessage: ''
       }
@@ -223,7 +252,14 @@
         next(false)
       }
     },
+    // Methods
     methods: {
+      /**
+       * Manually add an author
+       */
+      addManual () {
+        this.showManualModal = true
+      },
       /**
        * Clear inputs and json
        */
@@ -234,6 +270,34 @@
         this.showmodal = false
         this.bookJson = {}
         this.existingBooks = {}
+      },
+      /**
+       * Save was called via the popup modal for manual book add
+       * Try to save the author to the DB
+       *
+       * params:
+       * newBook- new book from modal
+       * AddUserBookInformation- struct of format:
+       * {
+       * addFlag: true/false
+       * tags: {}
+       * }
+       */
+      manualSaveCalled (newBook, AddUserBookInformation) {
+        let self = this
+
+        // Clear the modal
+        self.showManualModal = false
+        self.clearInputs()
+
+        // Update in database
+        UpdateDb.addBook(this, newBook, AddUserBookInformation)
+      },
+      /**
+       * Cancel was called via the popup modal for manual add of author
+       */
+      manualCancelCalled () {
+        this.showManualModal = false
       },
       /**
        * Save was called via the popup modal.
@@ -312,7 +376,6 @@
        *
        */
       cancelCalled () {
-        console.log('Cancel called in parent')
         this.showmodal = false
       },
       /**

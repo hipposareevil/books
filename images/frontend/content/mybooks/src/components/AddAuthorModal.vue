@@ -43,7 +43,7 @@
        * Save was clicked, send message to the owning component
        */
        save () {
-         this.$emit('dunsaved', 'foo')
+         this.$emit('dunsaved')
          this.isActive = false
        },
       /**

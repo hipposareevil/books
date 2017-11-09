@@ -98,8 +98,6 @@
 <script>
   import Auth from '../auth'
 
-//  import UpdateDb from '../updatedb'
-
   export default {
     components: { },
     // Data

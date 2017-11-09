@@ -13,12 +13,17 @@
            v-bind:name="currentAuthor.name">
     </AuthorModal>
 
+    <!-- Modal. dunsaved called when user clicks on Save -->
+    <ManualAuthorModal
+      @dunsaved="manualSaveCalled" 
+      @duncanceled="manualCancelCalled" 
+      v-bind:active="showManualModal">
+    </ManualAuthorModal>
+
     <!-- Main container -->
     <nav class="level">
       <!-- Left side -->
       <div class="level-left">
-        <div class="level-item">
-        </div>
         <div class="level-item">
           <div class="field has-addons">
             <p class="control">
@@ -30,17 +35,46 @@
                        placeholder="Author name">
               </form>
             </p>
-            <p class="control">
+            <p class="control"
+               style="padding-left: 1px;">
               <button class="button is-info"
                       v-bind:class="{ 'is-loading': loading}"
                       @click="search">
                 Search
               </button>
             </p>
+
+            <p class="control">
+              <button class="button is-light"
+                      @click="clearInputs">
+                Clear
+              </button>
+            </p>
+
           </div>
         </div>
       </div>
+      <!-- end left -->
+
+      <!-- right -->
+      <div class="level-right">
+        <div class="level-item">
+          <!-- manual -->
+          <p class="control"
+             style="padding-left: 1em;">
+            <button class="button is-primary"
+                    @click="addManual">
+              Manual Add
+            </button>
+          </p>
+
+        </div>
+
+      </div>
+      <!-- end right -->
     </nav>
+
+    <br>
 
     <!-- List of authors -->
 
@@ -128,11 +162,12 @@
 <script>
   import _ from 'lodash'
   import AuthorModal from './AddAuthorModal.vue'
+  import ManualAuthorModal from './AddManualAuthorModal.vue'
   import Auth from '../auth'
   import UpdateDb from '../updatedb'
 
   export default {
-    components: { AuthorModal },
+    components: { AuthorModal, ManualAuthorModal },
     data () {
       return {
         // currently chosen author
@@ -149,6 +184,8 @@
         userMessage: '',
         // show the modal for adding an author
         showmodal: false,
+        // show the manual add author modal
+        showManualModal: false,
         // Error message
         errorMessage: ''
       }
@@ -164,10 +201,37 @@
         next(false)
       }
     },
+    /**
+     * This is called after this component is created.
+     *
+     */
+    created: function () {
+      this.debouncedSearch = _.debounce(this.search, 250)
+
+      // When we get booksaved event, print out message
+      Event.$on('updatedb_authorcreated', (message) => this.printMessage(message))
+
+      // If we get booksaved error, print out error
+      Event.$on('updatedb_error', (error) => this.printError(error))
+    },
+    /**
+     * Remove event listeners
+     */
+    destroyed: function () {
+      Event.$off('updatedb_authorcreated')
+      Event.$off('updatedb_error')
+    },
+    // Methods
     methods: {
       /**
-       * Search the /query endpoint for an author
-       *
+       * Manually add an author
+       */
+      addManual () {
+        this.showManualModal = true
+      },
+      /**
+       * Search the /query endpoint for an author.
+       * Place that data into authorJson
        */
       search () {
         let self = this
@@ -212,15 +276,36 @@
       clearInputs () {
         this.forminput.name = ''
         this.showmodal = false
+        this.showManualModal = false
         this.authorJson = {}
+        this.existingAuthors = {}
+      },
+      /**
+       * Save was called via the popup modal for manual author add
+       * Try to save the author to the DB
+       */
+      manualSaveCalled (newAuthor) {
+        let self = this
+
+        // Clear the modal
+        self.showManualModal = false
+        self.clearInputs()
+
+        // Update in database
+        UpdateDb.tryAddAuthor(this, newAuthor)
+      },
+      /**
+       * Cancel was called via the popup modal for manual add of author
+       */
+      manualCancelCalled () {
+        this.showManualModal = false
       },
       /**
        * Save was called via the popup modal.
        * Try to save the author to the DB
        */
-      saveCalled (value) {
+      saveCalled () {
         let self = this
-        console.log('save called in parent:' + value)
         console.log('Saving author: ' + this.currentAuthor.name)
 
         // Clear the modal
@@ -301,13 +386,6 @@
           self.userMessage = false
         }, 2000)
       }
-    },
-    /**
-     * This is called after this component is created.
-     *
-     */
-    created: function () {
-      this.debouncedSearch = _.debounce(this.search, 250)
     }
   }
 </script> 

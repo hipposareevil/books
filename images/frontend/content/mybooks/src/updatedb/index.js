@@ -75,7 +75,6 @@ export default {
   addBook (context, book, bookInformation) {
     console.log('add book ' + book.title)
     console.log('add book ' + book.authorName)
-    console.log('add book ' + book.authorKey)
 
     let self = this
     const authString = Auth.getAuthHeader()
@@ -111,10 +110,8 @@ export default {
     let self = this
     let authString = Auth.getAuthHeader()
 
-    console.log('addbook_noauthor: ' + book.authorKey)
-
     // Get Author information from /query into 'authorJson'
-    let url = API_URL + '/query/author?author=' + book.authorKey
+    let url = API_URL + '/query/author?author=' + book.authorName
     console.log('addBook_noauthor. do a get on: ' + url)
     context.$axios.get(url, { headers: { Authorization: authString } })
       .then((response) => {
@@ -168,6 +165,7 @@ export default {
       description: book.description,
       firstPublishedYear: book.firstPublishedYear,
       openlibraryWorkUrl: book.openlibraryWorkUrl,
+      goodreadsUrl: book.goodreadsUrl,
       subjects: book.subjects,
       isbns: book.isbns,
       title: book.title
@@ -176,7 +174,6 @@ export default {
     // Make POST call to /book
     const url = API_URL + '/book'
     console.log('create book at url: ' + url)
-    console.log('create with workurl: ' + book.openlibraryWorkUrl)
     context.$axios.post(url, data, { headers: { Authorization: authString } })
       .then((response) => {
         bookInformation.bookId = response.data.id
