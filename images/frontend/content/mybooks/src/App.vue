@@ -25,28 +25,22 @@
           </div>
         </div>
 
-        <div v-if="true"
+        <!-- Mobile -->
+        <div v-if="showMobile"
              :class="{ 'is-active': showMobile }"
              class="navbar-menu">
 
           <!-- left side -->
           <div class="navbar-start">
 
-            <!-- home -->
-            <a class="navbar-item"
-               @click="toggleMobileNav">
-              <router-link tag="div" to="/" exact>
-                <span class="icon is-medium"><i class="fa fa-home"></i></span>
-                <span>Home</span>
-              </router-link>
-            </a>
-
             <!-- user books -->
             <a class="navbar-item"
                @click="toggleMobileNav"
                v-if="is_authenticated()">
               <router-link tag="div" to="/shelves" exact>
-                <span class="icon is-medium"><i class="fa fa-wpexplorer"></i></span>
+                <span class="icon is-medium">
+                  <i class="fa fa-wpexplorer"></i>
+                </span>
                 <span>My Books</span>
               </router-link>
             </a>
@@ -57,11 +51,12 @@
                @click="toggleMobileNav"
                v-if="is_authenticated()">
               <router-link tag="span" to="/books" exact>
-                <span class="icon is-large"><i class="fa fa-book"></i></span>
+                <span class="icon is-large">
+                  <i class="fa fa-book"></i>
+                </span>
                 <span>All Books</span>
               </router-link>
             </a>
-
 
             <!-- /authors -->
             <a class="navbar-item"
@@ -76,6 +71,69 @@
 
           </div> <!-- end navbar-start -->
 
+          <div class="navbar-item">
+            <div v-if="is_authenticated()">
+              <button class="button" @click="do_logout()">Log out</button>
+            </div>
+            <div v-if="! is_authenticated()">
+              <button class="button" @click="do_login()">Log In</button>
+            </div>
+          </div>
+        </div>
+        <!-- end  mobile -->
+        
+        <!-- normal -->
+        <div v-if="!showMobile"
+          class="navbar-menu">
+
+          <!-- left side -->
+          <div class="navbar-start">
+
+            <!-- home -->
+            <a class="navbar-item">
+              <router-link tag="div" to="/" exact>
+                <span class="icon is-medium">
+                  <i class="fa fa-home"></i>
+                </span>
+                <span>Home</span>
+              </router-link>
+            </a>
+
+            <!-- user books -->
+            <a class="navbar-item"
+               v-if="is_authenticated()">
+              <router-link tag="div" to="/shelves" exact>
+                <span class="icon is-medium">
+                  <i class="fa fa-wpexplorer"></i>
+                </span>
+                <span>My Books</span>
+              </router-link>
+            </a>
+
+
+            <!-- /books -->
+            <a class="navbar-item disabled"
+               v-if="is_authenticated()">
+              <router-link tag="span" to="/books" exact>
+                <span class="icon is-large">
+                  <i class="fa fa-book"></i>
+                </span>
+                <span>All Books</span>
+              </router-link>
+            </a>
+
+
+            <!-- /authors -->
+            <a class="navbar-item"
+               v-if="is_authenticated()">
+              <router-link tag="span" to="/authors" exact>
+                <span class="icon is-large"><i class="fa fa-grav"></i></span>
+                <span>All Authors</span>
+              </router-link>
+            </a>
+
+
+          </div> <!-- end navbar-start -->
 
           <!-- right side -->
           <div class="navbar-end"
@@ -83,8 +141,7 @@
 
             <!-- Admin dropdown -->
             <!-- Do not show if mobila navigation is turned on -->
-            <div class="navbar-item has-dropdown is-hoverable"
-                 v-if="! showMobile">
+            <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link">
                 Admin
               </a>
@@ -147,7 +204,6 @@
             </div>
           </div>
 
-
           <div class="navbar-item">
             <div v-if="is_authenticated()">
               <button class="button" @click="do_logout()">Log out</button>
@@ -156,8 +212,9 @@
               <button class="button" @click="do_login()">Log In</button>
             </div>
           </div>
-
         </div>
+        <!-- end normal -->
+
       </nav> <!-- end navbar -->
 
 

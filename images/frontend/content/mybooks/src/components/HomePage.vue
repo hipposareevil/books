@@ -30,7 +30,8 @@
 
 <script>
   import Auth from '../auth'
-  let NUM_BOOKS = 5
+  //  number of 'last' books to get
+  let NUM_BOOKS = 10
 
   export default {
     // Data
