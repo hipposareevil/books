@@ -7,21 +7,34 @@
     <div id="app"
          class="container is-fullhd is-light">
 
-      <nav class="navbar is-size-5"  role="navigation" aria-label="main navigation">
+      <nav class="navbar is-size-5"
+           role="navigation"
+           aria-label="main navigation">
         <div class="navbar-brand">
           <a class="navbar-item" href="/">
             <img src="./assets/leaningBooks.png">&nbsp;myBooks
           </a>
+
+          <!-- Mobile navigation -->
+          <div class="navbar-burger"
+               @click="toggleMobileNav"
+               :class="{ 'is-active': showMobile }">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
 
-
-        <div class="navbar-menu">
+        <div v-if="true"
+             :class="{ 'is-active': showMobile }"
+             class="navbar-menu">
 
           <!-- left side -->
           <div class="navbar-start">
 
             <!-- home -->
-            <a class="navbar-item">
+            <a class="navbar-item"
+               @click="toggleMobileNav">
               <router-link tag="div" to="/" exact>
                 <span class="icon is-medium"><i class="fa fa-home"></i></span>
                 <span>Home</span>
@@ -30,6 +43,7 @@
 
             <!-- user books -->
             <a class="navbar-item"
+               @click="toggleMobileNav"
                v-if="is_authenticated()">
               <router-link tag="div" to="/shelves" exact>
                 <span class="icon is-medium"><i class="fa fa-wpexplorer"></i></span>
@@ -40,6 +54,7 @@
 
             <!-- /books -->
             <a class="navbar-item disabled"
+               @click="toggleMobileNav"
                v-if="is_authenticated()">
               <router-link tag="span" to="/books" exact>
                 <span class="icon is-large"><i class="fa fa-book"></i></span>
@@ -50,6 +65,7 @@
 
             <!-- /authors -->
             <a class="navbar-item"
+               @click="toggleMobileNav"
                v-if="is_authenticated()">
               <router-link tag="span" to="/authors" exact>
                 <span class="icon is-large"><i class="fa fa-grav"></i></span>
@@ -66,7 +82,9 @@
                v-if="is_authenticated('admin')">
 
             <!-- Admin dropdown -->
-            <div class="navbar-item has-dropdown is-hoverable">
+            <!-- Do not show if mobila navigation is turned on -->
+            <div class="navbar-item has-dropdown is-hoverable"
+                 v-if="! showMobile">
               <a class="navbar-link">
                 Admin
               </a>
@@ -182,7 +200,9 @@ export default {
       // When true bring up the 'login' modal
       doLoginModal: false,
       // Error message
-      errorMessage: ''
+      errorMessage: '',
+      // Show the navigation on right
+      showMobile: false
     }
   },
   /**
@@ -199,6 +219,13 @@ export default {
     Event.$on('clearEverything', () => this.clearEverything())
   },
   methods: {
+    /**
+     * Toggle the mobile navigation
+     *
+     */
+    toggleMobileNav () {
+      this.showMobile = !this.showMobile
+    },
     /**
      * Login was called by the modal
      *
