@@ -35,7 +35,7 @@
 
         <!-- Image -->
 
-        <figure class="image is-square isclickable"
+        <figure class="image isclickable"
                 title="Double click to update."
                 v-bind:class="{ imagechanged : authorImageWasChangedFlag.flag }"
                 @dblclick="changeImage">
@@ -48,7 +48,7 @@
 
       <!-- books and stats -->
       <div class="column">
-        <p class="subtitle is-5"
+        <p class="subtitle is-4"
            style="width: 30%; ">
           Books:
         </p>
@@ -205,7 +205,6 @@
             imageLarge: value
           }
           this.authorData.imageLarge = value
-          console.log('Set author data to ' + this.authorData.imageLarge)
           this.makePutCall(data, this.authorImageWasChangedFlag)
         }
       },
@@ -227,7 +226,6 @@
             name: value
           }
           this.authorData.name = value
-          console.log('Set author Name to ' + this.authorData.name)
           this.makePutCall(data, this.authorNameWasChangedFlag)
         }
       },
@@ -250,7 +248,6 @@
 
         // get authorization string
         const authString = Auth.getAuthHeader()
-        console.log('making PUT request to /author/')
 
         // params for axios request
         let url = '/author/' + self.authorData.id
@@ -263,7 +260,6 @@
           .then((response) => {
             // Mark the Flagged thing as changed, and then set timeout to remove that change.
             if (flagMe) {
-              console.log('setting flag to true')
               flagMe.flag = true
               setTimeout(function () {
                 flagMe.flag = false

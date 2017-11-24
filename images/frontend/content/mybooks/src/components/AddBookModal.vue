@@ -128,6 +128,10 @@
       // we change our 'isActive' value to match.
        active: function (val, oldVal) {
          this.isActive = val
+         if (this.isActive) {
+           console.log('reset tags')
+           Event.$emit('resetTags')
+         }
        },
        title: function (val, oldVal) {
          this.bookTitle = val

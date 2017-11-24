@@ -300,7 +300,9 @@ public class BookResource {
       BeanUtils.copyProperty(bookInDatabase, "isbn", convertListToCsv(bookBean.getIsbns()));
 
       // year is different too
-      BeanUtils.copyProperty(bookInDatabase, "year", bookBean.getFirstPublishedYear()); 
+      if (bookBean.getFirstPublishedYear() != null) {
+        BeanUtils.copyProperty(bookInDatabase, "year", bookBean.getFirstPublishedYear());
+      }
       
       // open library url is different too
       BeanUtils.copyProperty(bookInDatabase, "olWorks", bookBean.getOpenlibraryWorkUrl());
@@ -323,6 +325,7 @@ public class BookResource {
       throw new WebApplicationException(errorMessage, 409);
     }
     catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException bean) {
+      bean.printStackTrace();
       throw new WebApplicationException("Error in updating database when creating book  " + bookBean + ".", Response.Status.INTERNAL_SERVER_ERROR);
     }
   }

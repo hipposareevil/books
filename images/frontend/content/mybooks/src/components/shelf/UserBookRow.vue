@@ -78,7 +78,6 @@
       <UpdateTagsModal v-if="showTagModal"
                        :active="showTagModal"
                        :allTags="allTags"
-                       :book="book"
                        :userBook="userBook"
                        @savedCalled="tagsUpdatedByModal"
                        @cancelCalled="tagsCancelledByModal"
@@ -114,9 +113,6 @@
      */
     data () {
       return {
-        // Data for the current book, this is retrieved once
-        // we are mounted via this.getFullBook
-        book: {},
         // Flag denoting the thumbs up was clicked & changed
         ratingWasChanged: {
           flag: false

@@ -10,7 +10,7 @@
       <!-- header -->
       <header class="modal-card-head" style="text-align: center;">
         <div class="modal-card-title">
-          Update tags for <span class="is-size-3">{{ book.title }}</span>
+          Update tags for <span class="is-size-3">{{ userBook.title }}</span>
         </div>
         <button @click="cancel" class="delete" aria-label="close"></button>
       </header>
@@ -67,7 +67,7 @@
      * userBook: userbook being edited
      * allTags: list of all tags in the system
      */
-     props: [ 'active', 'book', 'userBook', 'allTags' ],
+     props: [ 'active', 'userBook', 'allTags' ],
      // Data
      data () {
        return {

@@ -28,8 +28,8 @@
       <div class="column is-2">
 
         <!-- Image  -->
-        <figure class="image is-square isclickable"
-                style="cursor: pointer;"
+        <figure class="image isclickable"
+                style="cursor: pointer; min-height: 10em;"
                 title="Double click to update."
                 @dblclick="changeImage">
           <img v-if="bookData.imageMedium"
@@ -167,7 +167,6 @@
         this.bookData = {}
 
         let url = '/book/' + this.bookId
-        console.log('Get book from ' + url)
         this.$axios.get(url, { headers: { Authorization: authString } })
           .then((response) => {
             self.bookData = response.data

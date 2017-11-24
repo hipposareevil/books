@@ -377,10 +377,13 @@
          this.book.firstPublishedYear = ''
          this.book.goodreadsUrl = ''
          this.book.openlibraryWorkUrl = ''
+         this.book.imageMedium = ''
 
+         this.isbnsAsCsv = ''
          this.tagsToAdd = []
          this.existingTitle = ''
          this.existingBooks = []
+         this.existingAuthors = []
          this.authorName = ''
          Event.$emit('resetTags')
        },

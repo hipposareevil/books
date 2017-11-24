@@ -271,7 +271,15 @@
         const authString = Auth.getAuthHeader()
         let self = this
         this.TagJson = {}
-        this.$axios.get('/tag/', { headers: { Authorization: authString } })
+
+        let params = {
+          offset: 0,
+          limit: 200
+        }
+
+        this.$axios.get('/tag/', {
+          headers: { Authorization: authString },
+          params: params })
           .then((response) => {
             self.TagJson = response.data.data
             // Sort
