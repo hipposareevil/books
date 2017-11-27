@@ -18,7 +18,7 @@
   import Auth from '../auth'
 
   export default {
-    props: [ 'value' ],
+    props: [ 'userObject' ],
     // Data for this component
     data () {
       return { showSpan: true, formValue: this.value }
@@ -29,21 +29,22 @@
        * to update in database.
        */
       submit () {
-        console.log('submit! ' + this.formValue)
+        let self = this
+        console.log('submit! ' + self.formValue)
 
         // get authorization string
         const authString = Auth.getAuthHeader()
         console.log('making PUT request to /user')
 
         // params for axios request
-        let url = '/user/' + self.user.id
+        let url = '/user/' + self.userObject.id
         // auth headers
         let ourheaders = {
           'Authorization': authString
         }
         // Data to update in database, just the name
         let data = {
-          name: self.user.name
+          name: self.userObject.name
         }
         // make request
         this.$axios.put(url, data, { headers: ourheaders })

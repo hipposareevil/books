@@ -67,19 +67,22 @@
       <tbody>
         <tr v-for="current in UsersJson">
           <!-- clickable creates a td -->
-          <clickable :userObject="current">
+          <clickable
+            :userObject="current">
           </clickable>
 
           <td>{{current.id}}</td>
 
-          <clickablepassword :value="current.name">
-          </clickablepassword>
+          <Clickablepassword
+            :userObject="current">
+          </Clickablepassword>
 
           <td>{{current.userGroup}}</td>
           
           <td>
-            <deleteuserbutton :userObject="current"
-                              @userDeleted="userWasDeleted(current)">
+            <deleteuserbutton
+              :userObject="current"
+              @userDeleted="userWasDeleted(current)">
             </deleteuserbutton>
           </td>
 

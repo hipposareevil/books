@@ -31,16 +31,6 @@
                 </button>
               </p>
 
-              <!-- grab all -->
-              <p class="control">
-                <button class="button"
-                        title="Get all"
-                        @click="grabAll()">
-                  <span class="has-text-info">
-                    Get All
-                  </span>
-                </button>
-              </p>
             </div> <!-- search and clear -->
           </div>
         </div> 
@@ -57,13 +47,16 @@
             <!-- list the number of things -->
             <p class="control"
                style="margin-right: 1em;"
-              v-if="numberOfThings">
-              <a class="button is-static">
-                <span class="is-size-7">
-                ({{ numberOfThings }}
-                <span v-if="totalNumber">&nbsp;of {{ totalNumber }})</span>
-                </span>
-              </a>
+               title="Click to get all"
+               v-if="numberOfThings">
+
+                <a class="button"
+                   @click="grabAll()">
+                  <span class="is-size-7">
+                    ({{ numberOfThings }}
+                    <span v-if="totalNumber">&nbsp;of {{ totalNumber }})</span>
+                  </span>
+                </a>
             </p>
 
               <!-- List -->
