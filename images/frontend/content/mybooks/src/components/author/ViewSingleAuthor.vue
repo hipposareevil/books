@@ -134,10 +134,24 @@
        *
        */
       getBooks () {
-        const authString = Auth.getAuthHeader()
         let self = this
-        this.authorData = {}
-        this.$axios.get('/book?author_id=' + this.authorId, { headers: { Authorization: authString } })
+        self.authorData = {}
+
+        let url = '/book?author_id=' + self.authorId
+
+        // get authorization string
+        const authString = Auth.getAuthHeader()
+
+        // Get 1000 books
+        let params = {
+          offset: 0,
+          limit: 1000
+        }
+
+        console.log('Sending header: ' + authString)
+        this.$axios.get(url, {
+          headers: { Authorization: authString },
+          params: params })
           .then((response) => {
             self.bookData = response.data.data
             // Sort
