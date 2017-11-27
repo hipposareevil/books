@@ -73,9 +73,9 @@
 
           <td>{{current.id}}</td>
 
-          <Clickablepassword
+          <clickablepassword
             :userObject="current">
-          </Clickablepassword>
+          </clickablepassword>
 
           <td>{{current.userGroup}}</td>
           

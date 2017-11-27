@@ -34,17 +34,19 @@
 
         // get authorization string
         const authString = Auth.getAuthHeader()
-        console.log('making PUT request to /user')
 
         // params for axios request
         let url = '/user/' + self.userObject.id
+
+        console.log('making PUT request to ' + url)
+
         // auth headers
         let ourheaders = {
           'Authorization': authString
         }
         // Data to update in database, just the name
         let data = {
-          name: self.userObject.name
+          password: self.formValue
         }
         // make request
         this.$axios.put(url, data, { headers: ourheaders })
