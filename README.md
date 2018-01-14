@@ -258,34 +258,38 @@ Redis is also used as a cache for the services. When a service makes a REST call
 
 Metrics are provided via [graphite](https://graphiteapp.org/) and [grafana](https://grafana.com/).
 
-See [metrics](https://github.com/hipposareevil/books/blob/master/metrics/README.md) for more information.
+See the [metrics](https://github.com/hipposareevil/books/blob/master/metrics/README.md) directory for more information.
 
 # Notes and Thoughts
 
 ## Initial
-I created this project to experiment with writing multiple micro-services and wiring them together in a docker environment. I started using [dropwizard](http://www.dropwizard.io/) for a Java based server. The ramp up time was fairly quick and I was able to easily do most tasks with little pain. I played with [spring boot](https://projects.spring.io/spring-boot/) as well, but stuck with dropwizard for the rest of the services.
+I created this project to experiment with writing multiple micro-services and wiring them together in a docker environment. I started using [dropwizard](http://www.dropwizard.io/) for a Java based server. The ramp up time was fairly quick and I was able to easily do most tasks with little pain. I played with [spring boot](https://projects.spring.io/spring-boot/) for the _query_ endpoint, but stuck with dropwizard for the rest of the services.
 
 ## Memory Usage
-After I had 6 services implemented, I ran everything on my hosted environment and saw that I was running out of memory. I checked my _docker stats_ and my *micro* services were each using 250MB.  I lowered my Java memory usage with -*Xmx64m* for each service and the usage dropped to 180MB. This was so much (close to 2GB ram) that I ended up buying more memory to run this project on [linode](https://linode.com). Which is ridiculous and not very **micro**.
+With 6 services implemented, I ran everything on my [hosted environment](https://linode.com) and saw that I was running out of memory. I checked my _docker stats_ and my **micro** services were each using 250MB.
 
-I faintly remembered someone else looking into the memory usage of Java applications, especially on Docker, but I had ignored it thinking that it wouldn't affect me.
-Here [is the analysis blog](http://trustmeiamadeveloper.com/2016/03/18/where-is-my-memory-java/)
+I lowered the Java memory usage (*Xmx64m*) for each service and the usage dropped to ~180MB. This was still an inordinate amount of RAM for a simple web service.
+
+I came across a [blog post](http://trustmeiamadeveloper.com/2016/03/18/where-is-my-memory-java/) detailing where the memory for Java (on Docker) was going. Unsurprisingly those results correlated with this projects usage.
 
 ## Framework Changes
-As I wanted this to be a set of micro-services that had a small footprint instead of jumbo, I looked into other micro-service frameworks. I looked at [node](https://nodejs.org/en/) and [go](https://golang.org/) but node looked to have a large memory footprint from other people's analysis and looking at my *frontend* javascript app (which uses node for hot swapping).  I ran a golang application in Docker and the memory usage was minimal so I wrote a new micro-service using [go-kit](https://github.com/go-kit/kit).
+Given the large memory usage, I started looking for other micro-service frameworks. I ended up using [go](https://golang.org/) for a test service and saw the memory usage was in the single MB range. I also looked at [node](https://nodejs.org/en/) but that seemed to use almost as much memory as Java and others.
 
-I re-wrote *tag* using go-kit and had the following size changes:
+I ported that *tag* endpoint to golang using the [go-kit](https://github.com/go-kit/kit) framework and saw the following results:
+
 Metric | golang | java | go % of java
 --- | --- | --- | ---
 Image size| 7.56MB | 136MB | 5.5%
 Memory | 2MB | 187MB | 1.1%
 
-The golang service's image size is 5% of the Java implementation.
-The more striking difference is the golang service's 1.1% memory usage compared to the Java implementation.
+The golang service's image size is 5% of the corresponding Java image.
 
-*caveat* The image size is not always an accurate measurement due to image layer sharing (all the java images share the same base image, so the accumulated size is closer to 140MB than ~900MB (7 * 130MB)).
+More note worthy is golang's memory usage, being 1% the size of the Java implementation.
+
+**Caveat**: Individual image size is not always an accurate overall measurement due to image layer sharing. All of the java images share the same base image, so the accumulated size is closer to 140MB than 900MB (7 * 130MB).
 
 ## Plans
 
-* Port services from Java to golang for memory usage.
+* Port remaining services from Java to golang.
+* Add graphite metrics to golang services.
 * Investigate [istio.io](https://istio.io/) for service discovery and metrics.
