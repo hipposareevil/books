@@ -68,7 +68,8 @@ services:
    # Manage tags
    tag:
      container_name: tag
-     image: ${BOOK_REPOSITORY}books.tag:latest
+#     image: ${BOOK_REPOSITORY}books.tag:latest
+     image: ${BOOK_REPOSITORY}books.tag.go:latest
      expose:
        - 8080
      restart: always

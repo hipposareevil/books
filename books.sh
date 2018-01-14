@@ -97,7 +97,6 @@ build() {
     fi
     
     # get all build.sh files
-    #projects=$(find $PWD -maxdepth 2 -mindepth 2 -type f -name "build.sh")
     projects=$(ls images/*/build.sh)
 
     # break up into array by space

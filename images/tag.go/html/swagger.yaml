@@ -1,0 +1,195 @@
+swagger: '2.0'
+info:
+  version: '1'
+  description: Tag REST web services.
+  title: Tag Web Service
+basePath: /
+tags:
+  - name: tag
+schemes:
+  - http
+paths:
+  /tag:
+    get:
+      tags:
+        - tag
+      summary: Get list of all tags.
+      description: >-
+        Requires authentication token in header with key AUTHORIZATION. Example:
+        AUTHORIZATION: Bearer qwerty-1234-asdf-9876.
+      operationId: getTags
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: offset
+          in: query
+          description: Where to start the returned data segment from the full result.
+          required: false
+          type: integer
+          format: int32
+        - name: limit
+          in: query
+          description: size of the returned data segment.
+          required: false
+          type: integer
+          format: int32
+        - name: Authorization
+          in: header
+          description: Bearer authorization
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ResultWrapperTag'
+    post:
+      tags:
+        - tag
+      summary: Create new tag
+      description: >-
+        Create new tag in database. Requires authentication token in header with
+        key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876.
+      operationId: createTag
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Tag information.
+          required: true
+          schema:
+            $ref: '#/definitions/PostTag'
+        - name: Authorization
+          in: header
+          description: Bearer authorization
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Tag created.
+        '409':
+          description: Tag already exists.
+  '/tag/{tag_id}':
+    get:
+      tags:
+        - tag
+      summary: Get single tag.
+      description: >-
+        Requires authentication token in header with key AUTHORIZATION. Example:
+        AUTHORIZATION: Bearer qwerty-1234-asdf-9876.
+      operationId: getTag
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: tag_id
+          in: path
+          description: ID of tag to retrieve.
+          required: true
+          type: string
+        - name: Authorization
+          in: header
+          description: Bearer authorization
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Tag'
+    put:
+      tags:
+        - tag
+      summary: Update tag in the database
+      description: >-
+        Requires authentication token in header with key AUTHORIZATION. Example:
+        AUTHORIZATION: Bearer qwerty-1234-asdf-9876. Caller must be 'admin'
+        user. 
+      operationId: update
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: tag_id
+          in: path
+          required: true
+          type: integer
+          format: int32
+        - in: body
+          name: body
+          required: false
+          schema:
+            $ref: '#/definitions/PostTag'
+        - name: Authorization
+          in: header
+          description: Bearer authorization
+          required: true
+          type: string
+      responses:
+        default:
+          description: successful operation
+    delete:
+      tags:
+        - tag
+      summary: Delete tag from database
+      description: >-
+        Create new user in database. Requires authentication token in header
+        with key AUTHORIZATION. Example: AUTHORIZATION: Bearer
+        qwerty-1234-asdf-9876. Caller must be 'admin' user. 
+      operationId: delete
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: tag_id
+          in: path
+          description: Name of tag to delete.
+          required: true
+          type: integer
+          format: int32
+        - name: Authorization
+          in: header
+          description: Bearer authorization
+          required: true
+          type: string
+      responses:
+        default:
+          description: successful operation
+definitions:
+  ResultWrapperTag:
+    type: object
+    properties:
+      offset:
+        type: integer
+        format: int32
+      limit:
+        type: integer
+        format: int32
+      total:
+        type: integer
+        format: int64
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+  Tag:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+      name:
+        type: string
+  PostTag:
+    type: object
+    properties:
+      name:
+        type: string

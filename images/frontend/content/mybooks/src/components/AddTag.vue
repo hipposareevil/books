@@ -198,6 +198,7 @@
         const authString = Auth.getAuthHeader()
         let self = this
         this.tagJson = {}
+        // Get 200 tags
         let params = {
           offset: 0,
           limit: 200
