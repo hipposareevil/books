@@ -472,10 +472,12 @@ System.out.println("getUserBooksByTitle: " + titleQuery);
     // Get all tags in database and convert into a map keyed by tagID
     Map<String, Tag> allTags = this.tagDAO.findAll();
     Map<Integer, Tag> tagsIndexById = allTags.values().stream().collect(Collectors.toMap(Tag::getId, p -> p));
-
+    
     // Correlate tag ids from tagMappings into tag names
-    List<String> tagNames = tagIds.stream().map(e -> tagsIndexById.get(e).getName()).collect(
-        Collectors.toList());
+    List<String> tagNames = tagIds
+        .stream()
+        .map(e -> tagsIndexById.get(e).getName())
+        .collect(Collectors.toList());
 
     userBook.setTags(tagNames);
   }
