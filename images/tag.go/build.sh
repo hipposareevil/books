@@ -38,14 +38,15 @@ n    exit 0
 
 
 ##########
-# Clean project
+# Clean project.
+# This utilizes an alpine container as 'root' will own the directories
+# and we will be unable to delete from a bare node.
 #
 ##########
 clean() {
     echo "[Removing dep vendor, metadata, and pkg directories]"
-    rm -f ${ROOT_DIR}/src/github.com/hipposareevil/Gopkg*
-    rm -rf ${ROOT_DIR}/src/github.com/hipposareevil/vendor
-    rm -rf ${ROOT_DIR}/pkg
+    
+    docker run -it -v ${ROOT_DIR}:/go -w /go alpine sh -c "rm -rf src/github.com/hipposareevil/vendor src/github.com/hipposareevil/Gopkg* pkg/"
 }
 
 
@@ -108,6 +109,9 @@ main() {
                 ;;
         esac
     done
+
+    # clean
+    clean
 
     # get dependencies
     run_dep
