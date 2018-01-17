@@ -58,6 +58,11 @@ run_dep() {
     # All packages are downloaded into the src/github.com/hipposareevil/vendor directory
     echo "[Running go's 'dep' against source]"
     docker run -it -e GOPATH=/go -v ${ROOT_DIR}:/go -w /go hipposareevil/alpine-dep init src/github.com/hipposareevil
+    if [ $? -ne 0 ]; then
+        echo "** Error running 'dep' for  $IMAGE_NAME **"
+        exit 1
+    fi
+
     echo "[Done grabbing dependencies]"
     echo ""
 }
@@ -70,7 +75,12 @@ build_image() {
 
     # This will run 'go build' in the image and then copy
     # the binary to the appropriate end location.
-    docker build -t ${IMAGE_NAME} .
+    result=$(docker build -t ${IMAGE_NAME} ${ROOT_DIR})
+    if [ $? -ne 0 ]; then
+        echo "** Error building $IMAGE_NAME **"
+        echo "$result"
+        exit 1
+    fi
     
     echo "[Done with build for ${IMAGE_NAME}]"
 }
