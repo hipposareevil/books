@@ -190,6 +190,10 @@ func (theService tagService) DeleteTag(bearer string, tagId int) error {
 	// Make DELETE query
 	_, err := theService.mysqlDb.Exec("DELETE FROM tag WHERE tag_id = ?", tagId)
 
+    // Delete from tagmapping as well
+    // TODO
+	_, _ = theService.mysqlDb.Exec("DELETE FROM tagmapping WHERE tag_id = ?", tagId)
+    
 	return err
 }
 
