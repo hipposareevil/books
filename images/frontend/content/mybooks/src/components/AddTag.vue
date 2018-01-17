@@ -203,7 +203,7 @@
           offset: 0,
           limit: 200
         }
-        this.$axios.get('/tag/', {
+        this.$axios.get('/tag', {
           headers: { Authorization: authString },
           params: params })
           .then((response) => {
