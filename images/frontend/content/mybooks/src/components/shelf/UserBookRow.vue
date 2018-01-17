@@ -154,7 +154,6 @@
       * Tags were NOT updated via the modal
       */
       tagsCancelledByModal () {
-        console.log('Tags were CANCELD')
         this.showTagModal = false
       },
       /**

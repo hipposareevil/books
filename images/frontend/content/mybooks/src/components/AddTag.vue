@@ -67,13 +67,22 @@
             {{ current.name }}
           </span>
           <a class="tag is-delete"
-             @click="tagWasDeleted(current)">
+             @click="tryToDeleteATag(current)">
           </a>
         </div>
           <!-- end tag -->
 
       </div> <!-- end v-for -->
     </div>
+
+    <!-- Modal to verify deletion -->
+    <VerifyModal v-if="showVerifyModal"
+                 :active="showVerifyModal"
+                 :tagToDelete="tagToDelete"
+                 @verifyCalled="deleteTag"
+                 @verifyCanceled="showVerifyModal=false"
+                 >
+    </VerifyModal>
 
 
     <!-- longer error message to user -->
@@ -97,9 +106,10 @@
 
 <script>
   import Auth from '../auth'
+  import VerifyModal from './VerifyDeleteTagModal.vue'
 
   export default {
-    components: { },
+    components: { VerifyModal },
     // Data
     data () {
       return {
@@ -112,7 +122,11 @@
         // message for user
         userMessage: '',
         // Error message
-        errorMessage: ''
+        errorMessage: '',
+        // show the verify modal?
+        showVerifyModal: false,
+        // Tag to delete
+        tagToDelete: {}
       }
     },
     /**
@@ -167,18 +181,28 @@
           })
       },
       /**
-       * A tag was deleted, remove from db
-       *
+       * Attempt to delete a tag.
+       * First verify with user.
        */
-      tagWasDeleted (currentTag) {
-        console.log('delete tag: ' + currentTag.name)
+      tryToDeleteATag (currentTag) {
+        this.tagToDelete = currentTag
+        this.showVerifyModal = true
+      },
+      /**
+       * Really delete the tag
+       * params:
+       * tagId: ID of tag to delete
+       */
+      deleteTag (tagId) {
+        this.showVerifyModal = false
+        this.tagToDelete = {}
 
         const authString = Auth.getAuthHeader()
         let self = this
-        let url = '/tag/' + currentTag.id
+        let url = '/tag/' + tagId
         this.$axios.delete(url, { headers: { Authorization: authString } })
           .then((response) => {
-            console.log('tag deleted')
+            console.log('tag ' + tagId + ' deleted')
             self.getTags()
           })
           .catch(function (error) {
