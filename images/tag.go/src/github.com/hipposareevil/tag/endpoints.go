@@ -12,7 +12,7 @@ type dataHolder interface {
 }
 
 ////////////////
-// Responses are  passed to 'encodeResponse'
+// Responses are  passed to 'transport.encodeResponse'
 
 ////////////////////
 /// TAGS

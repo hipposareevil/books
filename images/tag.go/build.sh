@@ -32,15 +32,19 @@ usage() {
     echo "  -h               Print this message."
     echo "  -c/--clean       Cleans the project."
     echo ""
+    echo "To manually build the 'tag' service in golang:"
+    echo "$ export GOPATH=`pwd`"
+    echo "$ go build github.com/hipposareevil/tag"
+    echo ""
 
-n    exit 0
+    exit 0
 }
 
 
 ##########
-# Clean project.
+# Clean the project.
 # This utilizes an alpine container as 'root' will own the directories
-# and we will be unable to delete from a bare node.
+# and we will be unable to delete from a bare node without going through a container.
 #
 ##########
 clean() {
@@ -116,7 +120,8 @@ main() {
     # get dependencies
     run_dep
 
-    # Build docker image
+    # Build docker image.
+    # The Dockerfile builds the actual golang source
     build_image
 }
 

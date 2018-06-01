@@ -50,7 +50,7 @@ func Authenticate(onlyAdminGroup bool, redisPool *pool.Pool, next http.Handler) 
         // Key to query in redis
         redisHashName := "user:" + bearer
 
-        // Check redis. If it is null, there is no authentication
+        // Check redis. If it is null, authentication failed
         userName, err := conn.Cmd("HGET", redisHashName, "name").Str()
 
         fmt.Println("Got username: ", userName)

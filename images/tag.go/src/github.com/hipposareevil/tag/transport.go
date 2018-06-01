@@ -397,11 +397,13 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	// Write actual error code
-	w.WriteHeader(codeFrom(err))
+    code := codeFrom(err)
+	w.WriteHeader(code)
 
 	// write out the error message
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error": err.Error(),
+        "code": code,
+		"message": err.Error(),
 	})
 }
 
