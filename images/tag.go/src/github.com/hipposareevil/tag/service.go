@@ -184,14 +184,17 @@ func (theService tagService) DeleteTag(bearer string, tagId int) error {
 		return errors.New("unable to ping mysql")
 	}
 
-	// TODO
 	// Verify the tag exists, if not, throw ErrNotFound
+    _, getErr := theService.GetTag(bearer, tagId)
+    if getErr != nil {
+        return getErr
+    }
 
 	// Make DELETE query
 	_, err := theService.mysqlDb.Exec("DELETE FROM tag WHERE tag_id = ?", tagId)
 
-    // Delete from tagmapping as well
-    // TODO
+    // Delete from tagmapping as well.
+    // Ignore the error for now.
 	_, _ = theService.mysqlDb.Exec("DELETE FROM tagmapping WHERE tag_id = ?", tagId)
     
 	return err
