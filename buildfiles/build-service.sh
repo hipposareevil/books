@@ -14,11 +14,36 @@
 # Initalize variables
 #############
 initialize_variables() {
+    if [ -z "$our_directory" ]; then
+        echo "NOTE: Calling script must set 'our_directory' variable."
+        exit 1
+    fi
+
     # Get name of project
     project=$(cat $our_directory/webservice.name | xargs)
 
     image_name="books.$project:latest"
 }
+
+#########
+# Usage
+#
+#########
+usage() {
+    echo
+    echo "Usage: $0 [OPTION]"
+    echo ""
+    echo "Builds image '$image_name'"
+    echo ""
+    echo "Options:"
+    echo "  -h,--help   : Print this message."
+    echo "  build       : Builds the application"
+    echo "  clean       : Cleans the application"
+    echo ""
+    exit 0;
+
+}
+
 
 #########
 # Run a maven command
@@ -163,7 +188,17 @@ clean_gradle() {
 build_image() {
     local then=$(date +%s)
     echo "[[Building Docker image '$image_name']]"
-    (cd $our_directory; docker build "$our_directory" -t $image_name)
+
+    # set build time
+    BUILD_TIME=$(date +%Y-%m-%dT%H:%M:%S%Z)
+    VERSION_TAG="latest"
+
+    (cd $our_directory;
+     docker build -t ${image_name} \
+            --build-arg BUILD_TIME=${BUILD_TIME} \
+            --build-arg VERSION=${VERSION_TAG} \
+            "$our_directory" )
+
     build_result=$?
 
     local now=$(date +%s)
@@ -186,15 +221,7 @@ build_image() {
 # Build the project
 #
 #############
-build-service::build() {
-    if [ -z "$our_directory" ]; then
-        echo "NOTE: Calling script must set 'our_directory' variable"
-        exit 1
-    fi
-
-    # init variables
-    initialize_variables
-
+build() {
     # copy in common
     copy_common_jars
 
@@ -220,7 +247,6 @@ build-service::build() {
         exit 1
     fi
 
-
     local now=$(date +%s)
     local elapsed=$(expr $now - $then)
     echo "[[Built application in $elapsed seconds]]"
@@ -243,14 +269,7 @@ build-service::build() {
 # Clean the project
 #
 #############
-build-service::clean() {
-    if [ -z "$our_directory" ]; then
-        echo "NOTE: Calling script must set 'our_directory' variable"
-        exit 1
-    fi
-
-    initialize_variables
-
+clean() {
     # build project
     echo "[[Cleaning web service '$project']]"
     if [ -e $our_directory/pom.xml ]; then
@@ -272,4 +291,42 @@ build-service::clean() {
     echo "[[Clean for '$project' complete]]"
 }
 
+############
+# main
+# 
+############
+main() {
+    # init
+    initialize_variables
 
+    # default to "build"
+    if [ $# -eq 0 ]
+    then
+        arg="build"
+    else
+        arg=$1
+    fi
+
+    # check arg
+    case $arg in
+        "-h"|"--help")
+	    usage
+	    exit 0
+	    ;;
+        "build")
+            build
+            exit 0
+            ;;
+        "clean")
+            clean
+            exit 0
+            ;;
+        \?) #unknown
+            usage
+            ;;
+    esac
+}
+
+
+# Call main
+main "$@"

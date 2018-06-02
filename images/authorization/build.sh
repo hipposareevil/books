@@ -11,6 +11,4 @@ root=$our_directory/../..
 # load in common build file
 . $root/buildfiles/build-service.sh
 
-# build the project including the image
-build-service::build
 

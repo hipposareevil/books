@@ -28,8 +28,7 @@ initialize_variables() {
 # Usage
 # 
 ############
-usage()
-{
+usage() {
   echo
   echo "Usage: $0 [build] [start] [stop] [clean]"
   echo ""
@@ -110,7 +109,7 @@ build() {
         echo " -------------------------------------------------"
         echo ""
         echo "  Building project '$project'"
-        $project/build.sh
+        $project/build.sh 
         if [ $? -ne 0 ]; then
             echo "Unable to build $project, exiting."
             exit 1
@@ -160,7 +159,7 @@ _iterate_projects() {
 # Clean all projects
 ##############
 clean() {
-    _iterate_projects "clean.sh"
+    _iterate_projects "build.sh clean"
 }
 
 
