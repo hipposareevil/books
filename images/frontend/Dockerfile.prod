@@ -2,3 +2,15 @@ FROM nginx:alpine
 
 COPY content/mybooks/dist/ /usr/share/nginx/html/
 
+# Args passed in via 'docker build'
+# Used by the LABELs
+ARG BUILD_TIME
+ARG VERSION
+
+# Putting LABEL last so we can re-use the preceding caching layers
+LABEL org.label-schema.build-date="$BUILD_TIME" \
+      org.label-schema.vendor="github.com/hipposareevil" \
+      org.label-schema.version="$VERSION" \
+      org.label-schema.description="Frontend SPA webpage for books application." \
+      org.label-schema.name="books.frontend" 
+
