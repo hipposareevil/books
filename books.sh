@@ -85,7 +85,6 @@ build() {
     # build all projects and their docker images
 
     # build common
-    echo ""
     echo " -------------------------------------------------"
     echo ""
     echo "  Building project 'mybooks_common'"

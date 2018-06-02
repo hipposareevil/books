@@ -6,7 +6,7 @@ our_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 root=$our_directory/..
 
 # load in common build file
-. $root/buildfiles/build-service.sh
+. $root/buildfiles/build_java.sh
 
 # build the project including the image
 _gradle uploadArchives
