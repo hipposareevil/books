@@ -79,7 +79,7 @@ func (theService authorizeService) ValidateToken(bearer string) (error) {
     redisHashName := "user:" + bearer
 
     // Check redis. If it is null, authentication failed
-    userName, err := conn.Cmd("HGET", redisHashName, "name").Str()
+    _, err = conn.Cmd("HGET", redisHashName, "name").Str()
 
     if err != nil {
         // No authorization -> send a 401

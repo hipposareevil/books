@@ -16,11 +16,23 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo github.com/hipposare
 # final stage
 FROM scratch
 
+# Args passed in via 'docker build'
+# Used by the LABELs
+ARG BUILD_TIME
+ARG VERSION
+
 # copy binary
 COPY --from=build-env /go/authorization /
 
 # copy static html files
 COPY html/* /html/
+
+# Putting LABEL last so we can re-use the preceding caching layers
+LABEL org.label-schema.build-date="$BUILD_TIME" \
+      org.label-schema.vendor="github.com/hipposareevil" \
+      org.label-schema.version="$VERSION" \
+      org.label-schema.description="Microservice for authorizing clients." \
+      org.label-schema.name="books.authorize.go" 
 
 CMD ["/authorization"]
 
