@@ -44,6 +44,9 @@ usage() {
     echo "  -h,--help   : Print this message."
     echo "  build       : Builds the application"
     echo "  clean       : Cleans the application"
+    if [ -e ${our_directory}/src/github.com/hipposareevil ]; then
+        echo "  dep         : Download dependencies"
+    fi
     echo ""
 
     # add extra info for golang builds
@@ -137,6 +140,26 @@ clean() {
     echo "[[Clean for '$project' complete]]"
 }
 
+
+#############
+# Get dependencies
+#
+#############
+dependencies() {
+    echo "[[Getting dependencies project '$project']]"
+
+    # determine build type:
+    # golang, maven, gradle
+    if [ -e ${our_directory}/src/github.com/hipposareevil ]; then
+        golang::clean
+        golang::run_dep
+    else
+        echo "[[no-op for ava]]"
+    fi
+
+    echo "[[Dependencies for '$project' complete]]"
+}
+
 ############
 # main
 # 
@@ -165,6 +188,10 @@ main() {
             ;;
         "clean")
             clean
+            exit 0
+            ;;
+        "dep")
+            dependencies
             exit 0
             ;;
         \?) #unknown

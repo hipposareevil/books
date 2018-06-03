@@ -24,7 +24,6 @@ Table of Contents
          * [user](#user)
          * [user_book](#user_book)
          * [tag](#tag)
-         * [tag.go](#taggo)
          * [authorize](#authorize)
          * [swagger](#swagger)
       * [Databases](#databases)
@@ -221,7 +220,9 @@ Microservice to manage tags. Tags can be applied to a user's set of books via th
 
 *Note:* This is now implemented in Go instead of Java.
 
-See [tag](https://github.com/hipposareevil/books/blob/master/images/tag.go/README.md) for more information. 
+See [tag.go](https://github.com/hipposareevil/books/blob/master/images/tag.go/README.md) for more information. 
+
+See *deprecated* [tag](https://github.com/hipposareevil/books/blob/master/images/tag/README.md) for more information. 
 
 
 ### authorize

@@ -81,7 +81,8 @@ services:
    # Manage authorizations
    authorize:
      container_name: authorize
-     image: ${BOOK_REPOSITORY}books.authorize:latest
+#     image: ${BOOK_REPOSITORY}books.authorize:latest
+     image: ${BOOK_REPOSITORY}books.authorize.go:latest
      expose:
        - 8080
      restart: always
