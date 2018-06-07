@@ -44,7 +44,8 @@ services:
    # Manage users
    user:
      container_name: user
-     image: ${BOOK_REPOSITORY}books.user:latest
+#     image: ${BOOK_REPOSITORY}books.user:latest
+     image: ${BOOK_REPOSITORY}books.user.go:latest
      expose:
        - 8080
      restart: always
