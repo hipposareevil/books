@@ -154,7 +154,7 @@ dependencies() {
         golang::clean
         golang::run_dep
     else
-        echo "[[no-op for ava]]"
+        echo "[[no-op for java]]"
     fi
 
     echo "[[Dependencies for '$project' complete]]"
@@ -184,6 +184,10 @@ main() {
 	    ;;
         "build")
             build
+            exit 0
+            ;;
+        "buildimage")
+            build_image
             exit 0
             ;;
         "clean")

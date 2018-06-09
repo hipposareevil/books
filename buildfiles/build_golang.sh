@@ -29,7 +29,8 @@ golang::run_dep() {
 # 
 ###############
 golang::build() {
-    echo "[[no-op]]"
+    golang::clean
+    golang::run_dep
 }
 
 

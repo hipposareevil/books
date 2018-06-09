@@ -31,8 +31,9 @@ $> curl -X POST http://localhost:8080/authorize/token --header 'Content-Type: ap
 The list of supported calls and their documentation are available via the swagger endpoint. This runs on localhost:8080/swagger/ when the application is up.
 
 
-## Dropwizard Application
-The application listens on port 8080.
+## Encryption
+
+Password are encrypted with [bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt).
 
 
 ## Go-kit Application
@@ -47,3 +48,4 @@ The Docker container will expose port 8080 to other containers on the *booknet* 
 * [go](https://golang.org/)
 * [go-kit](https://github.com/go-kit/kit) - microservice framework.
 * [dep](https://github.com/golang/dep) - depdendency management tool.
+* [bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt) - encryption library

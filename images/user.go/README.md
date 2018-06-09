@@ -4,12 +4,15 @@
 
 **/user** is a microservice for creating, listing, updating and deleting Users from the database. The *admin* user is available to manage subsequent users. (It's recommended to change that *admin* users password.)
 
-**Note:** This version is implemented in Go instead of Java.
-
 Expected usage:
 * *admin* user creates user Bob with password "s3cret".
 * Actual user Bob makes REST call to */authorize* with {"name":"bob","password","s3cret"} and recieves authorization token.
 * That token is inserted into the HTTP Headers for calls to the other endpoints.
+
+## Encryption
+
+Password are encrypted with [bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt).
+
 
 ## Supported calls
 The list of supported calls and their documentation are available via the swagger endpoint. This runs on localhost:8080/swagger/ when the application is up.
@@ -38,4 +41,4 @@ The Docker container will expose port 8080 to other containers on the *booknet* 
 * [go](https://golang.org/)
 * [go-kit](https://github.com/go-kit/kit) - microservice framework.
 * [dep](https://github.com/golang/dep) - depdendency management tool.
-
+* [bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt) - encryption library
