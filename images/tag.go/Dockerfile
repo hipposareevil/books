@@ -2,11 +2,6 @@
 # Build stage
 FROM golang:alpine AS build-env
 
-# Args passed in via 'docker build'
-# Used by the LABELs
-ARG BUILD_TIME
-ARG VERSION
-
 # golang defaults to directory '/go' for building
 WORKDIR /go
 
@@ -20,6 +15,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo github.com/hipposare
 ########
 # final stage
 FROM scratch
+
+# Args passed in via 'docker build'
+# Used by the LABELs
+ARG BUILD_TIME
+ARG VERSION
 
 # copy binary
 COPY --from=build-env /go/tag /

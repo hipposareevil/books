@@ -24,7 +24,6 @@ Table of Contents
          * [user](#user)
          * [user_book](#user_book)
          * [tag](#tag)
-         * [tag.go](#taggo)
          * [authorize](#authorize)
          * [swagger](#swagger)
       * [Databases](#databases)
@@ -43,7 +42,7 @@ This project has two goals; to create a book repository (like [goodreads.com](ht
 
 The frontend web application is a [SPA](https://en.wikipedia.org/wiki/Single-page_application) written in Javascript ([vue.js](https://vuejs.org/)).
 
-The backend is a set of micro-services written in Java and golang, backed by [mysql](https://www.mysql.com/) and [redis](https://redis.io/) databases.  There are various (micro-service) endpoints for interfacing with and querying the data, see [endpoints](#endpoints) below. Most endpoints requires authorization, which is obtained at the */authorize* endpoint. See the */swagger* endpoint for full information.  
+The backend is a set of micro-services written in Java and Golang, backed by [mysql](https://www.mysql.com/) and [redis](https://redis.io/) databases.  There are various (micro-service) endpoints for interfacing with and querying the data, see [endpoints](#endpoints) below. Most endpoints requires authorization, which is obtained at the */authorize* endpoint. See the */swagger* endpoint for full information.  
 
 There is an initial user of *admin* with same password. The *admin* user can create a new user, or update the *admin* user via the */user* endpoint or the main web application. 
 
@@ -208,26 +207,31 @@ See [book](https://github.com/hipposareevil/books/blob/master/images/book/README
 ### user
 Microservice to manage users. A *user* is used to maintain a set of *user books*, which stores which books the user is cataloging, along with metadata, tags and a rating. In addition, a *user* is used to obtain an authorization token for authenticating against the various endpoints.
 
-See [user](https://github.com/hipposareevil/books/blob/master/images/user/README.md) for more information. 
+See [user](https://github.com/hipposareevil/books/blob/master/images/user.go/README.md) for more information. 
+
+See *deprecated* [user](https://github.com/hipposareevil/books/blob/master/images/user/README.md) for more information. 
 
 ### user_book
 Microservice to manage a set of books for a user. Each user has a list of books they can catalog. Each *user book* has a link to the real Book and associated Author. In addition, a *user book* has user *data* and a set of *tags*. 
 
 See [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book/README.md) for more information. 
 
-
 ### tag
 Microservice to manage tags. Tags can be applied to a user's set of books via the *user_books* endpoint.  Multiple tags may be applied to a single book, e.g. "e-book" and "sci-fi".
 
 *Note:* This is now implemented in Go instead of Java.
 
-See [tag](https://github.com/hipposareevil/books/blob/master/images/tag.go/README.md) for more information. 
+See [tag.go](https://github.com/hipposareevil/books/blob/master/images/tag.go/README.md) for more information. 
+
+See *deprecated* [tag](https://github.com/hipposareevil/books/blob/master/images/tag/README.md) for more information. 
 
 
 ### authorize
 Microservice to authenticate a user. This creates a token of the form 'Bearer qwerty-1234-asdf-9876', which is then added to the headers of any calls to the other endpoints.
 
-See [authorize](https://github.com/hipposareevil/books/blob/master/images/authorization/README.md) for more information. 
+See [authorize](https://github.com/hipposareevil/books/blob/master/images/authorization.go/README.md) for more information. 
+
+See *deprecated* [authorize](https://github.com/hipposareevil/books/blob/master/images/authorization/README.md) for more information. 
 
 ### swagger
 Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions.

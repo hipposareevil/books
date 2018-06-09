@@ -62,9 +62,10 @@ ALTER TABLE user ADD CONSTRAINT unique_user UNIQUE(name);
 
 LOCK TABLES `user` WRITE;
 
--- Insert initial admin/admin user
+-- Insert initial admin/admin user.
+-- This was encrypted via bcrypt: https://godoc.org/golang.org/x/crypto/bcrypt
 
-INSERT INTO `user` VALUES (1, 'admin', 'admin', '', 'ZEiRIzMMip7aN7nRSbLZLRaCUzIjIWwc');
+INSERT INTO `user` VALUES (1, 'admin', 'admin', '', '$2a$04$H8mgQszUXgk95cafRxfc5e1Yb1wGi8hbiysxtMSHNclcjNWmDqGsG');
 
 UNLOCK TABLES;
 

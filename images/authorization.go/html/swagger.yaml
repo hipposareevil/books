@@ -1,0 +1,73 @@
+swagger: "2.0"
+info:
+  description: "Authorize users for the REST web services."
+  title: "Authorization Web Service"
+basePath: "/"
+tags:
+- name: "authorize"
+schemes:
+- "http"
+paths:
+  /authorize/token:
+    post:
+      tags:
+      - "authorize"
+      summary: "Creates authentication token which is then used for various endpoints."
+      description: "Token is created for the user being authenticated. Token is of\
+        \ form 'Bearer qwerty-1234-asdf-9876'. Where required, it should be put in\
+        \ the HTTP Headers with key 'AUTHORIZATION'."
+      operationId: "authenticate"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Credentials for creating authentication token"
+        required: true
+        schema:
+          $ref: "#/definitions/Credentials"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Bearer"
+  /authorize/validate:
+    get:
+      tags:
+      - "authorize"
+      summary: "Validates an authentication token"
+      description: "Returns a 200 if the authorization header is OK, 401 otherwise"
+      operationId: "validate"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "Authorization"
+        in: "header"
+        required: false
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+definitions:
+  Bearer:
+    type: "object"
+    properties:
+      token:
+        type: "string"
+      userId:
+        type: "integer"
+        format: "int32"
+      groupName:
+        type: "string"
+  Credentials:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      password:
+        type: "string"
+        

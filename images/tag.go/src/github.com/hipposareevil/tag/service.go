@@ -227,6 +227,7 @@ func (theService tagService) CreateTag(bearer string, tagName string) (Tag, erro
 
 	// Make query
 	stmt, err := theService.mysqlDb.Prepare("INSERT INTO tag SET name=?")
+    defer stmt.Close()
 	if err != nil {
 		fmt.Println("Error preparing DB: ", err)
 		return Tag{}, errors.New("Unable to prepare a DB statement: ")
@@ -283,6 +284,7 @@ func (theService tagService) UpdateTag(bearer string, tagName string, tagId int)
 
 	// Make query
 	stmt, err := theService.mysqlDb.Prepare("UPDATE tag SET name=? WHERE tag_id = ?")
+    defer stmt.Close()
 	if err != nil {
 		fmt.Println("Error preparing DB: ", err)
 		return errors.New("Unable to prepare a DB statement: ")
