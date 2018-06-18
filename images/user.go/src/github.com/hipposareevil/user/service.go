@@ -62,6 +62,7 @@ func (theService userService) GetUser(userId int) (User, error) {
 	// mysql
 	if err := theService.mysqlDb.Ping(); err != nil {
 		theService.mysqlDb.Close()
+        fmt.Println("got ping error: ", err)
 		return User{}, errors.New("unable to ping mysql")
 	}
 
@@ -101,6 +102,7 @@ func (theService userService) GetUsers(offset int, limit int) (Users, error) {
 	// mysql
 	if err := theService.mysqlDb.Ping(); err != nil {
 		theService.mysqlDb.Close()
+        fmt.Println("got ping error: ", err)
 		return Users{}, errors.New("unable to ping mysql")
 	}
 
@@ -161,6 +163,7 @@ func (theService userService) DeleteUser(userId int) error {
 	// mysql
 	if err := theService.mysqlDb.Ping(); err != nil {
 		theService.mysqlDb.Close()
+        fmt.Println("got ping error: ", err)
 		return errors.New("unable to ping mysql")
 	}
 
@@ -194,6 +197,7 @@ func (theService userService) CreateUser(userName string, userGroup string, data
 	// mysql
 	if err := theService.mysqlDb.Ping(); err != nil {
 		theService.mysqlDb.Close()
+        fmt.Println("got ping error: ", err)
 		return User{}, errors.New("unable to ping mysql")
 	}
 
@@ -256,6 +260,7 @@ func (theService userService) UpdateUser(userId int, userName string, userGroup 
 	// mysql
 	if err := theService.mysqlDb.Ping(); err != nil {
 		theService.mysqlDb.Close()
+        fmt.Println("got ping error: ", err)
 		return errors.New("unable to ping mysql")
 	}
 

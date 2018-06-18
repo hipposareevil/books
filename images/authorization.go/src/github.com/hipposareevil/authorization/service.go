@@ -68,7 +68,7 @@ func (theService authorizeService) ValidateToken(bearer string) (error) {
     // Redis
     conn, err := theService.redisPool.Get()
     if err != nil {
-        fmt.Println("Got error when calling pool.Get: ", err)
+        fmt.Println("Got error when calling redisPool.Get: ", err)
         return ErrServerError
     }
     defer theService.redisPool.Put(conn)
@@ -104,7 +104,7 @@ func (theService authorizeService) CreateToken(userName string, password string)
     // Redis
     conn, err := theService.redisPool.Get()
     if err != nil {
-        fmt.Println("Got error when calling pool.Get: ", err)
+        fmt.Println("Got error when calling redisPool.Get: ", err)
         return Authorization{}, ErrServerError
     }
     defer theService.redisPool.Put(conn)
@@ -113,7 +113,7 @@ func (theService authorizeService) CreateToken(userName string, password string)
 	// Mysql
 	if err := theService.mysqlDb.Ping(); err != nil {
 		theService.mysqlDb.Close()
-        fmt.Println("Got error when calling pool.Get: ", err)
+        fmt.Println("Got error when calling mysql.Ping: ", err)
         return Authorization{}, ErrServerError
 	}
 
