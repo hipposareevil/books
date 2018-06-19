@@ -53,7 +53,7 @@ CREATE TABLE `user` (
   `user_id`  int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL UNIQUE,
   `user_group` varchar(255) DEFAULT NULL,
-  `data` varchar(2048) DEFAULT NULL,
+  `data` varchar(2048) DEFAULT '',
   `password` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
