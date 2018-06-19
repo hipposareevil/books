@@ -20,7 +20,8 @@ services:
    # List and manage book authors
    author:
      container_name: author
-     image: ${BOOK_REPOSITORY}books.author:latest
+#     image: ${BOOK_REPOSITORY}books.author:latest
+     image: ${BOOK_REPOSITORY}books.author.go:latest
      expose:
        - 8080
      restart: always
