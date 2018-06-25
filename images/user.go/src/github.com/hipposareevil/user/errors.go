@@ -12,8 +12,8 @@ type ErrorResponse struct {
 
 // List of common errors, used to write back HTTP error codes
 var (
-	ErrAlreadyExists = errors.New("Tag already exists")
-	ErrNotFound      = errors.New("Tag not found")
+	ErrAlreadyExists = errors.New("User already exists")
+	ErrNotFound      = errors.New("User not found")
 	ErrUnauthorized  = errors.New("Unauthorized")
 	ErrBadRouting    = errors.New("Inconsistent mapping between route and handler (programmer error)")
 	ErrServerError   = errors.New("Server error")

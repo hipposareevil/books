@@ -6,7 +6,7 @@ package main
 // - endpoint creation
 // - encode responses to client
 // - decode client requests
-// - structures used. e.g. tagRequest, postTagRequest, etc
+// - structures used. e.g. userRequest, postUserRequest, etc
 
 import (
 	"context"
@@ -99,7 +99,7 @@ func makeUpdateUserEndpoint(svc UserService) endpoint.Endpoint {
 		// convert request into a updateUserRequest
 		req := request.(updateUserRequest)
 
-		// call actual service with data from the req (putTagRequest)
+		// call actual service with data from the req (putUserRequest)
 		err := svc.UpdateUser(req.Id,
 			req.Name,
 			req.UserGroup,
@@ -139,7 +139,7 @@ func decodeGetAllUsersRequest(_ context.Context, r *http.Request) (interface{}, 
 // /user/id
 //
 // The userRequest has 2 variables:
-// - TagId   ID of tag taken from the path
+// - UserId   ID of user taken from the path
 func decodeGetUserRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	userId, err := parseUserId(r)
 	if err != nil {
@@ -159,7 +159,7 @@ func decodeGetUserRequest(_ context.Context, r *http.Request) (interface{}, erro
 // DELETE /user/id
 //
 // The (delete) userRequest has 2 variables:
-// - TagId   ID of tag taken from the path
+// - UserId   ID of user taken from the path
 func decodeDeleteUserRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	userId, err := parseUserId(r)
 	if err != nil {
