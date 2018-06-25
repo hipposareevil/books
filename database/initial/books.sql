@@ -18,6 +18,7 @@ UNLOCK TABLES;
 
 
 -- User Book
+-- Rating: 0 thumbs down, 1 thumbs up
 
 DROP TABLE IF EXISTS `userbook`;
 
@@ -25,7 +26,7 @@ CREATE TABLE `userbook` (
   `user_book_id`  int(11) NOT NULL AUTO_INCREMENT,
   `user_id`  int(11) NOT NULL,
   `book_id`  int(11) NOT NULL,
-  `rating` tinyint(1) DEFAULT NULL,
+  `rating` tinyint(1) DEFAULT 0,
   `date_added` DATETIME DEFAULT NULL,
   PRIMARY KEY (`user_book_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -52,9 +53,9 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `user_id`  int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL UNIQUE,
-  `user_group` varchar(255) DEFAULT NULL,
+  `user_group` varchar(255) DEFAULT '',
   `data` varchar(2048) DEFAULT '',
-  `password` varchar(2048) DEFAULT NULL,
+  `password` varchar(2048) DEFAULT '',
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -81,14 +82,14 @@ DROP TABLE IF EXISTS `author`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `author` (
   `author_id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(40) DEFAULT NULL UNIQUE,
-  `birth_date` varchar(50) DEFAULT NULL,
-  `subjects` varchar(2000) DEFAULT NULL,
-  `image_small` varchar(250) DEFAULT NULL,
-  `image_medium` varchar(250) DEFAULT NULL,
-  `image_large` varchar(250) DEFAULT NULL,
-  `goodreads_url` varchar(500) DEFAULT NULL,
-  `ol_key` char(100) DEFAULT NULL,
+  `name` varchar(40) DEFAULT '' UNIQUE,
+  `birth_date` varchar(50) DEFAULT '',
+  `subjects` varchar(2000) DEFAULT '',
+  `image_small` varchar(250) DEFAULT '',
+  `image_medium` varchar(250) DEFAULT '',
+  `image_large` varchar(250) DEFAULT '',
+  `goodreads_url` varchar(500) DEFAULT '',
+  `ol_key` varchar(100) DEFAULT '',
   PRIMARY KEY (`author_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
