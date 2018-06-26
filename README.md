@@ -197,12 +197,16 @@ See [query](https://github.com/hipposareevil/books/blob/master/images/query/READ
 ### author
 Microservice to manage the complete set of Authors in the database. Operations include: add, list all, list single and delete.
 
-See [author](https://github.com/hipposareevil/books/blob/master/images/author/README.md) for more information. 
+See [author.go](https://github.com/hipposareevil/books/blob/master/images/author/README.md) for more information. 
+
+See *deprecated* [author](https://github.com/hipposareevil/books/blob/master/images/author/README.md) for more information. 
 
 ### book
 Microservice to manage the complete set of Books in the database. Operations include; list, query, add, delete.
 
-See [book](https://github.com/hipposareevil/books/blob/master/images/book/README.md) for more information. 
+Sett [book.go](https://github.com/hipposareevil/books/blob/master/images/book.go/README.md) for more information. 
+
+See *deprecated* [book](https://github.com/hipposareevil/books/blob/master/images/book/README.md) for more information. 
 
 ### user
 Microservice to manage users. A *user* is used to maintain a set of *user books*, which stores which books the user is cataloging, along with metadata, tags and a rating. In addition, a *user* is used to obtain an authorization token for authenticating against the various endpoints.
