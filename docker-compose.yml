@@ -33,7 +33,8 @@ services:
    # List and manage books
    book:
      container_name: book
-     image: ${BOOK_REPOSITORY}books.book:latest
+#     image: ${BOOK_REPOSITORY}books.book:latest
+     image: ${BOOK_REPOSITORY}books.book.go:latest
      expose:
        - 8080
      restart: always
