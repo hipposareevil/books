@@ -7,21 +7,20 @@ package main
 // GET request for author, contains:
 // - offset
 // - limit
-// - bearer
+// - name
 type getAllAuthorsRequest struct {
 	Offset int `json:"offset"`
 	Limit  int `json:"limit"`
+	Name   string `json:"name"`
 }
 
 // GET request for single author
-// - bearer
 // - author_id
 type getAuthorRequest struct {
 	AuthorId int `json:"author_id"`
 }
 
 // DELETE request for single author
-// - bearer
 // - author_id
 type deleteAuthorRequest struct {
 	AuthorId int `json:"author_id"`

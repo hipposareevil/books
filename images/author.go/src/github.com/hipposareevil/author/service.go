@@ -15,7 +15,7 @@ import (
 // Service interface exposed to clients
 type AuthorService interface {
 	// GetAuthors: offset, limit
-	GetAuthors(int, int) (Authors, error)
+	GetAuthors(int, int, string) (Authors, error)
 
 	// GetAuthor: id
 	GetAuthor(int) (Author, error)
@@ -69,12 +69,12 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 	// Scan the DB info into 'author' composite variable
 	err := theService.mysqlDb.
 		QueryRow("SELECT author_id, name, birth_date, "+
-			"image_small, image_medium, image_large, "+
-			"ol_key, goodreads_url, subjects "+
-			"FROM author WHERE author_id = ?", authorId).
+        "image_small, image_medium, image_large, "+
+        "ol_key, goodreads_url, subjects "+
+        "FROM author WHERE author_id = ?", authorId).
 		Scan(&author.Id, &author.Name, &author.BirthDate,
-			&author.ImageSmall, &author.ImageMedium, &author.ImageLarge,
-			&author.OlKey, &author.GoodReadsUrl, &subjectAsCsv)
+        &author.ImageSmall, &author.ImageMedium, &author.ImageLarge,
+        &author.OlKey, &author.GoodReadsUrl, &subjectAsCsv)
 
 	switch {
 	case err == sql.ErrNoRows:
@@ -98,11 +98,12 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 // params:
 // offset : offset into list
 // limit : number of items to get from list
+// name : partial name of author
 //
 // returns:
 // authors
 // error
-func (theService authorService) GetAuthors(offset int, limit int) (Authors, error) {
+func (theService authorService) GetAuthors(offset int, limit int, name string) (Authors, error) {
 	////////////////////
 	// Get data from mysql
 	// mysql
@@ -119,16 +120,27 @@ func (theService authorService) GetAuthors(offset int, limit int) (Authors, erro
 		limit = totalNumberOfRows
 	}
 
-    fmt.Println("Looking for author with limit ", limit)
-    fmt.Println("Looking for author with offset ", offset)
+	fmt.Println("Looking for author with limit ", limit)
+	fmt.Println("Looking for author with offset ", offset)
 
+	// Create SELECT string
+	selectString := "SELECT author_id, name, birth_date, " +
+		"image_small, image_medium, image_large, " +
+		"ol_key, goodreads_url, subjects " +
+		"FROM author "
 
 	// Make query
-	results, err := theService.mysqlDb.
-		Query("SELECT author_id, name, birth_date, "+
-			"image_small, image_medium, image_large, "+
-			"ol_key, goodreads_url, subjects "+
-			"FROM author LIMIT ?,?", offset, limit)
+    if len(name) > 0 {
+        // Update query to add 'name'
+        selectString += " WHERE name LIKE '%" + name + "%' "
+    }
+
+    // Make query
+   results, err := theService.mysqlDb.Query(
+    selectString+
+                "LIMIT ?,?",
+            offset, limit)
+
 
 	if err != nil {
 		fmt.Println("Got error from mysql: " + err.Error())
@@ -289,8 +301,7 @@ func (theService authorService) UpdateAuthor(authorId int,
 		return errors.New("unable to ping mysql")
 	}
 
-    fmt.Println("Updating author by iD: " , authorId)
-
+	fmt.Println("Updating author by iD: ", authorId)
 
 	// Make query
 	stmt, err := theService.mysqlDb.

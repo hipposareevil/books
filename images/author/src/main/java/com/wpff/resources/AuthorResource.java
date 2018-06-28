@@ -330,6 +330,7 @@ public class AuthorResource {
       this.authorHelper.deleteAuthor(authorId.get());
     }
     catch (org.hibernate.HibernateException he) {
+      System.out.println(he);
       throw new NotFoundException("No author by id '" + authorId + "'");
     }
     return Response.ok().build();

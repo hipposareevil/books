@@ -6,21 +6,18 @@ package main
 // GET request for users, contains:
 // - offset
 // - limit
-// - bearer
 type getAllUsersRequest struct {
 	Offset int `json:"offset"`
 	Limit  int `json:"limit"`
 }
 
 // GET request for single user
-// - bearer
 // - user_id
 type getUserRequest struct {
 	UserId int `json:"user_id"`
 }
 
 // DELETE request for single user
-// - bearer
 // - user_id
 type deleteUserRequest struct {
 	UserId int `json:"user_id"`

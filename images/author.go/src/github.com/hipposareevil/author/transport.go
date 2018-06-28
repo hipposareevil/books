@@ -32,7 +32,7 @@ func makeGetAuthorsEndpoint(svc AuthorService) endpoint.Endpoint {
 		req := request.(getAllAuthorsRequest)
 
 		// call actual service with data from the req
-		authors, err := svc.GetAuthors(req.Offset, req.Limit)
+		authors, err := svc.GetAuthors(req.Offset, req.Limit, req.Name)
 		return authorsResponse{
 			Data: authors,
 			Err:  err,
@@ -132,11 +132,17 @@ func makeUpdateAuthorEndpoint(svc AuthorService) endpoint.Endpoint {
 func decodeGetAllAuthorsRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	realOffset, realLimit := parseOffsetAndLimit(r)
 
+    // Get name
+	r.ParseForm()
+	values := r.Form
+    name := values.Get("name")
+
 	// Make request for all authors
 	var request getAllAuthorsRequest
 	request = getAllAuthorsRequest{
 		Offset: realOffset,
 		Limit:  realLimit,
+        Name: name,
 	}
 
 	return request, nil
