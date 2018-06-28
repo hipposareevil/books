@@ -65,9 +65,14 @@ func main() {
 	router.PathPrefix("/swagger.yaml").Handler(http.StripPrefix("/", fs))
 
 	///////////////
+	// cache layer
+    var cache CacheLayer
+    cache = cacheLayer{redisPool}
+
+	///////////////
 	// 'author' service
 	var authorSvc AuthorService
-	authorSvc = authorService{db}
+	authorSvc = authorService{db, cache}
 
 	// Set up the endpoints on our service
 	//
