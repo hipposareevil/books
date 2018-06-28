@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"strings"
 
-"time"
-
 	"github.com/mediocregopher/radix.v2/pool"
 	_ "github.com/mediocregopher/radix.v2/redis"
 )
