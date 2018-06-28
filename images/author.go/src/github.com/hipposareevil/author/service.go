@@ -12,6 +12,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+const AUTHOR_CACHE="author.name"
+
 // Service interface exposed to clients
 type AuthorService interface {
 	// GetAuthors: offset, limit
@@ -38,6 +40,7 @@ type AuthorService interface {
 // - mysqlDb    DB for MySQL
 type authorService struct {
 	mysqlDb *sql.DB
+    cache CacheLayer
 }
 
 //////////
@@ -83,11 +86,14 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 		fmt.Println("Got error from select: ", err)
 		return Author{}, ErrServerError
 	default:
-		fmt.Println("got author!", author)
+		fmt.Println("got author")
 	}
 
 	// Convert subjects from CSV to string array
 	author.Subjects = splitSubjects(subjectAsCsv)
+
+    // Set the cache
+    go theService.cache.Set(AUTHOR_CACHE, authorId, author.Name)
 
 	return author, nil
 }
@@ -104,6 +110,9 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 // authors
 // error
 func (theService authorService) GetAuthors(offset int, limit int, name string) (Authors, error) {
+    fmt.Println("")
+    fmt.Println("-- GetAuthors --")
+
 	////////////////////
 	// Get data from mysql
 	// mysql
@@ -133,6 +142,7 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
     if len(name) > 0 {
         // Update query to add 'name'
         selectString += " WHERE name LIKE '%" + name + "%' "
+        fmt.Println("Looking for author with name like '" + name + "'")
     }
 
     // Make query
@@ -143,12 +153,15 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 
 
 	if err != nil {
-		fmt.Println("Got error from mysql: " + err.Error())
+		fmt.Println("Got error from mysql when querying for all authors: " + err.Error())
 		return Authors{}, errors.New("unable to create query in mysql")
 	}
 
 	// slice of Author entities
 	datum := make([]Author, 0, 0)
+
+    // Make hashmap of author ID to author name for the cache
+    kvMap := make(map[int]string)
 
 	// Parse results
 	for results.Next() {
@@ -168,8 +181,13 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 		// Convert subjects from CSV to string array
 		author.Subjects = splitSubjects(subjectAsCsv)
 
+        kvMap[author.Id] = author.Name
+
 		datum = append(datum, author)
 	}
+
+    // Set cache
+    go theService.cache.SetMultiple(AUTHOR_CACHE, kvMap)
 
 	// Create Authors to return
 	returnValue := Authors{
@@ -207,6 +225,9 @@ func (theService authorService) DeleteAuthor(authorId int) error {
 
 	// Make DELETE query
 	_, err := theService.mysqlDb.Exec("DELETE FROM author WHERE author_id = ?", authorId)
+
+    // Clear cache for this author
+    theService.cache.Clear(AUTHOR_CACHE, authorId)
 
 	return err
 }
@@ -330,8 +351,13 @@ func (theService authorService) UpdateAuthor(authorId int,
 		return errors.New("Unable to run update against DB: ")
 	}
 
+    // Clear cache for this author
+    theService.cache.Clear(AUTHOR_CACHE, authorId)
+
 	return nil
 }
+
+
 
 ////////////
 // Split a CSV string into array

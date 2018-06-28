@@ -15,6 +15,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+const AUTHOR_CACHE="author.name"
+
+
 // Service interface exposed to clients
 type BookService interface {
 	// GetBooks: offset, limit, title, authorIds, titleIds
@@ -35,6 +38,10 @@ type BookService interface {
     // Same as CreateBook but the first param is the ID of book to update
     // first param: bearer
 	UpdateBook(string, int, int, string, int, string, string, string, string, []string, string, []string, string) (Book, error)
+
+
+    // Get author name by id
+    getAuthorNameById(string, int) string 
 }
 
 ////////////////////////
@@ -43,6 +50,7 @@ type BookService interface {
 // - mysqlDb    DB for MySQL
 type bookService struct {
 	mysqlDb *sql.DB
+    cache CacheLayer
 }
 
 //////////
@@ -98,7 +106,7 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 
     // Get the author name
     if len(bearer) > 0 {
-        book.AuthorName = getAuthorNameById(bearer, book.AuthorId)
+        book.AuthorName = theService.getAuthorNameById(bearer, book.AuthorId)
     }
 
 	// Convert subjects from CSV to string array
@@ -189,7 +197,6 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 		Query(selectString +
 			"LIMIT ?,?", offset, limit)
 
-
 	if err != nil {
 		fmt.Println("Got error from mysql: " + err.Error())
 		return Books{}, errors.New("unable to create query in mysql")
@@ -212,15 +219,15 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
             &book.ImageSmall, &book.ImageMedium, &book.ImageLarge, &book.GoodReadsUrl)
 
 		if err != nil {
-			fmt.Println("Got error from mysql: " + err.Error())
-			return Books{}, errors.New("Unable to scan the query mysql")
+			fmt.Println("Got error from mysql when getting all books: " + err.Error())
+			return Books{}, errors.New("Unable to scan mysql for all books.")
 		}
 
         fmt.Println("Get author name for book with id: ",  book.Id)
         fmt.Println("Get author name for book with author id: ",  book.AuthorId)
 
         // Get the author name
-        book.AuthorName = getAuthorNameById(bearer, book.AuthorId)
+        book.AuthorName = theService.getAuthorNameById(bearer, book.AuthorId)
 
         // Convert subjects from CSV to string array
         book.Subjects = splitCsvStringToArray(subjectAsCsv)
@@ -339,7 +346,7 @@ func (theService bookService) CreateBook(
 	// get the id
 	id, _ := res.LastInsertId()
 
-    authorName := getAuthorNameById(bearer, authorId)
+    authorName := theService.getAuthorNameById(bearer, authorId)
 
 	// Create book
 	var bookToReturn Book
@@ -449,8 +456,14 @@ type author struct {
 
 ////////////
 // Query the /author endpoint for author information
-func getAuthorNameById(bearer string, authorId int) string {
+func (theService bookService) getAuthorNameById(bearer string, authorId int) string {
     start := time.Now()
+
+    // Check cache
+    authorName := theService.cache.Get(AUTHOR_CACHE, authorId)
+    if len(authorName) > 0 {
+        return authorName
+    }
 
     url := "http://author:8080/author/" + strconv.Itoa(authorId)
 
