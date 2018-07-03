@@ -34,12 +34,12 @@ func makeGetBooksEndpoint(svc BookService) endpoint.Endpoint {
 
 		// call actual service with data from the req
 		books, err := svc.GetBooks(
-            req.Bearer,
-            req.Offset,
-            req.Limit,
-            req.Title,
-            req.AuthorId,
-            req.BookId)
+			req.Bearer,
+			req.Offset,
+			req.Limit,
+			req.Title,
+			req.AuthorId,
+			req.BookId)
 		return booksResponse{
 			Data: books,
 			Err:  err,
@@ -87,18 +87,18 @@ func makeCreateBookEndpoint(svc BookService) endpoint.Endpoint {
 
 		// call actual service with data from the req
 		newBook, err := svc.CreateBook(
-            req.Bearer,
-            req.AuthorId,
-            req.Description,
-            req.FirstPublishedYear,
-            req.GoodReadsUrl,
-            req.ImageLarge,
-            req.ImageMedium,
-            req.ImageSmall,
-            req.Isbns,
-            req.OpenlibraryWorkUrl,
-            req.Subjects,
-            req.Title)
+			req.Bearer,
+			req.AuthorId,
+			req.Description,
+			req.FirstPublishedYear,
+			req.GoodReadsUrl,
+			req.ImageLarge,
+			req.ImageMedium,
+			req.ImageSmall,
+			req.Isbns,
+			req.OpenlibraryWorkUrl,
+			req.Subjects,
+			req.Title)
 
 		return createBookResponse{
 			Data: newBook,
@@ -116,23 +116,23 @@ func makeUpdateBookEndpoint(svc BookService) endpoint.Endpoint {
 
 		// call actual service with data from the req (putBookRequest)
 		book, err := svc.UpdateBook(
-            req.Bearer,
-            req.BookId,
-            req.AuthorId,
-            req.Description,
-            req.FirstPublishedYear,
-            req.GoodReadsUrl,
-            req.ImageLarge,
-            req.ImageMedium,
-            req.ImageSmall,
-            req.Isbns,
-            req.OpenlibraryWorkUrl,
-            req.Subjects,
-            req.Title)
+			req.Bearer,
+			req.BookId,
+			req.AuthorId,
+			req.Description,
+			req.FirstPublishedYear,
+			req.GoodReadsUrl,
+			req.ImageLarge,
+			req.ImageMedium,
+			req.ImageSmall,
+			req.Isbns,
+			req.OpenlibraryWorkUrl,
+			req.Subjects,
+			req.Title)
 
 		return updateBookResponse{
-            Data: book,
-			Err: err,
+			Data: book,
+			Err:  err,
 		}, nil
 	}
 }
@@ -155,29 +155,31 @@ func decodeGetAllBooksRequest(_ context.Context, r *http.Request) (interface{}, 
 	r.ParseForm()
 	values := r.Form
 
-    // get Title
-    title := values.Get("title")
+	// get Title
+	title := values.Get("title")
 
-    // get AuthorId list
-    tempIds := values.Get("author_id")
-    authorIds := splitCsvStringAsInts(tempIds)
+	// get AuthorId list
+    tempAuthorIds := values["author_id"]
+    temp := strings.Join(tempAuthorIds, ",")
+	authorIds := splitCsvStringAsInts(temp)
 
-    // Get BookId list
-    tempIds = values.Get("book_id")
-    bookIds := splitCsvStringAsInts(tempIds)
+	// Get BookId list
+    tempIds := values["book_id"]
+    temp = strings.Join(tempIds, ",")
+	bookIds := splitCsvStringAsInts(temp)
 
-    // Get bearer from headers
-    bearer := parseBearer(r)
+	// Get bearer from headers
+	bearer := parseBearer(r)
 
 	// Make request for all books
 	var request getAllBooksRequest
 	request = getAllBooksRequest{
-        Bearer: bearer,
-		Offset: realOffset,
-		Limit:  realLimit,
-        Title: title,
-        AuthorId: authorIds,
-        BookId: bookIds,
+		Bearer:   bearer,
+		Offset:   realOffset,
+		Limit:    realLimit,
+		Title:    title,
+		AuthorId: authorIds,
+		BookId:   bookIds,
 	}
 
 	return request, nil
@@ -187,20 +189,20 @@ func decodeGetAllBooksRequest(_ context.Context, r *http.Request) (interface{}, 
 // /book/id
 //
 func decodeGetBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    // Get book ID from gorilla handling of vars
+	// Get book ID from gorilla handling of vars
 	bookId, err := parseBookId(r)
 	if err != nil {
 		return nil, err
 	}
 
-    // Get bearer from headers
-    bearer := parseBearer(r)
+	// Get bearer from headers
+	bearer := parseBearer(r)
 
 	// Make request for single  book
 	var request getBookRequest
 	request = getBookRequest{
 		BookId: bookId,
-        Bearer: bearer,
+		Bearer: bearer,
 	}
 
 	return request, nil
@@ -229,8 +231,8 @@ func decodeDeleteBookRequest(_ context.Context, r *http.Request) (interface{}, e
 // Create createBookRequest
 //  POST /book
 func decodeCreateBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    // Get bearer from headers
-    bearer := parseBearer(r)
+	// Get bearer from headers
+	bearer := parseBearer(r)
 
 	///////////////////
 	// Parse body
@@ -239,8 +241,7 @@ func decodeCreateBookRequest(_ context.Context, r *http.Request) (interface{}, e
 		return nil, err
 	}
 
-    createBookRequest.Bearer = bearer
-
+	createBookRequest.Bearer = bearer
 
 	return createBookRequest, nil
 }
@@ -253,8 +254,8 @@ func decodeUpdateBookRequest(_ context.Context, r *http.Request) (interface{}, e
 		return nil, err
 	}
 
-    // Get bearer from headers
-    bearer := parseBearer(r)
+	// Get bearer from headers
+	bearer := parseBearer(r)
 
 	///////////////////
 	// Parse body
@@ -263,10 +264,10 @@ func decodeUpdateBookRequest(_ context.Context, r *http.Request) (interface{}, e
 		return nil, err
 	}
 
-    // Set bookid on update request
+	// Set bookid on update request
 	updateBook.BookId = bookId
 
-    updateBook.Bearer = bearer
+	updateBook.Bearer = bearer
 
 	return updateBook, nil
 }
@@ -314,8 +315,8 @@ func parseOffsetAndLimit(r *http.Request) (int, int) {
 	if limit != "" {
 		realLimit, _ = strconv.Atoi(limit)
 	} else {
-		// default to get 30
-		realLimit = 30
+		// default to get 20
+		realLimit = 20
 	}
 
 	return realOffset, realLimit
@@ -344,30 +345,28 @@ func parseBookId(r *http.Request) (int, error) {
 ////////////
 // Split a CSV string into array of ints
 func splitCsvStringAsInts(csv string) []int {
-    var newArray []int
+	var newArray []int
 
-    fmt.Println("Converting csv string:"+csv+": into array of ints")
+	fmt.Println("Converting csv string:" + csv + ": into array of ints")
 
-    if len(csv) > 0 {
-        stringArray  := strings.Split(csv, ",")
+	if len(csv) > 0 {
+		stringArray := strings.Split(csv, ",")
 
-        fmt.Println("new string array>", stringArray)
-        fmt.Println("new string array>", len(stringArray))
+		fmt.Println("new string array>", stringArray)
+		fmt.Println("new string array>", len(stringArray))
 
-        
-        // Convert each string to int
-        for _, element := range stringArray {
-            temp, _ := strconv.Atoi(element)
-            fmt.Println("Got element: ", element)
-            newArray = append(newArray, temp)
-        }
-    }
+		// Convert each string to int
+		for _, element := range stringArray {
+			temp, _ := strconv.Atoi(element)
+			fmt.Println("Got element: ", element)
+			newArray = append(newArray, temp)
+		}
+	}
 
-    fmt.Println("returning newarray:",newArray)
-    
+	fmt.Println("returning newarray:", newArray)
+
 	return newArray
 }
-
 
 //////////////////////////////////////////////////////////
 //

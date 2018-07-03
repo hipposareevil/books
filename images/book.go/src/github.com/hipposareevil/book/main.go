@@ -64,11 +64,10 @@ func main() {
 	fs := http.FileServer(http.Dir(htmlDir))
 	router.PathPrefix("/swagger.yaml").Handler(http.StripPrefix("/", fs))
 
-
 	///////////////
 	// cache layer
-    var cache CacheLayer
-    cache = cacheLayer{redisPool}
+	var cache CacheLayer
+	cache = cacheLayer{redisPool}
 
 	///////////////
 	// 'book' service
