@@ -218,7 +218,9 @@ See *deprecated* [user](https://github.com/hipposareevil/books/blob/master/image
 ### user_book
 Microservice to manage a set of books for a user. Each user has a list of books they can catalog. Each *user book* has a link to the real Book and associated Author. In addition, a *user book* has user *data* and a set of *tags*. 
 
-See [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book/README.md) for more information. 
+See [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book.go/README.md) for more information. 
+
+See *deprecated* [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book/README.md) for more information. 
 
 ### tag
 Microservice to manage tags. Tags can be applied to a user's set of books via the *user_books* endpoint.  Multiple tags may be applied to a single book, e.g. "e-book" and "sci-fi".

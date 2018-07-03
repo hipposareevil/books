@@ -59,7 +59,8 @@ services:
    # Manage books for user
    user_book:
      container_name: user_book
-     image: ${BOOK_REPOSITORY}books.user_book:latest
+#     image: ${BOOK_REPOSITORY}books.user_book:latest
+     image: ${BOOK_REPOSITORY}books.user_book.go:latest
      expose:
        - 8080
      restart: always
