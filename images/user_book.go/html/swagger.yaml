@@ -1,0 +1,274 @@
+swagger: "2.0"
+info:
+  description: "User Books REST web services."
+  title: "User Book Web Service"
+basePath: "/"
+tags:
+- name: "user_book"
+schemes:
+- "http"
+paths:
+  /user_book/{user_id}:
+    get:
+      tags:
+      - "user_book"
+      summary: "Get list of UserBooks for user."
+      description: "Requires authentication token in header with key AUTHORIZATION.\
+        \ Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+      operationId: "getUserBooks"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "user_id"
+        in: "path"
+        description: "ID of user."
+        required: true
+        type: "string"
+      - name: "tag"
+        in: "query"
+        description: "List of tags of books to retrieve. Only user books that have\
+          \ these tags will be returned"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      - name: "book_id"
+        in: "query"
+        description: "ID of book to find in list of user books. Only the user book\
+          \ that contains this book id will be returned"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "title"
+        in: "query"
+        description: "Title of books within the user's books. Only the books with\
+          \ that matching title will be returned"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Where to start the returned data segment from the full result."
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "limit"
+        in: "query"
+        description: "size of the returned data segment."
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "Authorization"
+        in: "header"
+        description: "Bearer authorization"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ResultWrapperFullUserBook"
+    post:
+      tags:
+      - "user_book"
+      summary: "Create new userbook"
+      description: "Create new userbook in database. Requires authentication token\
+        \ in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+      operationId: "createUserBook"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "user_id"
+        in: "path"
+        description: "ID of user."
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "User Book information."
+        required: true
+        schema:
+          $ref: "#/definitions/PostUserBook"
+      - name: "Authorization"
+        in: "header"
+        description: "Bearer authorization"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Userbook created."
+        409:
+          description: "Userbook already exists in database."
+  /user_book/{user_id}/{user_book_id}:
+    get:
+      tags:
+      - "user_book"
+      summary: "Get single UserBook."
+      description: "Requires authentication token in header with key AUTHORIZATION.\
+        \ Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+      operationId: "getUserBook"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "user_id"
+        in: "path"
+        description: "ID of user."
+        required: true
+        type: "string"
+      - name: "user_book_id"
+        in: "path"
+        description: "ID of userBook."
+        required: true
+        type: "string"
+      - name: "Authorization"
+        in: "header"
+        description: "Bearer authorization"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FullUserBook"
+    put:
+      tags:
+      - "user_book"
+      summary: "Update a userbook"
+      description: "Updates a userbook in database. Requires authentication token\
+        \ in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+      operationId: "updateUserBook"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "user_id"
+        in: "path"
+        description: "ID of user."
+        required: true
+        type: "string"
+      - name: "user_book_id"
+        in: "path"
+        description: "ID of user_book."
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "User Book information."
+        required: true
+        schema:
+          $ref: "#/definitions/PostUserBook"
+      - name: "Authorization"
+        in: "header"
+        description: "Bearer authorization"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Userbook successfully updated."
+          schema:
+            $ref: "#/definitions/FullUserBook"
+    delete:
+      tags:
+      - "user_book"
+      summary: "Delete a UserBook."
+      description: "Requires authentication token in header with key AUTHORIZATION.\
+        \ Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+      operationId: "deleteUserBook"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "user_id"
+        in: "path"
+        description: "ID of user."
+        required: true
+        type: "string"
+      - name: "user_book_id"
+        in: "path"
+        description: "ID of userBook."
+        required: true
+        type: "string"
+      - name: "Authorization"
+        in: "header"
+        description: "Bearer authorization"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+definitions:
+  FullUserBook:
+    type: "object"
+    properties:
+      bookId:
+        type: "integer"
+        format: "int32"
+      rating:
+        type: "boolean"
+        default: false
+      tags:
+        type: "array"
+        items:
+          type: "string"
+      userBookId:
+        type: "integer"
+        format: "int32"
+      userId:
+        type: "integer"
+        format: "int32"
+      dateAdded:
+        type: "string"
+        format: "date-time"
+      title:
+        type: "string"
+      authorName:
+        type: "string"
+      authorId:
+        type: "integer"
+        format: "int32"
+      firstPublishedYear:
+        type: "integer"
+        format: "int32"
+      imageSmall:
+        type: "string"
+      imageMedium:
+        type: "string"
+      imageLarge:
+        type: "string"
+  PostUserBook:
+    type: "object"
+    properties:
+      bookId:
+        type: "integer"
+        format: "int32"
+      rating:
+        type: "boolean"
+        default: false
+      tags:
+        type: "array"
+        items:
+          type: "string"
+  ResultWrapperFullUserBook:
+    type: "object"
+    properties:
+      offset:
+        type: "integer"
+        format: "int32"
+      limit:
+        type: "integer"
+        format: "int32"
+      total:
+        type: "integer"
+        format: "int64"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/FullUserBook"
