@@ -90,7 +90,7 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 	}
 
 	// Convert subjects from CSV to string array
-	author.Subjects = splitSubjects(subjectAsCsv)
+	author.Subjects = splitCsvStringToArray(subjectAsCsv)
 
     // Set the cache
     go theService.cache.Set(AUTHOR_CACHE, authorId, author.Name)
@@ -123,7 +123,9 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 
 	// Get total number of rows
 	var totalNumberOfRows int
-	_ = theService.mysqlDb.QueryRow("SELECT COUNT(*) from author").Scan(&totalNumberOfRows)
+    countQuery := "SELECT COUNT(*) FROM author "
+	_ = theService.mysqlDb.QueryRow(countQuery).
+        Scan(&totalNumberOfRows)
 
 	if limit > totalNumberOfRows {
 		limit = totalNumberOfRows
@@ -141,16 +143,21 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 	// Make query
     if len(name) > 0 {
         // Update query to add 'name'
-        selectString += " WHERE name LIKE '%" + name + "%' "
+        appendString :=" WHERE name LIKE '%" + name + "%' "
         fmt.Println("Looking for author with name like '" + name + "'")
+
+        selectString += appendString
+        countQuery += appendString
     }
+
+
+    // Redo the total number of rows
+    _ = theService.mysqlDb.QueryRow(countQuery).Scan(&totalNumberOfRows)
 
     // Make query
    results, err := theService.mysqlDb.Query(
-    selectString+
-                "LIMIT ?,?",
-            offset, limit)
-
+       selectString + "LIMIT ?,?",
+       offset, limit)
 
 	if err != nil {
 		fmt.Println("Got error from mysql when querying for all authors: " + err.Error())
@@ -179,7 +186,7 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 		}
 
 		// Convert subjects from CSV to string array
-		author.Subjects = splitSubjects(subjectAsCsv)
+		author.Subjects = splitCsvStringToArray(subjectAsCsv)
 
         kvMap[author.Id] = author.Name
 
@@ -188,6 +195,9 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 
     // Set cache
     go theService.cache.SetMultiple(AUTHOR_CACHE, kvMap)
+
+    // reset the limit (number of things being returned)
+    limit = len(datum)
 
 	// Create Authors to return
 	returnValue := Authors{
@@ -282,21 +292,9 @@ func (theService authorService) CreateAuthor(authorName string,
 	// get the id
 	id, _ := res.LastInsertId()
 
-	// Create author
-	var author Author
-	author = Author{
-		Id:           int(id),
-		Name:         authorName,
-		BirthDate:    birthDate,
-		OlKey:        olKey,
-		GoodReadsUrl: goodreadsUrl,
-		ImageSmall:   imageSmall,
-		ImageMedium:  imageMedium,
-		ImageLarge:   imageLarge,
-		Subjects:     subjects,
-	}
+    author, err := theService.GetAuthor(int(id))
 
-	return author, nil
+	return author, err
 }
 
 ////////////////
@@ -361,7 +359,10 @@ func (theService authorService) UpdateAuthor(authorId int,
 
 ////////////
 // Split a CSV string into array
-func splitSubjects(subjectCsv string) []string {
-	subjects := strings.Split(subjectCsv, ",")
-	return subjects
+func splitCsvStringToArray(subjectCsv string) []string {
+    if len(subjectCsv) > 0 {
+        return strings.Split(subjectCsv, ",")
+    } else {
+        return make([]string, 0)
+    }
 }
