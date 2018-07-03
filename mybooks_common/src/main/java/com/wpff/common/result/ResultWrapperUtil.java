@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class ResultWrapperUtil {
   
-  public static int DEFAULT_OFFSET = 20;
+  public static int DEFAULT_LIMIT= 20;
   
   /**
    * Create a wrapper around a list of data. This will chop the incoming data
@@ -33,7 +33,7 @@ public class ResultWrapperUtil {
     }
     if (lengthOfSegment == null) {
       // make the segment be the full data
-      lengthOfSegment = DEFAULT_OFFSET;
+      lengthOfSegment = DEFAULT_LIMIT;
     }
 
     // Verify whereToStart
