@@ -5,6 +5,36 @@ import (
     "strconv"
 
 )
+
+
+////////
+// Return a untion of the two incoming arrays
+//
+//
+func Union(left []int, right []int) []int {
+    var result []int
+
+    for _, leftValue := range left {
+        // See if leftValue is in right array
+        if inArray(leftValue, right) {
+            result = append(result, leftValue)
+        }
+    }
+
+    return result
+}
+
+
+func inArray(valueToCheck int, array []int) bool {
+    for _, currentValue := range array {
+        if currentValue == valueToCheck {
+            return true
+        }
+    }
+    return false
+}
+
+
 ////////////
 // Split a CSV string into array
 func splitCsvStringToArray(csv string) []string {
@@ -32,8 +62,6 @@ func convertIntArrayToCsv(intArray []int) string {
 
 	return strings.Join(tempArray, ",")
 }
-
-
 
 ////////////
 // Convert Tags structure into map of Tag objects indexed by name
