@@ -86,9 +86,11 @@ build_image() {
     local now=$(date +%s)
     local elapsed=$(expr $now - $then)
 
+    rightnow=$(date)
+
     if [ $build_result -eq 0 ]; then
         echo ""
-        echo "[[Built $image_name in $elapsed seconds]]"
+        echo "[[Built $image_name in $elapsed seconds (done at: $rightnow)]]"
     else
         echo ""
         echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
