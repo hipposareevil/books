@@ -237,14 +237,6 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 	fmt.Println("")
 	fmt.Println("-- GetUserBooks (by filter) --")
 
-	// Get total number of rows
-	var totalNumberOfRows int
-	_ = theService.mysqlDb.QueryRow("SELECT COUNT(*) FROM userbook").Scan(&totalNumberOfRows)
-
-	if limit > totalNumberOfRows {
-		limit = totalNumberOfRows
-	}
-
 	/////////////////////
 	// Query for each portion of the filter:
 	// - tags
@@ -438,18 +430,36 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 
 			datum = append(datum, userBook)
 		}
-
 	}
 
-    // massage the return data according to the incoming offset/limit
+    //////////////
+    // Update return data
     
-
-
-    // reset the limit (number of things being returned)
-    realLimit := len(datum)
-
-    // Set the total number of rows
+    // Get the total number of rows
     realNumberRows := len(datum)
+    realLimit := limit
+
+    // fix offset
+    if (offset > realNumberRows) || (offset < 0) {
+        offset = 0        
+    }
+
+    // fix limit
+    if (realLimit < 0) {
+        realLimit = len(datum)
+    }
+
+    if (realLimit > realNumberRows) {
+        realLimit = realNumberRows
+    }
+
+    // determine slice of datum to use
+    whereToEnd := offset + realLimit
+    if (whereToEnd > realNumberRows) {
+        whereToEnd = realNumberRows
+    }
+
+    datum = datum[offset:whereToEnd]
 
 	// Create Books to return
 	returnValue := UserBooks{

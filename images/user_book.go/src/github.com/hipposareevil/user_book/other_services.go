@@ -113,15 +113,15 @@ func getBook(bearer string, bookId int, userBook *UserBook) (error) {
 
 	// Check status code
 	if !strings.Contains(res.Status, "200") {
-		fmt.Println("Unable to connect to '" + fullUrl + "' to get names. HTTP code: " + res.Status)
-		return ErrServerError
+		fmt.Println("getBook: Unable to connect to '" + fullUrl + "' to get names. HTTP code: " + res.Status)
+        return nil
 	}
 
 	// parse body
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
 		fmt.Println("Unable to parse response from /book")
-		return ErrServerError
+        return nil
 	}
 
 	// get books
@@ -129,7 +129,7 @@ func getBook(bearer string, bookId int, userBook *UserBook) (error) {
 	jsonErr := json.Unmarshal(body, &book)
 	if jsonErr != nil {
 		fmt.Println("Unable to unmarshall response from /book")
-		return  ErrServerError
+		return  nil
 	}
 
 	t := time.Now()
@@ -183,7 +183,7 @@ func getBooksByTitle(bearer string, title string) (Books, error) {
 
 	// Check status code
 	if !strings.Contains(res.Status, "200") {
-		fmt.Println("Unable to connect to '" + fullUrl + "' to get names. HTTP code: " + res.Status)
+		fmt.Println("getBooksByTitle: Unable to connect to '" + fullUrl + "' to get names. HTTP code: " + res.Status)
 		return Books{},ErrServerError
 	}
 
