@@ -238,8 +238,8 @@ func parseOffsetAndLimit(r *http.Request) (int, int) {
 	if limit != "" {
 		realLimit, _ = strconv.Atoi(limit)
 	} else {
-		// default to get 30
-		realLimit = 30
+		// default to get 20
+		realLimit = 20
 	}
 
 	return realOffset, realLimit
