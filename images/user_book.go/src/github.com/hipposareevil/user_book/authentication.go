@@ -15,15 +15,17 @@ import (
 
 // Authenticate a handler. This will return a 401 to the client if authentication has failed
 //
+// Any user in the 'admin' usergroup will have access to the resource.
+//
 // params:
-// onlyAdminGroup - true if only users belonging to the admin group can access the resource
-//                  false if any authenticated user can access the resource
+// onlyMatchingUser - true:  the authorized user's ID must match the ID in the resource URL
+//                    false: any authorized user can access the resource
 // redisPool - Pool to get redis connection
 // next      - Handler to call if the authentication is successful
 //
 // return:
 // a http.Handler
-func Authenticate(onlyAdminGroup bool, redisPool *pool.Pool, next http.Handler) http.Handler {
+func AuthenticateForUserBook(onlyMatchingUser bool, redisPool *pool.Pool, next http.Handler) http.Handler {
 	// return new handler that wraps 'next'
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		/////////////////
@@ -35,6 +37,16 @@ func Authenticate(onlyAdminGroup bool, redisPool *pool.Pool, next http.Handler) 
 			return
 		}
 		defer redisPool.Put(conn)
+
+        ///////////////////
+        // Parse url
+        userIdInUrl, err := parseUserId(request)
+
+        if err != nil {
+            // unable to get the userid from the request
+            fmt.Println("Unable to get user-id from redis:", err)
+            writeUnauthorizedError(writer)
+        }
 
 		///////////////////
 		// Parse headers
@@ -54,34 +66,44 @@ func Authenticate(onlyAdminGroup bool, redisPool *pool.Pool, next http.Handler) 
 
 		if err != nil {
 			// No authorization -> send a 401
+            fmt.Println("Unable to fine data in redis for name:", redisHashName)
 			writeUnauthorizedError(writer)
 		} else {
-			// If this endpoint is protected by group check for 'admin'
-			if onlyAdminGroup {
-				// Check for 'admin' group
-				groupName, err := conn.Cmd("HGET", redisHashName, "group").Str()
+            // get data from redis
 
-				if err != nil {
-					// No group authorization -> send a 401
-					writeUnauthorizedError(writer)
-				} else {
-					// is group 'admin' ?
-					if strings.Compare(groupName, "admin") == 0 {
-						// admin group
-						next.ServeHTTP(writer, request)
-					} else {
-						// not admin group
-						// Incorrect group authorization -> send a 401
-						writeUnauthorizedError(writer)
-					}
-				}
-				// done checking admin group
-			} else {
-				// Endpoint doesn't need to verify 'admin' group
+            // group name
+            groupName, err := conn.Cmd("HGET", redisHashName, "group").Str()
+            if err != nil {
+                // No group authorization -> send a 401
+                writeUnauthorizedError(writer)
+            }
 
-				// User is authorized, continue as normal
-				next.ServeHTTP(writer, request)
-			}
+            // user id
+            userIdFromRedis, err := conn.Cmd("HGET", redisHashName, "id").Int()
+            if err != nil {
+                // No group authorization -> send a 401
+                writeUnauthorizedError(writer)
+            }
+
+            // If the authenticated user is an 'admin' OR
+            // (when onlyMatchingUser is true) the authenticated user ID is the same as in the URL
+            if (strings.Compare(groupName, "admin") == 0) {
+                // In admin group, go ahead
+                next.ServeHTTP(writer, request)
+            } else if (onlyMatchingUser) {
+                // Check user ids
+                
+                if (userIdFromRedis == userIdInUrl) {
+                    // matching ids, go ahead
+                    next.ServeHTTP(writer, request)
+                } else {
+                    // IDs don't match, error out
+                    writeUnauthorizedError(writer)
+                }
+            } else {
+                // No need to check ids
+                next.ServeHTTP(writer, request)
+            }
 		}
 	})
 }

@@ -92,8 +92,8 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-	// first parameter denotes if only 'admin' group can access the endpoint.
-	userBooksHandler := Authenticate(false, redisPool, baseUserBooksHandler)
+    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	userBooksHandler := AuthenticateForUserBook(false, redisPool, baseUserBooksHandler)
 	// The id is used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("GET").Path("/user_book/{user_id}").Handler(userBooksHandler)
 
@@ -106,8 +106,8 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-	// first parameter denotes if only 'admin' group can access the endpoint.
-	userBookHandler := Authenticate(false, redisPool, baseBookHandler)
+    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	userBookHandler := AuthenticateForUserBook(false, redisPool, baseBookHandler)
 	// The id's are used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("GET").Path("/user_book/{user_id}/{user_book_id}").Handler(userBookHandler)
 
@@ -120,8 +120,8 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-	// first parameter denotes if only 'admin' group can access the endpoint.
-	deleteUserBookHandler := Authenticate(true, redisPool, baseDeleteUserBookHandler)
+    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	deleteUserBookHandler := AuthenticateForUserBook(true, redisPool, baseDeleteUserBookHandler)
 	// The id's are used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("DELETE").Path("/user_book/{user_id}/{user_book_id}").Handler(deleteUserBookHandler)
 
@@ -134,8 +134,8 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-	// first parameter denotes if only 'admin' group can access the endpoint.
-	createUserBookHandler := Authenticate(true, redisPool, baseCreateUserBookHandler)
+    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	createUserBookHandler := AuthenticateForUserBook(true, redisPool, baseCreateUserBookHandler)
 	router.Methods("POST").Path("/user_book/{user_id}").Handler(createUserBookHandler)
 
 	//////
@@ -147,8 +147,8 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-	// first parameter denotes if only 'admin' group can access the endpoint.
-	updateUserBookHandler := Authenticate(true, redisPool, baseUpdateUserBookHandler)
+    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	updateUserBookHandler := AuthenticateForUserBook(true, redisPool, baseUpdateUserBookHandler)
 	// The id's are used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("PUT").Path("/user_book/{user_id}/{user_book_id}").Handler(updateUserBookHandler)
 
