@@ -29,13 +29,10 @@ func getAuthorNameById(cache CacheLayer, bearer string, authorId int) string {
 	// Check cache
 	authorName := cache.Get(AUTHOR_CACHE, authorId)
 	if len(authorName) > 0 {
+        fmt.Println("Got Author name from cache.")
 		return authorName
 	}
-
 	url := "http://author:8080/author/" + strconv.Itoa(authorId)
-
-	fmt.Println("Making call to>" + url + "<")
-	fmt.Println("bearer> '" + bearer + "' <")
 
 	// make client
 	superClient := http.Client{

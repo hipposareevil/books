@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"time"
-
 	"github.com/mediocregopher/radix.v2/pool"
 	_ "github.com/mediocregopher/radix.v2/redis"
 )
@@ -49,8 +47,6 @@ type cacheLayer struct {
 // key  Key to store
 // value Value to store
 func (theCache cacheLayer) Set(namespace string, key int, value string) {
-	start := time.Now()
-
 	conn, err := theCache.redisPool.Get()
 	if err != nil {
 		fmt.Println("Unable to get Redis for setting cache: ", err)
@@ -66,10 +62,6 @@ func (theCache cacheLayer) Set(namespace string, key int, value string) {
 	if err != nil {
 		fmt.Println("Unable to set cache for "+namespace+"."+keyAsString+": ", err)
 	}
-
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fmt.Println("cache.Set: ", elapsed)
 }
 
 ////////////
@@ -91,8 +83,6 @@ func (theCache cacheLayer) SetBytes(namespace string, key int, value []byte) {
 // namespace: Namespace for k/v
 // kvMap: array of key values
 func (theCache cacheLayer) SetMultiple(namespace string, kvMap map[int]string) {
-	start := time.Now()
-
 	conn, err := theCache.redisPool.Get()
 	if err != nil {
 		fmt.Println("Unable to get Redis for setting cache: ", err)
@@ -111,10 +101,6 @@ func (theCache cacheLayer) SetMultiple(namespace string, kvMap map[int]string) {
 			fmt.Println("Unable to set cache for "+namespace+"."+keyAsString+": ", err)
 		}
 	}
-
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fmt.Println("cache.SetMultiple: ", elapsed)
 }
 
 ////////////

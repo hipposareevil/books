@@ -94,8 +94,6 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 	case err != nil:
 		fmt.Println("Got error from select: ", err)
 		return Book{}, ErrServerError
-	default:
-		fmt.Println("got book!", book.Title)
 	}
 
 	// Get the author name
@@ -152,10 +150,7 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 		"image_small, image_medium, image_large, goodreads_url " +
 		"FROM book "
 
-	fmt.Println("")
 	fmt.Println("-- GetBooks --")
-	fmt.Println("author: ", authorIds)
-	fmt.Println("books: ", bookIds)
 
 	// Update query according to which other queryParams come in (title, authorIds, bookIds)
 	updated := false
@@ -198,12 +193,10 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 
     // Re get total # of rows for the return value
     countQuery := "SELECT COUNT(*) FROM book " + appendedString;
-    fmt.Println("get count query with: ", countQuery)
 	_ = theService.mysqlDb.QueryRow(countQuery).Scan(&totalNumberOfRows)
 
     // real select string
     selectString = selectString + appendedString
-	fmt.Println("Making query with: " + selectString)
 
     // Make query
 	results, err := theService.mysqlDb.
@@ -235,9 +228,6 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 			fmt.Println("Got error from mysql when getting all books: " + err.Error())
 			return Books{}, errors.New("Unable to scan mysql for all books.")
 		}
-
-		fmt.Println("Get author name for book with id: ", book.Id)
-		fmt.Println("Get author name for book with author id: ", book.AuthorId)
 
 		// Get the author name
 		book.AuthorName = getAuthorNameById(theService.cache, bearer, book.AuthorId)
@@ -345,9 +335,6 @@ func (theService bookService) CreateBook(
 	subjectsAsCsv := strings.Join(subjects[:], ",")
 	isbnsAsCsv := strings.Join(isbns[:], ",")
 
-    fmt.Println("ISBNS ", len(isbns))
-    fmt.Println("ISBNS ", isbns)
-
 	// Make prepared insert statement
 	stmt, err := theService.mysqlDb.
 		Prepare("INSERT INTO book SET " +
@@ -413,8 +400,6 @@ func (theService bookService) UpdateBook(
 		theService.mysqlDb.Close()
 		return Book{}, errors.New("unable to ping mysql")
 	}
-
-	fmt.Println("Updating book by id: ", bookId)
 
 	// Make query
 	stmt, err := theService.mysqlDb.
