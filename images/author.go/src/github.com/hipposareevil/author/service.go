@@ -92,7 +92,7 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 	// Convert subjects from CSV to string array
 	author.Subjects = splitCsvStringToArray(subjectAsCsv)
 
-    // Set the cache
+    // Cache author name by id
     go theService.cache.Set(AUTHOR_CACHE, authorId, author.Name)
 
 	return author, nil
@@ -188,12 +188,13 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 		// Convert subjects from CSV to string array
 		author.Subjects = splitCsvStringToArray(subjectAsCsv)
 
+        // Save the authors name indexed by id
         kvMap[author.Id] = author.Name
 
 		datum = append(datum, author)
 	}
 
-    // Set cache
+    // Cache author name by id for all authors found
     go theService.cache.SetMultiple(AUTHOR_CACHE, kvMap)
 
     // reset the limit (number of things being returned)
