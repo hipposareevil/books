@@ -69,6 +69,9 @@ func main() {
     var cache CacheLayer
     cache = cacheLayer{redisPool}
 
+    // Clear the cache on startup
+    cache.ClearAll(AUTHOR_CACHE)
+
 	///////////////
 	// 'author' service
 	var authorSvc AuthorService

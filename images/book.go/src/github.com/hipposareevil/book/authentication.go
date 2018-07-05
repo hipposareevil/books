@@ -52,7 +52,6 @@ func Authenticate(onlyAdminGroup bool, redisPool *pool.Pool, next http.Handler) 
 		// Check redis. If it is null, authentication failed
 		_, err = conn.Cmd("HGET", redisHashName, "name").Str()
 
-
 		if err != nil {
 			// No authorization -> send a 401
 			writeUnauthorizedError(writer)

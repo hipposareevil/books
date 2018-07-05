@@ -1,9 +1,10 @@
-#  Book Microservice
+#  User Book Microservice
 
 ## Introduction
 
-**/book** is a microservice for querying, listing, adding and deleting Book entries from the database. Books are visable to all users but are only mutable by the *admin* user. 
+**/user_book** is a microservice for creating, listing, updating and deleting *user books* from the database. Each *user book* is a link between a *User* and a *Book*.
 
+For example, user Bob has two *user books* in his *to read* list. He would create a *user book* for each of those books and add the tag *to read* to each book
 
 ## Supported calls
 The list of supported calls and their documentation are available via the swagger endpoint. This runs on localhost:8080/swagger/ when the application is up.

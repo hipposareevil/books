@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"time"
+
 	"github.com/mediocregopher/radix.v2/pool"
 	_ "github.com/mediocregopher/radix.v2/redis"
 )
@@ -47,6 +49,8 @@ type cacheLayer struct {
 // key  Key to store
 // value Value to store
 func (theCache cacheLayer) Set(namespace string, key int, value string) {
+	start := time.Now()
+
 	conn, err := theCache.redisPool.Get()
 	if err != nil {
 		fmt.Println("Unable to get Redis for setting cache: ", err)
@@ -62,7 +66,12 @@ func (theCache cacheLayer) Set(namespace string, key int, value string) {
 	if err != nil {
 		fmt.Println("Unable to set cache for "+namespace+"."+keyAsString+": ", err)
 	}
+
+	t := time.Now()
+	elapsed := t.Sub(start)
+	fmt.Println("cache.Set: ", elapsed)
 }
+
 
 ////////////
 // Set a value in the cache
@@ -72,8 +81,8 @@ func (theCache cacheLayer) Set(namespace string, key int, value string) {
 // key  Key to store
 // value Byte Value to store
 func (theCache cacheLayer) SetBytes(namespace string, key int, value []byte) {
-	valueAsString := string(value[:])
-	theCache.Set(namespace, key, valueAsString)
+    valueAsString := string(value[:])
+    theCache.Set(namespace, key, valueAsString)
 }
 
 ////////////
@@ -83,6 +92,8 @@ func (theCache cacheLayer) SetBytes(namespace string, key int, value []byte) {
 // namespace: Namespace for k/v
 // kvMap: array of key values
 func (theCache cacheLayer) SetMultiple(namespace string, kvMap map[int]string) {
+	start := time.Now()
+
 	conn, err := theCache.redisPool.Get()
 	if err != nil {
 		fmt.Println("Unable to get Redis for setting cache: ", err)
@@ -101,6 +112,10 @@ func (theCache cacheLayer) SetMultiple(namespace string, kvMap map[int]string) {
 			fmt.Println("Unable to set cache for "+namespace+"."+keyAsString+": ", err)
 		}
 	}
+
+	t := time.Now()
+	elapsed := t.Sub(start)
+	fmt.Println("cache.SetMultiple: ", elapsed)
 }
 
 ////////////
@@ -147,6 +162,7 @@ func (theCache cacheLayer) ClearAll(namespace string) {
 	}
 }
 
+
 ////////////
 // Get a byte array value from the cache
 //
@@ -157,15 +173,16 @@ func (theCache cacheLayer) ClearAll(namespace string) {
 // returns:
 // value, or empty byte array if none exists
 func (theCache cacheLayer) GetBytes(namespace string, key int) []byte {
-	stringValue := theCache.Get(namespace, key)
-	var byteValue []byte
+    stringValue := theCache.Get(namespace, key)
+    var byteValue []byte
 
-	if len(stringValue) > 0 {
-		byteValue = []byte(stringValue)
-	}
+    if len(stringValue) > 0 {
+        byteValue = []byte(stringValue)
+    }
 
-	return byteValue
+    return byteValue    
 }
+
 
 ////////////
 // Get a value from the cache

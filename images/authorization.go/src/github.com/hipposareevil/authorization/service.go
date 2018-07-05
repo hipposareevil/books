@@ -155,6 +155,10 @@ func (theService authorizeService) CreateToken(userName string, password string)
         fmt.Println("Unable to set name '" + userName + "' in redis.")
         return Authorization{}, ErrServerError
     }
+    if conn.Cmd("HSET", redisKey, "id", user.UserId).Err != nil {
+        fmt.Println("Unable to set id '", user.UserId,  "' in redis.")
+        return Authorization{}, ErrServerError
+    }
     if conn.Cmd("HSET", redisKey, "group", user.UserGroup).Err != nil {
         fmt.Println("Unable to set group in redis for '" + userName +"'.")
         return Authorization{}, ErrServerError

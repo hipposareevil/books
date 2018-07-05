@@ -7,7 +7,7 @@ package main
 // - offset
 // - limit
 type getAllBooksRequest struct {
-	Bearer string `json:"bearer"`
+	Bearer   string `json:"bearer"`
 	Offset   int    `json:"offset"`
 	Limit    int    `json:"limit"`
 	Title    string `json:"title"`
@@ -19,7 +19,7 @@ type getAllBooksRequest struct {
 // - book_id
 type getBookRequest struct {
 	Bearer string `json:"bearer"`
-	BookId int `json:"book_id"`
+	BookId int    `json:"book_id"`
 }
 
 // DELETE request for single book
@@ -30,7 +30,7 @@ type deleteBookRequest struct {
 
 // POST request to create book
 type createBookRequest struct {
-	Bearer string `json:"bearer"`
+	Bearer             string   `json:"bearer"`
 	AuthorId           int      `json:"authorId"`
 	Description        string   `json:"description"`
 	FirstPublishedYear int      `json:"firstPublishedYear"`
@@ -47,8 +47,8 @@ type createBookRequest struct {
 // PUT request to update book
 // struct passed into service
 type updateBookRequest struct {
-	Bearer string `json:"bearer"`
-    BookId             int      `json:"id"`
+	Bearer             string   `json:"bearer"`
+	BookId             int      `json:"id"`
 	AuthorId           int      `json:"authorId"`
 	Description        string   `json:"description"`
 	FirstPublishedYear int      `json:"firstPublishedYear"`

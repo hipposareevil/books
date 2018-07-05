@@ -4,24 +4,22 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
+    "encoding/json"
 	_ "github.com/go-sql-driver/mysql"
+	"strings"
 )
 
-const AUTHOR_CACHE="author.name"
-
+// namespace for author cache, this will be indexed by author id
+const AUTHOR_CACHE = "author.name"
+// namespace for this book cache, this will be indexed by book id
+const BOOK_CACHE = "book.info"
 
 // Service interface exposed to clients
 type BookService interface {
 	// GetBooks: offset, limit, title, authorIds, titleIds
-    // first param: bearer
+	// first param: bearer
 	GetBooks(string, int, int, string, []int, []int) (Books, error)
 
 	// GetBook: bearer, id
@@ -31,17 +29,13 @@ type BookService interface {
 	DeleteBook(int) error
 
 	// CreateBook (see createBookRequest for params)
-    // first param: bearer
+	// first param: bearer
 	CreateBook(string, int, string, int, string, string, string, string, []string, string, []string, string) (Book, error)
 
 	// UpdateBook
-    // Same as CreateBook but the first param is the ID of book to update
-    // first param: bearer
+	// Same as CreateBook but the first param is the ID of book to update
+	// first param: bearer
 	UpdateBook(string, int, int, string, int, string, string, string, string, []string, string, []string, string) (Book, error)
-
-
-    // Get author name by id
-    getAuthorNameById(string, int) string 
 }
 
 ////////////////////////
@@ -50,7 +44,7 @@ type BookService interface {
 // - mysqlDb    DB for MySQL
 type bookService struct {
 	mysqlDb *sql.DB
-    cache CacheLayer
+	cache   CacheLayer
 }
 
 //////////
@@ -67,8 +61,8 @@ type bookService struct {
 // book
 // error
 func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
-    fmt.Println("")
-    fmt.Println("-- GetBook --")
+	fmt.Println("")
+	fmt.Println("-- GetBook --")
 
 	////////////////////
 	// Get data from mysql
@@ -81,18 +75,18 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 	// Make query
 	var book Book
 	var subjectAsCsv string
-    var isbnsAsCsv string
+	var isbnsAsCsv string
 
 	// Scan the DB info into 'book' composite variable
 	err := theService.mysqlDb.
-		QueryRow("SELECT " +
-        "book_id, author_id, year, title, " +
-        "isbn, subjects, ol_works, description, " +
-        "image_small, image_medium, image_large, goodreads_url " +
-        "FROM book WHERE book_id = ?", bookId).
+		QueryRow("SELECT "+
+			"book_id, author_id, year, title, "+
+			"isbn, subjects, ol_works, description, "+
+			"image_small, image_medium, image_large, goodreads_url "+
+			"FROM book WHERE book_id = ?", bookId).
 		Scan(&book.Id, &book.AuthorId, &book.FirstPublishedYear, &book.Title,
-        &isbnsAsCsv, &subjectAsCsv, &book.OpenlibraryWorkUrl, &book.Description,
-        &book.ImageSmall, &book.ImageMedium, &book.ImageLarge, &book.GoodReadsUrl)
+			&isbnsAsCsv, &subjectAsCsv, &book.OpenlibraryWorkUrl, &book.Description,
+			&book.ImageSmall, &book.ImageMedium, &book.ImageLarge, &book.GoodReadsUrl)
 
 	switch {
 	case err == sql.ErrNoRows:
@@ -100,20 +94,28 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 	case err != nil:
 		fmt.Println("Got error from select: ", err)
 		return Book{}, ErrServerError
-	default:
-		fmt.Println("got book!", book.Title)
 	}
 
-    // Get the author name
-    if len(bearer) > 0 {
-        book.AuthorName = theService.getAuthorNameById(bearer, book.AuthorId)
-    }
+	// Get the author name
+	if len(bearer) > 0 {
+		book.AuthorName = getAuthorNameById(theService.cache, bearer, book.AuthorId)
+	}
 
 	// Convert subjects from CSV to string array
 	book.Subjects = splitCsvStringToArray(subjectAsCsv)
 
 	// Convert isbns from CSV to string array
 	book.Isbns = splitCsvStringToArray(isbnsAsCsv)
+
+    // Save to cache
+    bookAsBytes, err := json.Marshal(book)
+    if err == nil {
+        fmt.Println("Saving book to book cache")
+        go theService.cache.SetBytes(BOOK_CACHE, bookId, bookAsBytes)
+    } else {
+        fmt.Println("Unable to save book to cache:", err)
+    }
+
 
 	return book, nil
 }
@@ -142,59 +144,63 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 	}
 
 	// Make select string
-    selectString := "SELECT " +
-        "book_id, author_id, year, title, " +
-        "isbn, subjects, ol_works, description, " +
-        "image_small, image_medium, image_large, goodreads_url " +
-        "FROM book "
+	selectString := "SELECT " +
+		"book_id, author_id, year, title, " +
+		"isbn, subjects, ol_works, description, " +
+		"image_small, image_medium, image_large, goodreads_url " +
+		"FROM book "
 
-    fmt.Println("")
-    fmt.Println("-- GetBooks --")
-    fmt.Println("author: ", authorIds)
-    fmt.Println("books: ", bookIds)
+	fmt.Println("-- GetBooks --")
+
+	// Update query according to which other queryParams come in (title, authorIds, bookIds)
+	updated := false
+
+    var appendedString string
 
 
-    // Update query according to which other queryParams come in (title, authorIds, bookIds)
-    updated := false
-    // Title
-    if len(title) > 0 {
-        updated = true
-        selectString += "WHERE title LIKE '%" + title + "%' "
-    }
-    // Author IDs
-    if len(authorIds) > 0 {
-        var prependValue string
-        
-        if updated {
-            prependValue = " AND"
-        } else {
-            prependValue = " WHERE"
-        }
-        authorIdsAsCsv := convertIntArrayToCsv(authorIds)
-        selectString += prependValue + " author_id in (" + authorIdsAsCsv + ")"
+	// Title
+	if len(title) > 0 {
+		updated = true
+		appendedString = "WHERE title LIKE '%" + title + "%' "
+	}
+	// Author IDs
+	if len(authorIds) > 0 {
+		var prependValue string
 
-        updated = true
-    }
-    // Book IDs
-    if len(bookIds) > 0 {
-        var prependValue string
-        
-        if updated {
-            prependValue = " AND"
-        } else {
-            prependValue = " WHERE"
-        }
-        bookIdsAsCsv := convertIntArrayToCsv(bookIds)
-        selectString += prependValue + " book_id in (" + bookIdsAsCsv + ")"
+		if updated {
+			prependValue = " AND"
+		} else {
+			prependValue = " WHERE"
+		}
+		authorIdsAsCsv := convertIntArrayToCsv(authorIds)
+        appendedString += prependValue + " author_id in (" + authorIdsAsCsv + ")"
+		updated = true
+	}
+	// Book IDs
+	if len(bookIds) > 0 {
+		var prependValue string
 
-        updated = true
-    }
+		if updated {
+			prependValue = " AND"
+		} else {
+			prependValue = " WHERE"
+		}
+		bookIdsAsCsv := convertIntArrayToCsv(bookIds)
+        appendedString += prependValue + " book_id in (" + bookIdsAsCsv + ")"
 
-    fmt.Println("Making query with: " + selectString)
+		updated = true
+	}
+
+    // Re get total # of rows for the return value
+    countQuery := "SELECT COUNT(*) FROM book " + appendedString;
+	_ = theService.mysqlDb.QueryRow(countQuery).Scan(&totalNumberOfRows)
+
+    // real select string
+    selectString = selectString + appendedString
 
     // Make query
 	results, err := theService.mysqlDb.
-		Query(selectString +
+		Query(selectString+
 			"LIMIT ?,?", offset, limit)
 
 	if err != nil {
@@ -209,35 +215,43 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 	for results.Next() {
 		var book Book
 
-        var subjectAsCsv string
-        var isbnsAsCsv string
+		var subjectAsCsv string
+		var isbnsAsCsv string
 
 		// For each row, scan the result into our book composite object:
 		err = results.
-            Scan(&book.Id, &book.AuthorId, &book.FirstPublishedYear, &book.Title,
-            &isbnsAsCsv, &subjectAsCsv, &book.OpenlibraryWorkUrl, &book.Description,
-            &book.ImageSmall, &book.ImageMedium, &book.ImageLarge, &book.GoodReadsUrl)
+			Scan(&book.Id, &book.AuthorId, &book.FirstPublishedYear, &book.Title,
+				&isbnsAsCsv, &subjectAsCsv, &book.OpenlibraryWorkUrl, &book.Description,
+				&book.ImageSmall, &book.ImageMedium, &book.ImageLarge, &book.GoodReadsUrl)
 
 		if err != nil {
 			fmt.Println("Got error from mysql when getting all books: " + err.Error())
 			return Books{}, errors.New("Unable to scan mysql for all books.")
 		}
 
-        fmt.Println("Get author name for book with id: ",  book.Id)
-        fmt.Println("Get author name for book with author id: ",  book.AuthorId)
+		// Get the author name
+		book.AuthorName = getAuthorNameById(theService.cache, bearer, book.AuthorId)
 
-        // Get the author name
-        book.AuthorName = theService.getAuthorNameById(bearer, book.AuthorId)
+		// Convert subjects from CSV to string array
+		book.Subjects = splitCsvStringToArray(subjectAsCsv)
 
-        // Convert subjects from CSV to string array
-        book.Subjects = splitCsvStringToArray(subjectAsCsv)
-
-        // Convert isbns from CSV to string array
-        book.Isbns = splitCsvStringToArray(isbnsAsCsv)
-
+		// Convert isbns from CSV to string array
+		book.Isbns = splitCsvStringToArray(isbnsAsCsv)
 
 		datum = append(datum, book)
+
+        // Save to cache
+        bookAsBytes, err := json.Marshal(book)
+        if err == nil {
+            fmt.Println("Saving book to book cache")
+            go theService.cache.SetBytes(BOOK_CACHE, book.Id, bookAsBytes)
+        } else {
+            fmt.Println("Unable to save book to cache:", err)
+        }
 	}
+
+    // reset the limit (number of things being returned)
+    limit = len(datum)
 
 	// Create Books to return
 	returnValue := Books{
@@ -259,8 +273,8 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 // returns:
 // error
 func (theService bookService) DeleteBook(bookId int) error {
-    fmt.Println("")
-    fmt.Println("-- DeleteBook --")
+	fmt.Println("")
+	fmt.Println("-- DeleteBook --")
 
 	////////////////////
 	// Get data from mysql
@@ -271,6 +285,7 @@ func (theService bookService) DeleteBook(bookId int) error {
 	}
 
 	// Verify the book exists, if not, throw ErrNotFound
+    // first param is empty for the bearer as we don't need to get the extra info
 	_, getErr := theService.GetBook("", bookId)
 	if getErr != nil {
 		return getErr
@@ -278,6 +293,9 @@ func (theService bookService) DeleteBook(bookId int) error {
 
 	// Make DELETE query
 	_, err := theService.mysqlDb.Exec("DELETE FROM book WHERE book_id = ?", bookId)
+
+    // remove from cache
+    theService.cache.Clear(BOOK_CACHE, bookId)
 
 	return err
 }
@@ -289,21 +307,21 @@ func (theService bookService) DeleteBook(bookId int) error {
 // book
 // error
 func (theService bookService) CreateBook(
-    bearer string,
-	authorId     int,
-	description  string,
-	firstPublishedYear    int,
+	bearer string,
+	authorId int,
+	description string,
+	firstPublishedYear int,
 	goodReadsUrl string,
-	imageLarge   string,
-	imageMedium  string,
-	imageSmall   string,
-	isbns        []string,
-	openlibraryWorkUrl    string,
-	subjects     []string,
-	title        string) (Book, error) {
+	imageLarge string,
+	imageMedium string,
+	imageSmall string,
+	isbns []string,
+	openlibraryWorkUrl string,
+	subjects []string,
+	title string) (Book, error) {
 
-    fmt.Println("")
-    fmt.Println("-- CreateBook --")
+	fmt.Println("")
+	fmt.Println("-- CreateBook --")
 
 	////////////////////
 	// verify mysql
@@ -317,12 +335,12 @@ func (theService bookService) CreateBook(
 	subjectsAsCsv := strings.Join(subjects[:], ",")
 	isbnsAsCsv := strings.Join(isbns[:], ",")
 
-	// Make insert
+	// Make prepared insert statement
 	stmt, err := theService.mysqlDb.
 		Prepare("INSERT INTO book SET " +
-        "author_id=?, year=?, title=?, isbn=?, subjects=?, " +
-        "ol_works=?, goodreads_url=?, description=?, " +
-        "image_small=?, image_medium=?, image_large=?")
+			"author_id=?, year=?, title=?, isbn=?, subjects=?, " +
+			"ol_works=?, goodreads_url=?, description=?, " +
+			"image_small=?, image_medium=?, image_large=?")
 
 	defer stmt.Close()
 	if err != nil {
@@ -331,8 +349,8 @@ func (theService bookService) CreateBook(
 	}
 
 	res, err := stmt.Exec(authorId, firstPublishedYear, title, isbnsAsCsv, subjectsAsCsv,
-        openlibraryWorkUrl, goodReadsUrl, description,
-        imageSmall, imageMedium, imageLarge)
+		openlibraryWorkUrl, goodReadsUrl, description,
+		imageSmall, imageMedium, imageLarge)
 
 	if err != nil {
 		fmt.Println("Error inserting into DB: ", err)
@@ -346,25 +364,8 @@ func (theService bookService) CreateBook(
 	// get the id
 	id, _ := res.LastInsertId()
 
-    authorName := theService.getAuthorNameById(bearer, authorId)
-
-	// Create book
-	var bookToReturn Book
-	bookToReturn = Book{
-        AuthorId: authorId,
-        AuthorName: authorName,
-        Description: description,
-        FirstPublishedYear:    firstPublishedYear,
-        GoodReadsUrl: goodReadsUrl,
-        Id: int(id),
-        ImageLarge:   imageLarge,
-        ImageMedium:  imageMedium,
-        ImageSmall:   imageSmall,
-        Isbns:        isbns,
-        OpenlibraryWorkUrl:    openlibraryWorkUrl,
-        Subjects:      subjects,
-        Title:        title,
-	}
+	// get the book back
+	bookToReturn, err := theService.GetBook(bearer, int(id))
 
 	return bookToReturn, nil
 }
@@ -375,22 +376,22 @@ func (theService bookService) CreateBook(
 // returns:
 // error
 func (theService bookService) UpdateBook(
-    bearer string,
-    bookId int,
-	authorId     int,
-	description  string,
-	firstPublishedYear    int,
+	bearer string,
+	bookId int,
+	authorId int,
+	description string,
+	firstPublishedYear int,
 	goodReadsUrl string,
-	imageLarge   string,
-	imageMedium  string,
-	imageSmall   string,
-	isbns        []string,
-	openlibraryWorkUrl    string,
-	subjects     []string,
-	title        string) (Book, error) {
+	imageLarge string,
+	imageMedium string,
+	imageSmall string,
+	isbns []string,
+	openlibraryWorkUrl string,
+	subjects []string,
+	title string) (Book, error) {
 
-    fmt.Println("")
-    fmt.Println("-- UpdateBook --")
+	fmt.Println("")
+	fmt.Println("-- UpdateBook --")
 
 	////////////////////
 	// Get data from mysql
@@ -400,24 +401,21 @@ func (theService bookService) UpdateBook(
 		return Book{}, errors.New("unable to ping mysql")
 	}
 
-    fmt.Println("Updating book by id: " , bookId)
-
 	// Make query
 	stmt, err := theService.mysqlDb.
 		Prepare("UPDATE book SET " +
-        "book_id=COALESCE(NULLIF(?,''),book_id), " +
-        "author_id=COALESCE(NULLIF(?,''),author_id), " +
-        "year=COALESCE(NULLIF(?,''),year), " +
-        "title=COALESCE(NULLIF(?,''),title), " +
-        "isbn=COALESCE(NULLIF(?,''),isbn), " +
-        "subjects=COALESCE(NULLIF(?,''),subjects), " +
-        "ol_works=COALESCE(NULLIF(?,''),ol_works), " +
-        "goodreads_url=COALESCE(NULLIF(?,''),goodreads_url), " +
-        "description=COALESCE(NULLIF(?,''),description), " +
-        "image_small=COALESCE(NULLIF(?,''),image_small), " +
-        "image_medium=COALESCE(NULLIF(?,''),image_medium), " +
-        "image_large=COALESCE(NULLIF(?,''),image_large) " +
-        "WHERE book_id = ?")
+			"author_id=COALESCE(NULLIF(?,''),author_id), " +
+			"year=COALESCE(NULLIF(?,''),year), " +
+			"title=COALESCE(NULLIF(?,''),title), " +
+			"isbn=COALESCE(NULLIF(?,''),isbn), " +
+			"subjects=COALESCE(NULLIF(?,''),subjects), " +
+			"ol_works=COALESCE(NULLIF(?,''),ol_works), " +
+			"goodreads_url=COALESCE(NULLIF(?,''),goodreads_url), " +
+			"description=COALESCE(NULLIF(?,''),description), " +
+			"image_small=COALESCE(NULLIF(?,''),image_small), " +
+			"image_medium=COALESCE(NULLIF(?,''),image_medium), " +
+			"image_large=COALESCE(NULLIF(?,''),image_large) " +
+			"WHERE book_id = ?")
 	defer stmt.Close()
 	if err != nil {
 		fmt.Println("Error preparing DB: ", err)
@@ -428,115 +426,20 @@ func (theService bookService) UpdateBook(
 	subjectsAsCsv := strings.Join(subjects[:], ",")
 	isbnsAsCsv := strings.Join(isbns[:], ",")
 
-	_, err = stmt.Exec(bookId, authorId, firstPublishedYear, title,
-        isbnsAsCsv, subjectsAsCsv, openlibraryWorkUrl, goodReadsUrl, description,
-        imageSmall, imageMedium, imageLarge, bookId)
+	_, err = stmt.Exec(authorId, firstPublishedYear, title,
+		isbnsAsCsv, subjectsAsCsv, openlibraryWorkUrl, goodReadsUrl, description,
+		imageSmall, imageMedium, imageLarge, bookId)
 
 	if err != nil {
 		fmt.Println("Error updatingDB for book: ", err)
 		return Book{}, errors.New("Unable to run update against DB for book: ")
 	}
 
-    // get the book back
-    bookToReturn, err := theService.GetBook(bearer, bookId)
+    // This next call will save the book into the cache and overwrite existing data
+
+	// get the book back
+	bookToReturn, err := theService.GetBook(bearer, bookId)
 
 	return bookToReturn, err
 }
 
-////////////////////////////////////////////////////
-//
-// Helper methods
-
-
-// Just need the author name
-type author struct {
-	Name         string   `json:"name"`
-}
-
-
-////////////
-// Query the /author endpoint for author information
-func (theService bookService) getAuthorNameById(bearer string, authorId int) string {
-    start := time.Now()
-
-    // Check cache
-    authorName := theService.cache.Get(AUTHOR_CACHE, authorId)
-    if len(authorName) > 0 {
-        return authorName
-    }
-
-    url := "http://author:8080/author/" + strconv.Itoa(authorId)
-
-    fmt.Println("Making call to>"+ url + "<")
-    fmt.Println("bearer> '" + bearer + "' <")
-
-    // make client
-	superClient := http.Client{
-		Timeout: time.Second * 2, // Maximum of 2 secs
-	}
-
-    // make request object
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-        fmt.Println("Unable to make new request to /author")
-		return ""
-	}
-
-    // set headers
-	req.Header.Set("User-Agent", "book-service-client")
-	req.Header.Set("authorization", "Bearer " + bearer)
-
-    // send request
-	res, getErr := superClient.Do(req)
-	if getErr != nil {
-        fmt.Println("Unable to send request to /author")
-		return ""
-	}
-
-    // Check status code
-    if ! strings.Contains(res.Status, "200")  {
-        fmt.Println("Unable to connect to '" + url + "' to get names. HTTP code: " + res.Status)
-        return ""
-    }
-
-    // parse body
-	body, readErr := ioutil.ReadAll(res.Body)
-	if readErr != nil {
-        fmt.Println("Unable to parse response from /author")
-		return ""
-	}
-
-    // get author info
-	authorBean := author{}
-	jsonErr := json.Unmarshal(body, &authorBean)
-	if jsonErr != nil {
-        fmt.Println("Unable to unmarshall response from /author")
-		return ""
-	}
-
-    t := time.Now()
-    elapsed := t.Sub(start)
-    fmt.Println("Elapsed: ", elapsed)
-
-    return authorBean.Name
-}
-
-
-
-////////////
-// Split a CSV string into array
-func splitCsvStringToArray(subjectCsv string) []string {
-	subjects := strings.Split(subjectCsv, ",")
-	return subjects
-}
-
-////////////
-// Convert incoming int array to CSV string
-func convertIntArrayToCsv(intArray []int) string {
-    tempArray := make([]string, len(intArray))
-    for i, v := range intArray {
-        tempArray[i] = strconv.Itoa(v)
-    }
-
-    return strings.Join(tempArray, ",")
-}

@@ -25,23 +25,25 @@ import (
 //
 // Create endpoints
 
-// GET /book/
+// GET /user_book/<user_id>
 // Make endpoint for getting books
-func makeGetBooksEndpoint(svc BookService) endpoint.Endpoint {
+func makeGetUserBooksEndpoint(svc UserBookService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		// convert request into a books specific request
-		req := request.(getAllBooksRequest)
+		req := request.(getAllUserBooksRequest)
 
 		// call actual service with data from the req
-		books, err := svc.GetBooks(
-			req.Bearer,
-			req.Offset,
-			req.Limit,
-			req.Title,
-			req.AuthorId,
-			req.BookId)
-		return booksResponse{
-			Data: books,
+		userBooks, err := svc.GetUserBooks(
+            req.Bearer,
+            req.UserId,
+            req.Offset,
+            req.Limit,
+            req.BookId,
+            req.Title,
+            req.Tag)
+
+		return userBooksResponse{
+			Data: userBooks,
 			Err:  err,
 		}, nil
 	}
@@ -49,14 +51,18 @@ func makeGetBooksEndpoint(svc BookService) endpoint.Endpoint {
 
 // GET /book/<book_id>
 // Make endpoint for getting single Book
-func makeGetBookEndpoint(svc BookService) endpoint.Endpoint {
+func makeGetUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		// convert request into a bookRequest
-		req := request.(getBookRequest)
+		req := request.(getUserBookRequest)
 
 		// call actual service with data from the req
-		book, err := svc.GetBook(req.Bearer, req.BookId)
-		return bookResponse{
+		book, err := svc.GetUserBook(
+            req.Bearer,
+            req.UserId,
+            req.UserBookId)
+
+		return userBookResponse{
 			Data: book,
 			Err:  err,
 		}, nil
@@ -65,14 +71,16 @@ func makeGetBookEndpoint(svc BookService) endpoint.Endpoint {
 
 // DELETE /book/<book_id>
 // Make endpoint for deleting single Book
-func makeDeleteBookEndpoint(svc BookService) endpoint.Endpoint {
+func makeDeleteUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		// convert request into a bookRequest
-		req := request.(deleteBookRequest)
+		req := request.(deleteUserBookRequest)
 
 		// call actual service with data from the req
-		err := svc.DeleteBook(req.BookId)
-		return deleteBookResponse{
+		err := svc.DeleteUserBook(
+            req.UserId,
+            req.UserBookId)
+		return deleteUserBookResponse{
 			Err: err,
 		}, nil
 	}
@@ -80,27 +88,20 @@ func makeDeleteBookEndpoint(svc BookService) endpoint.Endpoint {
 
 // POST /book/
 // Make endpoint for creating (via post) a book
-func makeCreateBookEndpoint(svc BookService) endpoint.Endpoint {
+func makeCreateUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		// convert request into a createBookRequest
-		req := request.(createBookRequest)
+		req := request.(createUserBookRequest)
 
 		// call actual service with data from the req
-		newBook, err := svc.CreateBook(
-			req.Bearer,
-			req.AuthorId,
-			req.Description,
-			req.FirstPublishedYear,
-			req.GoodReadsUrl,
-			req.ImageLarge,
-			req.ImageMedium,
-			req.ImageSmall,
-			req.Isbns,
-			req.OpenlibraryWorkUrl,
-			req.Subjects,
-			req.Title)
+		newBook, err := svc.CreateUserBook(
+            req.Bearer,
+            req.UserId,
+            req.BookId,
+            req.Rating,
+            req.Tags)
 
-		return createBookResponse{
+		return createUserBookResponse{
 			Data: newBook,
 			Err:  err,
 		}, nil
@@ -109,28 +110,22 @@ func makeCreateBookEndpoint(svc BookService) endpoint.Endpoint {
 
 // PUT /book/<book_id>
 // Make endpoint for updating (via PUT) a book
-func makeUpdateBookEndpoint(svc BookService) endpoint.Endpoint {
+func makeUpdateUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		// convert request into a updateBookRequest
-		req := request.(updateBookRequest)
+		req := request.(updateUserBookRequest)
 
 		// call actual service with data from the req (putBookRequest)
-		book, err := svc.UpdateBook(
-			req.Bearer,
-			req.BookId,
-			req.AuthorId,
-			req.Description,
-			req.FirstPublishedYear,
-			req.GoodReadsUrl,
-			req.ImageLarge,
-			req.ImageMedium,
-			req.ImageSmall,
-			req.Isbns,
-			req.OpenlibraryWorkUrl,
-			req.Subjects,
-			req.Title)
+		book, err := svc.UpdateUserBook(
+            req.Bearer,
+            req.UserId,
+            req.UserBookId,
+            req.BookId,
+            req.Rating,
+            req.Tags)
 
-		return updateBookResponse{
+
+		return updateUserBookResponse{
 			Data: book,
 			Err:  err,
 		}, nil
@@ -141,115 +136,146 @@ func makeUpdateBookEndpoint(svc BookService) endpoint.Endpoint {
 //
 // Decode
 
-// Create a getAllBooksRequest from the context and http.Request
-// /book/
+// Create a getAllUserBooksRequest from the context and http.Request
+// /user_book/<user_id>
 //
-// The getAllBooksRequest has 3 variables:
-// - Offset   Offset into the query
-// - Limit    Number of values to return
-func decodeGetAllBooksRequest(_ context.Context, r *http.Request) (interface{}, error) {
+func decodeGetAllUserBooksRequest(_ context.Context, r *http.Request) (interface{}, error) {
+    // Get offset, limit and bearer
 	realOffset, realLimit := parseOffsetAndLimit(r)
+	bearer := parseBearer(r)
+
+    // Get userId
+	userId, err := parseUserId(r)
+	if err != nil {
+		return nil, err
+	}
 
 	///////////////////
 	// Parse parameters
 	r.ParseForm()
 	values := r.Form
 
-	// get Title
+    temp := values["tag"]
+    tagsString := strings.Join(temp, ",")
+	tags := splitCsvStringToArray(tagsString)
+
+    // get book_id
+	tempId := values.Get("book_id")
+	bookId, _ := strconv.Atoi(tempId)
+
+    // get title
 	title := values.Get("title")
 
-	// get AuthorId list
-    tempAuthorIds := values["author_id"]
-    temp := strings.Join(tempAuthorIds, ",")
-	authorIds := splitCsvStringAsInts(temp)
-
-	// Get BookId list
-    tempIds := values["book_id"]
-    temp = strings.Join(tempIds, ",")
-	bookIds := splitCsvStringAsInts(temp)
-
-	// Get bearer from headers
-	bearer := parseBearer(r)
-
 	// Make request for all books
-	var request getAllBooksRequest
-	request = getAllBooksRequest{
+	var request getAllUserBooksRequest
+	request = getAllUserBooksRequest {
 		Bearer:   bearer,
 		Offset:   realOffset,
 		Limit:    realLimit,
+
+        UserId:   userId,
 		Title:    title,
-		AuthorId: authorIds,
-		BookId:   bookIds,
+		BookId:   bookId,
+        Tag:      tags,
 	}
 
 	return request, nil
 }
 
-// Create getBookRequest
-// /book/id
+// Create getUserBookRequest
+// /user_book/<user_id>/<user_book_id>
 //
-func decodeGetBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	// Get book ID from gorilla handling of vars
-	bookId, err := parseBookId(r)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get bearer from headers
+func decodeGetUserBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	bearer := parseBearer(r)
 
-	// Make request for single  book
-	var request getBookRequest
-	request = getBookRequest{
-		BookId: bookId,
-		Bearer: bearer,
-	}
-
-	return request, nil
-}
-
-// Create deleteBookRequest
-// DELETE /book/id
-//
-// The (delete) bookRequest has 2 variables:
-// - BookId   ID of book taken from the path
-func decodeDeleteBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	bookId, err := parseBookId(r)
+    // Get userId
+	userId, err := parseUserId(r)
 	if err != nil {
 		return nil, err
 	}
 
-	// Make request to delete book
-	var request deleteBookRequest
-	request = deleteBookRequest{
-		BookId: bookId,
+    // Get user_book_id
+	userBookId, err := parseUserBookId(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// Make request for all books
+	var request getUserBookRequest
+	request = getUserBookRequest {
+		Bearer:   bearer,
+        UserId:   userId,
+        UserBookId:   userBookId,
 	}
 
 	return request, nil
+
 }
 
-// Create createBookRequest
-//  POST /book
-func decodeCreateBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
+// Create deleteUserBookRequest
+// DELETE /user_book/<user_id>/<user_book_id>
+//
+func decodeDeleteUserBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
+    // Get userId
+	userId, err := parseUserId(r)
+	if err != nil {
+		return nil, err
+	}
+
+    // Get user_book_id
+	userBookId, err := parseUserBookId(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// Make request for all books
+	var request deleteUserBookRequest
+	request = deleteUserBookRequest {
+        UserId:   userId,
+        UserBookId:   userBookId,
+	}
+
+	return request, nil
+
+}
+
+// Create creatUsereBookRequest
+//  POST /user_book/<user_id>
+func decodeCreateUserBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
+    // Get userId
+	userId, err := parseUserId(r)
+	if err != nil {
+		return nil, err
+	}
+
 	// Get bearer from headers
 	bearer := parseBearer(r)
 
 	///////////////////
 	// Parse body
-	var createBookRequest createBookRequest
-	if err := json.NewDecoder(r.Body).Decode(&createBookRequest); err != nil {
+	var request createUserBookRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
 
-	createBookRequest.Bearer = bearer
+	// Set rest on update request
+	request.UserId = userId
+    request.Bearer = bearer
 
-	return createBookRequest, nil
+	return request, nil
 }
 
 // Create updateBookRequest
-//  PUT /book/id
-func decodeUpdateBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	bookId, err := parseBookId(r)
+//  PUT /user_book/<user_id>/<user_book_id>
+func decodeUpdateUserBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
+    // Get userId
+	userId, err := parseUserId(r)
+	if err != nil {
+		return nil, err
+	}
+
+    // Get user_book_id
+	userBookId, err := parseUserBookId(r)
 	if err != nil {
 		return nil, err
 	}
@@ -259,18 +285,21 @@ func decodeUpdateBookRequest(_ context.Context, r *http.Request) (interface{}, e
 
 	///////////////////
 	// Parse body
-	var updateBook updateBookRequest
-	if err := json.NewDecoder(r.Body).Decode(&updateBook); err != nil {
+	var request updateUserBookRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
 
-	// Set bookid on update request
-	updateBook.BookId = bookId
+	// Set rest on update request
+	request.UserId = userId
+	request.UserBookId = userBookId
+    request.Bearer = bearer
 
-	updateBook.Bearer = bearer
-
-	return updateBook, nil
+	return request, nil
 }
+
+/////////////////////////////
+// Helper methods
 
 // Returns the bearer id without "Bearer "
 func parseBearer(r *http.Request) string {
@@ -322,50 +351,44 @@ func parseOffsetAndLimit(r *http.Request) (int, int) {
 	return realOffset, realLimit
 }
 
-// Decode the 'book_id' from the request.
+// Decode the 'user_book_id' from the request.
 //
-//// Returns the book id
-func parseBookId(r *http.Request) (int, error) {
+//// Returns the user book id
+func parseUserBookId(r *http.Request) (int, error) {
 	// Demux the gorilla parsing
 	vars := mux.Vars(r)
-	// 'book_id' is set in the gorilla handling in main.go
-	id, ok := vars["book_id"]
+	// 'user_book_id' is set in the gorilla handling in main.go
+	id, ok := vars["user_book_id"]
 	if !ok {
 		return 0, ErrBadRouting
 	}
 
-	var bookId int
+	var userBookId int
 	if id != "" {
-		bookId, _ = strconv.Atoi(id)
+		userBookId, _ = strconv.Atoi(id)
 	}
 
-	return bookId, nil
+	return userBookId, nil
 }
 
-////////////
-// Split a CSV string into array of ints
-func splitCsvStringAsInts(csv string) []int {
-	var newArray []int
-
-	fmt.Println("Converting csv string:" + csv + ": into array of ints")
-
-	if len(csv) > 0 {
-		stringArray := strings.Split(csv, ",")
-
-		fmt.Println("new string array>", stringArray)
-		fmt.Println("new string array>", len(stringArray))
-
-		// Convert each string to int
-		for _, element := range stringArray {
-			temp, _ := strconv.Atoi(element)
-			fmt.Println("Got element: ", element)
-			newArray = append(newArray, temp)
-		}
+// Decode the 'user_id' from the request.
+//
+//// Returns the user id
+func parseUserId(r *http.Request) (int, error) {
+	// Demux the gorilla parsing
+	vars := mux.Vars(r)
+	// 'user_book_id' is set in the gorilla handling in main.go
+	id, ok := vars["user_id"]
+	if !ok {
+		return 0, ErrBadRouting
 	}
 
-	fmt.Println("returning newarray:", newArray)
+	var userId int
+	if id != "" {
+		userId, _ = strconv.Atoi(id)
+	}
 
-	return newArray
+	return userId, nil
 }
 
 //////////////////////////////////////////////////////////

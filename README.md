@@ -218,7 +218,9 @@ See *deprecated* [user](https://github.com/hipposareevil/books/blob/master/image
 ### user_book
 Microservice to manage a set of books for a user. Each user has a list of books they can catalog. Each *user book* has a link to the real Book and associated Author. In addition, a *user book* has user *data* and a set of *tags*. 
 
-See [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book/README.md) for more information. 
+See [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book.go/README.md) for more information. 
+
+See *deprecated* [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book/README.md) for more information. 
 
 ### tag
 Microservice to manage tags. Tags can be applied to a user's set of books via the *user_books* endpoint.  Multiple tags may be applied to a single book, e.g. "e-book" and "sci-fi".
@@ -261,6 +263,15 @@ Authentication tokens are created by the *authorize* service and stored in Redis
 
 #### Cache
 Redis is also used as a cache for the services. When a service makes a REST call to another service, the calling service stores the returned data in the cache. For example, the *book* service calls the *author* service to get the author's name for a book. The *book* service stores that in the cache for the next call. The *author* service will flush the cache when mutations to the author database have been made.
+
+Map of services performing caching and their consumers
+
+Cache Source | Namespace | Consumer | Notes
+--- | --- | --- | ---
+author.go | author.name | book.go | Author names indexed by Author ID
+tag.go | tag | user_book.go | All tags as JSON, indexed by '0' to denote all tags
+book.go | book.info | user_book.go | Individual Book JSON indexed by book ID
+
 
 ## Metrics
 
