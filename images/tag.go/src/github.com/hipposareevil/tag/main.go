@@ -69,10 +69,18 @@ func main() {
 	fs := http.FileServer(http.Dir(htmlDir))
 	router.PathPrefix("/swagger.yaml").Handler(http.StripPrefix("/", fs))
 
+	///////////////
+	// cache layer
+	var cache CacheLayer
+	cache = cacheLayer{redisPool}
+
+    // clear the cache as we are starting fresh
+    cache.ClearAll(TAG_CACHE)
+
     ///////////////
     // 'tag' service
     var tagSvc TagService
-    tagSvc = tagService{db}
+    tagSvc = tagService{db, cache}
     
     // Add middleware here
 
