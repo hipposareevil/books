@@ -20,7 +20,8 @@ import (
 	// gorilla routing
 	"github.com/gorilla/mux"
 
-	// metrics
+    "time" 
+
 
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -48,7 +49,6 @@ func main() {
 	defer db.Close()
     db.SetMaxIdleConns(0)
     db.SetConnMaxLifetime(time.Second * 10)
-
 
 	///////////////////
 	// create services and endpoints
