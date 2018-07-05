@@ -20,7 +20,7 @@ import (
 	// gorilla routing
 	"github.com/gorilla/mux"
 
-	// metrics
+    "time"
 
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
