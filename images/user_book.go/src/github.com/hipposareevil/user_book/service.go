@@ -117,7 +117,7 @@ func (theService userbookService) GetUserBook(bearer string, userId int, userBoo
 
 	//////////////////////////
 	// Get book information
-	err = getBook(bearer, userBook.BookId, &userBook)
+	err = getBookById(theService.cache, bearer, userBook.BookId, &userBook)
 	if err != nil {
 		fmt.Println("Error getting Book information for userbook ", userBookId)
 		return UserBook{}, err
@@ -207,7 +207,7 @@ func (theService userbookService) getAllUserBooks(bearer string, userId int, off
 
 		//////////////////////////
 		// Get book information
-		err = getBook(bearer, userBook.BookId, &userBook)
+		err = getBookById(theService.cache, bearer, userBook.BookId, &userBook)
 		if err != nil {
 			fmt.Println("Error getting Book information for userbook ", userBook.UserBookId)
 			return UserBooks{}, err
@@ -253,7 +253,7 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 
 	// tags index by the name
 	var tagsInDatabase map[string]Tag
-	allTags := getAllTags(bearer)
+	allTags := getAllTags(theService.cache, bearer)
 	tagsInDatabase = convertTagsJsonToArray(allTags)
 
 	// Loop through all tags and get userbooks for those
@@ -440,7 +440,7 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 
 			//////////////////////////
 			// Get book information
-			err = getBook(bearer, userBook.BookId, &userBook)
+			err = getBookById(theService.cache, bearer, userBook.BookId, &userBook)
 			if err != nil {
 				fmt.Println("Error getting Book information for userbook ", userBook.UserBookId)
 				return UserBooks{}, err
@@ -579,7 +579,7 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 
 	//////////////////////////
 	// Get book information
-	err = getBook(bearer, bookId, &userBookToReturn)
+	err = getBookById(theService.cache, bearer, bookId, &userBookToReturn)
 	if err != nil {
 		fmt.Println("Error getting Book information for new userbook. book id: ", bookId)
 		return UserBook{}, err
@@ -693,7 +693,7 @@ func (theService userbookService) getTagMappings(userId int, userBookId int) ([]
 // array of tag names that were added
 func (theService userbookService) updateTagMappings(bearer string, userId int, userBookId int, incomingTags []string) ([]string, error) {
 	// all tags in database, queried from /tag endpoint
-	allTags := getAllTags(bearer)
+	allTags := getAllTags(theService.cache, bearer)
 	tagsInDatabase := convertTagsJsonToArray(allTags)
 	// map of tags to add for this user book mapping
 	tagsToAddToMapping := make(map[string]Tag)

@@ -18,15 +18,39 @@ import (
 )
 
 
+// namespace for looking up tags.
+const TAG_CACHE="tag"
+// namespace for looking up books by book id.
+const BOOK_CACHE="book.info"
+
 
 ////////////
 // Query the /tag endpoint for all tags
 //
+// cache: Cache to utilize
+// bearer: BEARER string used to connect to other web service
+// 
 // returns Tags, which has array of Tag objects
-func getAllTags(bearer string) Tags {
-	start := time.Now()
+func getAllTags(cache CacheLayer, bearer string) Tags {
+    // Check the cache
+    tagsAsBytes := cache.GetBytes(TAG_CACHE, 0)
+    if len(tagsAsBytes) > 0 {
+        allTags := Tags{}
+        err := json.Unmarshal(tagsAsBytes, &allTags)
+        if err == nil {
+            // Check that there are actual tags in this data
+            numTags := len(allTags.Data)
+            if numTags > 0 {
+                fmt.Println("Got ",numTags," 'tags' from cache")
+                return allTags                
+            } else {
+                fmt.Println("Not using 'tags' from cache as it is empty")
+            }
+        }
+    }
 
-	fullUrl := "http://tag:8080/tag"
+    ///////////
+    // Get from tag service
 
 	// make client
 	superClient := http.Client{
@@ -34,6 +58,8 @@ func getAllTags(bearer string) Tags {
 	}
 
 	// make request object
+	fullUrl := "http://tag:8080/tag"
+
 	req, err := http.NewRequest(http.MethodGet, fullUrl, nil)
 	if err != nil {
 		fmt.Println("Unable to make new request to /tag")
@@ -72,21 +98,47 @@ func getAllTags(bearer string) Tags {
 		return Tags{}
 	}
 
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fmt.Println("get tags -> Elapsed: ", elapsed)
-
     return allTags
 }
 
 ///////////
 // Query the /book endpoint for a single book
-func getBook(bearer string, bookId int, userBook *UserBook) (error) {
-	start := time.Now()
+//
+// params:
+// cache: Cache to utilize
+// bearer: BEARER string used to connect to other web service
+// bookId: ID of book to get
+// userBook: UserBook to fill in with book data retrieved from /book service
+// 
+func getBookById(cache CacheLayer, bearer string, bookId int, userBook *UserBook) (error) {
+    // Check the cache
+    bookAsBytes := cache.GetBytes(BOOK_CACHE, bookId)
+    if len(bookAsBytes) > 0 {
+        book := Book{}
 
+        err := json.Unmarshal(bookAsBytes, &book)
+        if err == nil {
+            fmt.Println("Got 'book' from cache for bookid:", bookId)
+
+            // Fill in book info
+            userBook.Title = book.Title
+            userBook.AuthorName = book.AuthorName
+            userBook.AuthorId = book.AuthorId
+            userBook.FirstPublishedYear = book.FirstPublishedYear
+            userBook.ImageSmall = book.ImageSmall
+            userBook.ImageMedium = book.ImageMedium
+            userBook.ImageLarge = book.ImageLarge
+
+            return nil
+        }
+    }
+
+
+    ///////////
+    // Get from book service
+    
+    // book id as string
     bookIdAsString := strconv.Itoa(bookId)
-
-	fullUrl := "http://book:8080/book/" + bookIdAsString
 
 	// make client
 	superClient := http.Client{
@@ -94,6 +146,9 @@ func getBook(bearer string, bookId int, userBook *UserBook) (error) {
 	}
 
 	// make request object
+	fullUrl := "http://book:8080/book/" + bookIdAsString
+
+
 	req, err := http.NewRequest(http.MethodGet, fullUrl, nil)
 	if err != nil {
 		fmt.Println("Unable to make new request to /book")
@@ -132,10 +187,6 @@ func getBook(bearer string, bookId int, userBook *UserBook) (error) {
 		return  nil
 	}
 
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fmt.Println("get book from userbook -> Elapsed: ", elapsed)
-
     // Set values on incoming UserBook
     userBook.Title = book.Title
     userBook.AuthorName = book.AuthorName
@@ -151,8 +202,6 @@ func getBook(bearer string, bookId int, userBook *UserBook) (error) {
 ///////////
 // Query the /book endpoint for all books that match the incoming title
 func getBooksByTitle(bearer string, title string) (Books, error) {
-	start := time.Now()
-
     title = url.QueryEscape(title)
 
 	fullUrl := "http://book:8080/book?title=" + title
@@ -202,10 +251,6 @@ func getBooksByTitle(bearer string, title string) (Books, error) {
 		return Books{}, ErrServerError
 	}
 
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fmt.Println("get books by title -> Elapsed: ", elapsed)
-    
     return books, nil
 }
 
