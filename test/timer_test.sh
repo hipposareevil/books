@@ -15,6 +15,8 @@ export TOP_PID=$$
 
 . ${root_dir}/author.sh
 . ${root_dir}/user.sh
+. ${root_dir}/util.sh
+. ${root_dir}/user_book.sh
 . ${root_dir}/tags.sh
 . ${root_dir}/book.sh
 
@@ -97,16 +99,24 @@ EOF
 
 # Test book query
 test_books() {
-    all_books=$(get_all_books)
+    all_books=$(get_all_books_with_offset_limit 0 1000)
     numBooks=$(echo $all_books | jq -r '.data | length')
-    echo "numbooks: $numBooks"
+    echo "Num books: $numBooks"
+}
+
+# User books
+test_user_books() {
+    USER_ID=2
+    all_books=$(get_all_user_books_with_offset_limit 0 1000)
+    numBooks=$(echo $all_books | jq -r '.data | length')
+    echo "Num User books: $numBooks"
 }
 
 # Test author query
 test_authors() {
-    all_authors=$(get_all_authors)
+    all_authors=$(get_all_authors_with_offset_limit 0 1000)
     num=$(echo $all_authors | jq -r '.data | length')
-    echo "numauthors: $num"
+    echo "Num Authors: $num"
 }
 
 
@@ -121,9 +131,10 @@ main() {
     # authorize
     authorize
 
-    for i in `seq 1 5`;
+    for i in `seq 1 3`;
     do
-        test_books
+#        test_books
+        test_user_books
     done    
     
 }
