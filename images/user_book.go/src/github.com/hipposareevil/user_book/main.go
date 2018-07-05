@@ -46,6 +46,9 @@ func main() {
 		panic(err.Error())
 	}
 	defer db.Close()
+    db.SetMaxIdleConns(0)
+    db.SetConnMaxLifetime(time.Second * 10)
+
 
 	///////////////////
 	// create services and endpoints
