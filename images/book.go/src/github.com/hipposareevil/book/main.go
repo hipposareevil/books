@@ -69,6 +69,9 @@ func main() {
 	var cache CacheLayer
 	cache = cacheLayer{redisPool}
 
+    // clear the cache on startup
+    cache.ClearAll(BOOK_CACHE)
+
 	///////////////
 	// 'book' service
 	var bookSvc BookService

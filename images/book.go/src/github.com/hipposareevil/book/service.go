@@ -4,18 +4,17 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
+    "encoding/json"
 	_ "github.com/go-sql-driver/mysql"
-	"io/ioutil"
-	"net/http"
-	"strconv"
 	"strings"
-	"time"
 )
 
+// namespace for author cache, this will be indexed by author id
 const AUTHOR_CACHE = "author.name"
+// namespace for this book cache, this will be indexed by book id
+const BOOK_CACHE = "book.info"
 
 // Service interface exposed to clients
 type BookService interface {
@@ -37,9 +36,6 @@ type BookService interface {
 	// Same as CreateBook but the first param is the ID of book to update
 	// first param: bearer
 	UpdateBook(string, int, int, string, int, string, string, string, string, []string, string, []string, string) (Book, error)
-
-	// Get author name by id
-	getAuthorNameById(string, int) string
 }
 
 ////////////////////////
@@ -104,7 +100,7 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 
 	// Get the author name
 	if len(bearer) > 0 {
-		book.AuthorName = theService.getAuthorNameById(bearer, book.AuthorId)
+		book.AuthorName = getAuthorNameById(theService.cache, bearer, book.AuthorId)
 	}
 
 	// Convert subjects from CSV to string array
@@ -112,6 +108,16 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 
 	// Convert isbns from CSV to string array
 	book.Isbns = splitCsvStringToArray(isbnsAsCsv)
+
+    // Save to cache
+    bookAsBytes, err := json.Marshal(book)
+    if err == nil {
+        fmt.Println("Saving book to book cache")
+        go theService.cache.SetBytes(BOOK_CACHE, bookId, bookAsBytes)
+    } else {
+        fmt.Println("Unable to save book to cache:", err)
+    }
+
 
 	return book, nil
 }
@@ -234,7 +240,7 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 		fmt.Println("Get author name for book with author id: ", book.AuthorId)
 
 		// Get the author name
-		book.AuthorName = theService.getAuthorNameById(bearer, book.AuthorId)
+		book.AuthorName = getAuthorNameById(theService.cache, bearer, book.AuthorId)
 
 		// Convert subjects from CSV to string array
 		book.Subjects = splitCsvStringToArray(subjectAsCsv)
@@ -243,6 +249,15 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 		book.Isbns = splitCsvStringToArray(isbnsAsCsv)
 
 		datum = append(datum, book)
+
+        // Save to cache
+        bookAsBytes, err := json.Marshal(book)
+        if err == nil {
+            fmt.Println("Saving book to book cache")
+            go theService.cache.SetBytes(BOOK_CACHE, book.Id, bookAsBytes)
+        } else {
+            fmt.Println("Unable to save book to cache:", err)
+        }
 	}
 
     // reset the limit (number of things being returned)
@@ -288,6 +303,9 @@ func (theService bookService) DeleteBook(bookId int) error {
 
 	// Make DELETE query
 	_, err := theService.mysqlDb.Exec("DELETE FROM book WHERE book_id = ?", bookId)
+
+    // remove from cache
+    theService.cache.Clear(BOOK_CACHE, bookId)
 
 	return err
 }
@@ -432,105 +450,11 @@ func (theService bookService) UpdateBook(
 		return Book{}, errors.New("Unable to run update against DB for book: ")
 	}
 
+    // This next call will save the book into the cache and overwrite existing data
+
 	// get the book back
 	bookToReturn, err := theService.GetBook(bearer, bookId)
 
 	return bookToReturn, err
 }
 
-////////////////////////////////////////////////////
-//
-// Helper methods
-
-// Just need the author name
-type author struct {
-	Name string `json:"name"`
-}
-
-////////////
-// Query the /author endpoint for author information
-func (theService bookService) getAuthorNameById(bearer string, authorId int) string {
-	start := time.Now()
-
-	// Check cache
-	authorName := theService.cache.Get(AUTHOR_CACHE, authorId)
-	if len(authorName) > 0 {
-		return authorName
-	}
-
-	url := "http://author:8080/author/" + strconv.Itoa(authorId)
-
-	fmt.Println("Making call to>" + url + "<")
-	fmt.Println("bearer> '" + bearer + "' <")
-
-	// make client
-	superClient := http.Client{
-		Timeout: time.Second * 2, // Maximum of 2 secs
-	}
-
-	// make request object
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		fmt.Println("Unable to make new request to /author")
-		return ""
-	}
-
-	// set headers
-	req.Header.Set("User-Agent", "book-service-client")
-	req.Header.Set("authorization", "Bearer "+bearer)
-
-	// send request
-	res, getErr := superClient.Do(req)
-	if getErr != nil {
-		fmt.Println("Unable to send request to /author")
-		return ""
-	}
-
-	// Check status code
-	if !strings.Contains(res.Status, "200") {
-		fmt.Println("Unable to connect to '" + url + "' to get names. HTTP code: " + res.Status)
-		return ""
-	}
-
-	// parse body
-	body, readErr := ioutil.ReadAll(res.Body)
-	if readErr != nil {
-		fmt.Println("Unable to parse response from /author")
-		return ""
-	}
-
-	// get author info
-	authorBean := author{}
-	jsonErr := json.Unmarshal(body, &authorBean)
-	if jsonErr != nil {
-		fmt.Println("Unable to unmarshall response from /author")
-		return ""
-	}
-
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fmt.Println("Elapsed: ", elapsed)
-
-	return authorBean.Name
-}
-
-////////////
-// Split a CSV string into array
-func splitCsvStringToArray(subjectCsv string) []string {
-    if len(subjectCsv) > 0 {
-        return strings.Split(subjectCsv, ",")
-    } else {
-        return make([]string, 0)
-    }
-}
-
-////////////
-// Convert incoming int array to CSV string
-func convertIntArrayToCsv(intArray []int) string {
-	tempArray := make([]string, len(intArray))
-	for i, v := range intArray {
-		tempArray[i] = strconv.Itoa(v)
-	}
-
-	return strings.Join(tempArray, ",")
-}
