@@ -118,8 +118,6 @@ func getBookById(cache CacheLayer, bearer string, bookId int, userBook *UserBook
 
         err := json.Unmarshal(bookAsBytes, &book)
         if err == nil {
-            fmt.Println("Got 'book' from cache for bookid:", bookId)
-
             // Fill in book info
             userBook.Title = book.Title
             userBook.AuthorName = book.AuthorName
