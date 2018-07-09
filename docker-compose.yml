@@ -5,7 +5,8 @@ services:
    # Query the google book API endpoint. Must supply a Google API key 
    query:
      container_name: query
-     image: ${BOOK_REPOSITORY}books.query:latest
+#     image: ${BOOK_REPOSITORY}books.query:latest
+     image: ${BOOK_REPOSITORY}books.query.go:latest
      expose:
        - 8080
      restart: always
@@ -171,7 +172,7 @@ services:
     # COMBINE_URLS: comma separated list of URLs to gather yaml entries
     # Later yaml files will override previous yaml entries.
     # For example, gateway:80/swagger.yaml contains 'info' which will override any existing 'info' entries.
-      - COMBINE_URLS=author:8080/swagger.yaml,user:8080/swagger.yaml,authorize:8080/swagger.yaml,book:8080/swagger.yaml,tag:8080/swagger.yaml,user_book:8080/swagger.yaml,query:8080/v2/api-docs,gateway:80/swagger.yaml
+      - COMBINE_URLS=author:8080/swagger.yaml,user:8080/swagger.yaml,authorize:8080/swagger.yaml,book:8080/swagger.yaml,tag:8080/swagger.yaml,user_book:8080/swagger.yaml,query:8080/swagger.yaml,gateway:80/swagger.yaml
       - DEPLOY_HOST_NAME=${DEPLOY_HOST_NAME}
 
 

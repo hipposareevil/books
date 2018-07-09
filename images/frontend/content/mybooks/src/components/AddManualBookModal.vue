@@ -138,7 +138,7 @@
           <div class="control">
             <input class="input"
                    type="text"
-                   v-model="book.openlibraryWorkUrl"
+                   v-model="book.openLibraryWorkUrl"
                    placeholder="Openlibrary.org URL">
           </div>
         </div>
@@ -226,7 +226,7 @@
            authorId: '',
            description: '',
            firstPublishedYear: '',
-           openlibraryWorkUrl: '',
+           openLibraryWorkUrl: '',
            goodreadsUrl: '',
            imageMedium: ''
          },

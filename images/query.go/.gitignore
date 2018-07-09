@@ -1,0 +1,4 @@
+/query
+**/vendor/*
+**/Gopkg*
+pkg/*
