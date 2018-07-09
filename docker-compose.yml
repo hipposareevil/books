@@ -4,7 +4,7 @@ services:
 
    # Query the google book API endpoint. Must supply a Google API key 
    query:
-     container_name: query
+     container_name: books.query
      image: ${BOOK_REPOSITORY}books.query.go:latest
      expose:
        - 8080
@@ -19,7 +19,7 @@ services:
 
    # List and manage book authors
    author:
-     container_name: author
+     container_name: books.author
      image: ${BOOK_REPOSITORY}books.author.go:latest
      expose:
        - 8080
@@ -31,7 +31,7 @@ services:
 
    # List and manage books
    book:
-     container_name: book
+     container_name: books.book
      image: ${BOOK_REPOSITORY}books.book.go:latest
      expose:
        - 8080
@@ -43,7 +43,7 @@ services:
 
    # Manage users
    user:
-     container_name: user
+     container_name: books.user
      image: ${BOOK_REPOSITORY}books.user.go:latest
      expose:
        - 8080
@@ -55,7 +55,7 @@ services:
 
    # Manage books for user
    user_book:
-     container_name: user_book
+     container_name: books.user_books
      image: ${BOOK_REPOSITORY}books.user_book.go:latest
      expose:
        - 8080
@@ -67,7 +67,7 @@ services:
 
    # Manage tags
    tag:
-     container_name: tag
+     container_name: books.tag
      image: ${BOOK_REPOSITORY}books.tag.go:latest
      expose:
        - 8080
@@ -79,7 +79,7 @@ services:
 
    # Manage authorizations
    authorize:
-     container_name: authorize
+     container_name: books.authorize
      image: ${BOOK_REPOSITORY}books.authorize.go:latest
      expose:
        - 8080
@@ -91,7 +91,7 @@ services:
 
    # Frontend webpage + js
    frontend:
-     container_name: frontend
+     container_name: books.frontend
 #     image: ${BOOK_REPOSITORY}books.frontend:dev
      image: ${BOOK_REPOSITORY}books.frontend:prod
      restart: always
@@ -105,7 +105,7 @@ services:
    # Gateway-api runs on port 80 internally
    # It also exposes a swagger.yaml file for the 'swagger' container below.
    gateway:
-     container_name: gateway
+     container_name: books.gateway
      image: ${BOOK_REPOSITORY}books.gateway:latest
      ports:
        - 8080:80 
@@ -118,7 +118,7 @@ services:
    # MySQL database for storing books, authors and users.
    # This loads the books.sql database on initialization
    books_db:
-    container_name: books_db
+    container_name: books.db
     image: mysql:latest
     volumes:
       - "./database/mysql/:/var/lib/mysql"
@@ -137,7 +137,7 @@ services:
 
    # Redis key/value store for user and tokens
    token_db:
-    container_name: token_db
+    container_name: books.token_db
     image: redis:3.2-alpine
     restart: always
     logging:
@@ -151,7 +151,7 @@ services:
    # Swagger-UI running on port 8080 that is a single UI showing all of the
    # microservices' swagger information.
    swagger:
-    container_name: swagger
+    container_name: books.swagger
     image: hipposareevil/swagger-combine
     restart: always
     logging:
@@ -165,7 +165,7 @@ services:
     # COMBINE_URLS: comma separated list of URLs to gather yaml entries
     # Later yaml files will override previous yaml entries.
     # For example, gateway:80/swagger.yaml contains 'info' which will override any existing 'info' entries.
-      - COMBINE_URLS=author:8080/swagger.yaml,user:8080/swagger.yaml,authorize:8080/swagger.yaml,book:8080/swagger.yaml,tag:8080/swagger.yaml,user_book:8080/swagger.yaml,query:8080/swagger.yaml,gateway:80/swagger.yaml
+      - COMBINE_URLS=books.author:8080/swagger.yaml,books.user:8080/swagger.yaml,books.authorize:8080/swagger.yaml,books.book:8080/swagger.yaml,books.tag:8080/swagger.yaml,books.user_book:8080/swagger.yaml,books.query:8080/swagger.yaml,books.gateway:80/swagger.yaml
       - DEPLOY_HOST_NAME=${DEPLOY_HOST_NAME}
 
 

@@ -32,14 +32,14 @@ func main() {
 
 	/////////////////
 	// Make redis pool
-	redisPool, err := pool.New("tcp", "token_db:6379", 10)
+	redisPool, err := pool.New("tcp", "books.token_db:6379", 10)
 	if err != nil {
 		fmt.Println("Got error when making connection to redis: ", err)
 	}
 
 	/////////////////
 	// Make Mysql db connection
-	db, err := sql.Open("mysql", "booksuser:books@tcp(books_db:3306)/booksdatabase?parseTime=true")
+	db, err := sql.Open("mysql", "booksuser:books@tcp(books.db:3306)/booksdatabase?parseTime=true")
 
 	// if there is an error opening the connection, handle it
 	if err != nil {
