@@ -57,6 +57,17 @@ func main() {
     // no authentication like the other services
     router.Methods("GET").Path("/query/author").Handler(queryAuthorHandler)
 
+	// GET /title
+
+    queryTitleEndpoint := makeQueryTitleEndpoint(querySvc)
+    queryTitleHandler := httptransport.NewServer(
+        queryTitleEndpoint,
+        decodeQueryTitleRequest,
+        encodeResponse,
+    )
+    // no authentication like the other services
+    router.Methods("GET").Path("/query/book").Handler(queryTitleHandler)
+
     //////////////
 	// Start server
 	addr := ":8080"

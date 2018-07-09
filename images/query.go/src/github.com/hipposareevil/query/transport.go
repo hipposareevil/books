@@ -38,6 +38,26 @@ func makeQueryAuthorEndpoint(svc QueryService) endpoint.Endpoint {
 }
 
 
+// GET /query/title
+func makeQueryTitleEndpoint(svc QueryService) endpoint.Endpoint {
+
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		// convert request into a queryTitleRequest
+		req := request.(queryTitleRequest)
+
+		// call actual service with data from the request
+        titles, err := svc.QueryTitle(req.Author,
+            req.Title,
+            req.Isbn,
+            req.Offset, req.Limit)
+		return titlesResponse{
+			Data: titles,
+			Err:  err,
+		}, nil
+	}
+}
+
+
 //////////////////////////////////////////////////////////
 //
 // Decode
@@ -51,7 +71,6 @@ func decodeQueryAuthorRequest(_ context.Context, r *http.Request) (interface{}, 
 	r.ParseForm()
 	values := r.Form
 
-	// Offset, use a default of 0
 	authorName := values.Get("author")
 
 	var request queryAuthorRequest
@@ -63,6 +82,34 @@ func decodeQueryAuthorRequest(_ context.Context, r *http.Request) (interface{}, 
 
 	return request, nil
 }
+
+
+
+// Create a queryTitleRequest
+func decodeQueryTitleRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	realOffset, realLimit := parseOffsetAndLimit(r)
+
+    // Get params
+	r.ParseForm()
+	values := r.Form
+
+	authorName := values.Get("author")
+	title := values.Get("title")
+	isbn := values.Get("isbn")
+
+	var request queryTitleRequest
+	request = queryTitleRequest {
+		Offset: realOffset,
+		Limit:  realLimit,
+        Author: authorName,
+        Isbn: isbn,
+        Title: title,
+	}
+
+	return request, nil
+}
+
+
 
 // Decode the common parts of a request:
 // * offset

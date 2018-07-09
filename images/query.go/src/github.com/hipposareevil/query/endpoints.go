@@ -32,3 +32,22 @@ func (theResponse authorsResponse) getData() interface{} {
 	return theResponse.Data
 }
 
+
+////////////////////
+/// Titles
+// response for query title
+type titlesResponse struct {
+	Data Titles  `json:"all,omitempty"`
+	Err  error `json:"err,omitempty"`
+}
+
+// titlesResponse.error
+func (theResponse titlesResponse) error() error {
+	return theResponse.Err
+}
+
+// titlesResponse.getData
+func (theResponse titlesResponse) getData() interface{} {
+	return theResponse.Data
+}
+

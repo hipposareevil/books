@@ -1,0 +1,275 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "/query endpoint for using openlibrary.org api",
+    "version": "2.0",
+    "title": "Query endpoint",
+    "contact": {},
+    "license": {}
+  },
+  "host": "0.0.0.0:8080",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Query",
+      "description": "Queries openlibrary.org for books"
+    }
+  ],
+  "paths": {
+    "/query/author": {
+      "get": {
+        "tags": [
+          "query"
+        ],
+        "summary": "/author",
+        "description": "Query openlibrary.org for authors. Returns list of authors.",
+        "operationId": "query authorUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "author",
+            "in": "query",
+            "description": "Author's name",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Where to start the returned data segment from the full result",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Size of the returned data segment.",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResultWrapper«QueryAuthorResult»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/query/book": {
+      "get": {
+        "tags": [
+          "query"
+        ],
+        "summary": "/book",
+        "description": "Query openlibrary for book titles. Results are sorted by the number of ISBNs per book. The first titles in the resulting list will be the ones with more associated ISBNS",
+        "operationId": "query book titlesUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "author",
+            "in": "query",
+            "description": "Author's name",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "Book Title",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "isbn",
+            "in": "query",
+            "description": "Book ISBN",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Where to start the returned data segment from the full result",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Size of the returned data segment.",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResultWrapper«QueryTitleResult»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ResultWrapper«QueryAuthorResult»": {
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QueryAuthorResult"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ResultWrapper«QueryTitleResult»": {
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QueryTitleResult"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "QueryAuthorResult": {
+      "properties": {
+        "birthDate": {
+          "type": "string"
+        },
+        "imageLarge": {
+          "type": "string"
+        },
+        "imageMedium": {
+          "type": "string"
+        },
+        "imageSmall": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "olKey": {
+          "type": "string"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "QueryTitleResult": {
+      "properties": {
+        "authorKey": {
+          "type": "string"
+        },
+        "authorName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "firstPublishedYear": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "imageLarge": {
+          "type": "string"
+        },
+        "imageMedium": {
+          "type": "string"
+        },
+        "imageSmall": {
+          "type": "string"
+        },
+        "isbns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "openLibraryKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "openLibraryWorkUrl": {
+          "type": "string"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
+
