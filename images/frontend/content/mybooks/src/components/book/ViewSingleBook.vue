@@ -85,8 +85,8 @@
           <!-- Footer -->
           <footer class="card-footer">
             <p class="card-footer-item">
-              <span v-if="bookData.openlibraryWorkUrl">
-                <a :href="bookData.openlibraryWorkUrl">openlibrary.org</a>
+              <span v-if="bookData.openLibraryWorkUrl">
+                <a :href="bookData.openLibraryWorkUrl">openlibrary.org</a>
               </span>
             </p>
             <p class="card-footer-item">

@@ -164,7 +164,7 @@ export default {
       authorId: authorid,
       description: book.description,
       firstPublishedYear: book.firstPublishedYear,
-      openlibraryWorkUrl: book.openlibraryWorkUrl,
+      openLibraryWorkUrl: book.openLibraryWorkUrl,
       goodreadsUrl: book.goodreadsUrl,
       subjects: book.subjects,
       isbns: book.isbns,
