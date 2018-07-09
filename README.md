@@ -31,7 +31,6 @@ Table of Contents
          * [Redis](#redis)
             * [Authentication](#authentication)
             * [Cache](#cache)
-      * [Metrics](#metrics)
    * [Notes and Thoughts](#notes-and-thoughts)
       * [Initial](#initial)
       * [Memory Usage](#memory-usage)
@@ -42,7 +41,7 @@ This project has two goals; to create a book repository (like [goodreads.com](ht
 
 The frontend web application is a [SPA](https://en.wikipedia.org/wiki/Single-page_application) written in Javascript ([vue.js](https://vuejs.org/)).
 
-The backend is a set of micro-services written in Java and Golang, backed by [mysql](https://www.mysql.com/) and [redis](https://redis.io/) databases.  There are various (micro-service) endpoints for interfacing with and querying the data, see [endpoints](#endpoints) below. Most endpoints requires authorization, which is obtained at the */authorize* endpoint. See the */swagger* endpoint for full information.  
+The backend is a set of micro-services written in Golang, backed by [mysql](https://www.mysql.com/) and [redis](https://redis.io/) databases.  There are various (micro-service) endpoints for interfacing with and querying the data, see [endpoints](#endpoints) below. Most endpoints requires authorization, which is obtained at the */authorize* endpoint. See the */swagger* endpoint for full information.  
 
 There is an initial user of *admin* with same password. The *admin* user can create a new user, or update the *admin* user via the */user* endpoint or the main web application. 
 
@@ -89,14 +88,16 @@ openjdk:8-jdk-alpine | Base image for web services.
 
 ## Frameworks used
 
-* [dropwizard](http://www.dropwizard.io/)
-* [spring boot](https://projects.spring.io/spring-boot/)
 * [go-kit](https://github.com/go-kit/kit)
 * [swagger](http://swagger.io)
 * [bulma css](http://bulma.io/)
 * [vue javascript](https://vuejs.org/)
+
+*Deprecated*
 * [graphite](https://graphiteapp.org)
 * [grafana](https://grafana.com)
+* [dropwizard](http://www.dropwizard.io/)
+* [spring boot](https://projects.spring.io/spring-boot/)
 
 
 ## Managing application
@@ -199,28 +200,28 @@ Microservice to manage the complete set of Authors in the database. Operations i
 
 See [author.go](https://github.com/hipposareevil/books/blob/master/images/author/README.md) for more information. 
 
-See *deprecated* [author](https://github.com/hipposareevil/books/blob/master/images/author/README.md) for more information. 
+See *deprecated* [author](https://github.com/hipposareevil/books/blob/master/images.java/author/README.md) for more information. 
 
 ### book
 Microservice to manage the complete set of Books in the database. Operations include; list, query, add, delete.
 
 Sett [book.go](https://github.com/hipposareevil/books/blob/master/images/book.go/README.md) for more information. 
 
-See *deprecated* [book](https://github.com/hipposareevil/books/blob/master/images/book/README.md) for more information. 
+See *deprecated* [book](https://github.com/hipposareevil/books/blob/master/images.java/book/README.md) for more information. 
 
 ### user
 Microservice to manage users. A *user* is used to maintain a set of *user books*, which stores which books the user is cataloging, along with metadata, tags and a rating. In addition, a *user* is used to obtain an authorization token for authenticating against the various endpoints.
 
 See [user](https://github.com/hipposareevil/books/blob/master/images/user.go/README.md) for more information. 
 
-See *deprecated* [user](https://github.com/hipposareevil/books/blob/master/images/user/README.md) for more information. 
+See *deprecated* [user](https://github.com/hipposareevil/books/blob/master/images.java/user/README.md) for more information. 
 
 ### user_book
 Microservice to manage a set of books for a user. Each user has a list of books they can catalog. Each *user book* has a link to the real Book and associated Author. In addition, a *user book* has user *data* and a set of *tags*. 
 
 See [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book.go/README.md) for more information. 
 
-See *deprecated* [user_book](https://github.com/hipposareevil/books/blob/master/images/user_book/README.md) for more information. 
+See *deprecated* [user_book](https://github.com/hipposareevil/books/blob/master/images.java/user_book/README.md) for more information. 
 
 ### tag
 Microservice to manage tags. Tags can be applied to a user's set of books via the *user_books* endpoint.  Multiple tags may be applied to a single book, e.g. "e-book" and "sci-fi".
@@ -229,7 +230,7 @@ Microservice to manage tags. Tags can be applied to a user's set of books via th
 
 See [tag.go](https://github.com/hipposareevil/books/blob/master/images/tag.go/README.md) for more information. 
 
-See *deprecated* [tag](https://github.com/hipposareevil/books/blob/master/images/tag/README.md) for more information. 
+See *deprecated* [tag](https://github.com/hipposareevil/books/blob/master/images.java/tag/README.md) for more information. 
 
 
 ### authorize
@@ -237,7 +238,7 @@ Microservice to authenticate a user. This creates a token of the form 'Bearer qw
 
 See [authorize](https://github.com/hipposareevil/books/blob/master/images/authorization.go/README.md) for more information. 
 
-See *deprecated* [authorize](https://github.com/hipposareevil/books/blob/master/images/authorization/README.md) for more information. 
+See *deprecated* [authorize](https://github.com/hipposareevil/books/blob/master/images.java/authorization/README.md) for more information. 
 
 ### swagger
 Swagger-ui that combines the swagger.yaml files from the REST endpoints. Uses [swagger-combine](https://hub.docker.com/r/hipposareevil/swagger-combine/) image to grab the definitions.
@@ -273,12 +274,6 @@ tag.go | tag | user_book.go | All tags as JSON, indexed by '0' to denote all tag
 book.go | book.info | user_book.go | Individual Book JSON indexed by book ID
 
 
-## Metrics
-
-Metrics are provided via [graphite](https://graphiteapp.org/) and [grafana](https://grafana.com/).
-
-See the [metrics](https://github.com/hipposareevil/books/blob/master/metrics/README.md) directory for more information.
-
 # Notes and Thoughts
 
 ## Initial
@@ -309,6 +304,5 @@ More note worthy is golang's memory usage, being 1% the size of the Java impleme
 
 ## Plans
 
-* Port remaining services from Java to golang.
 * Add graphite metrics to golang services.
 * Investigate [istio.io](https://istio.io/) for service discovery and metrics.
