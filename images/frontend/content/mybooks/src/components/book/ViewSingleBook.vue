@@ -25,7 +25,7 @@
     <!-- data columns -->
     <div class="columns">
       <!-- left column -->
-      <div class="column is-2">
+      <div class="column is-3">
 
         <!-- Image  -->
         <figure class="image isclickable"
@@ -40,7 +40,7 @@
       </div>
 
       <!--  info -->
-      <div class="column is-4">
+      <div class="column is-6">
 
         <div class="card">
           <div class="card-content">
@@ -60,27 +60,35 @@
                 Published: <time>{{ bookData.firstPublishedYear }}</time>
               </span>
             </p>
-          </div>
 
-          <!-- description -->
-          <div class="card-content"
-               @dblclick="changeDescription"
-               title="Double click to update.">
-            <p class="title is-6">
-              Description:
-            </p>
+
             <!-- description or ... -->
-            <div class="isclickable subtitle">
+            <div class="isclickable subtitle"
+                 @dblclick="changeDescription"
+                 title="Double click to update.">
               <div v-if="bookData.description"
                    v-bind:class="{ 'has-text-success' : bookDescriptionWasChangedFlag.flag }">
-                {{ bookData.description }}
+                <!-- expand section -->
+                <div v-bind:class="{ 'expanded': descriptionExpanded, 'notExpanded': !descriptionExpanded }">
+                  {{ bookData.description }}
+
+                </div>
+                <span v-if="descriptionExpanded">
+                  <a class="expanderText"
+                     @click="toggleDescription">(less)</a>
+                  </span>
+                  <span v-else>
+                    <a class="expanderText"
+                       @click="toggleDescription">...more</a>
+                  </span>
+                <!-- end expand section -->
               </div>
               <div v-else>
-                .....
+                ...
               </div>
+
             </div>
           </div>
-
 
           <!-- Footer -->
           <footer class="card-footer">
@@ -139,13 +147,14 @@
         // Used for alerting user after a change went through
         bookDescriptionWasChangedFlag: {
           flag: false
-        }
+        },
+        descriptionExpanded: false
       }
     },
     /**
      * When mounted, get extra info
      */
-    mounted: function () {
+    created: function () {
       this.getBook()
     },
     /**
@@ -190,6 +199,9 @@
        */
       changeTitle () {
         this.showTitleChangeModal = true
+      },
+      toggleDescription () {
+        this.descriptionExpanded = !this.descriptionExpanded
       },
       /**
        * Set a new description
@@ -324,6 +336,7 @@
     cursor: pointer;
 }
 
+/*
 .isclickable:hover {
     background-color: rgb(245,245,245)
 }
@@ -331,6 +344,16 @@
 a:hover {
     background-color: rgb(245,245,245)
 }
+*/
+.expanderText {
+    color: green
+}
+.expanderText:hover {
+    text-decoration: underline;
+    background-color: white;
+    color: green;
+}
+
 
 /* Tooltip container */
 .tooltip {
@@ -367,4 +390,13 @@ a:hover {
 .boxshadow {
     box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, .1);
 }
+
+.notExpanded {
+    height: 15em;
+    overflow: hidden;
+}
+
+.expanded {
+}
+
 </style>
