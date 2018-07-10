@@ -27,12 +27,12 @@ type UserBookService interface {
 	DeleteUserBook(int, int) error
 
 	// CreateUserBook (see createUserBookRequest for params)
-	CreateUserBook(string, int, int, bool, []string) (UserBook, error)
+	CreateUserBook(string, int, int, bool, []string, string) (UserBook, error)
 
 	// UpdateUserBook
 	// Same as CreateUserBook but the first param is the ID of book to update
 	// first param: bearer
-	UpdateUserBook(string, int, int, int, bool, []string) (UserBook, error)
+	UpdateUserBook(string, int, int, int, bool, []string, string) (UserBook, error)
 
 	//////////////////////////////////////////////////
 
@@ -89,11 +89,11 @@ func (theService userbookService) GetUserBook(bearer string, userId int, userBoo
 	// Scan the DB info into 'book' composite variable
 	err := theService.mysqlDb.
 		QueryRow("SELECT "+
-			"user_book_id, user_id, book_id, rating, date_added "+
+        "user_book_id, user_id, book_id, rating, date_added, review "+
 			"FROM userbook "+
 			"WHERE user_id=? AND user_book_id=?",
 			userId, userBookId).
-		Scan(&userBook.UserBookId, &userBook.UserId, &userBook.BookId, &userBook.Rating, &userBook.DateAdded)
+                Scan(&userBook.UserBookId, &userBook.UserId, &userBook.BookId, &userBook.Rating, &userBook.DateAdded, &userBook.Review)
 
 	switch {
 	case err == sql.ErrNoRows:
@@ -168,7 +168,7 @@ func (theService userbookService) getAllUserBooks(bearer string, userId int, off
 	// Make query
 	results, err := theService.mysqlDb.
 		Query("SELECT "+
-			"user_book_id, user_id, book_id, rating, date_added "+
+        "user_book_id, user_id, book_id, rating, date_added, review "+
 			"FROM userbook WHERE "+
 			"user_id=? LIMIT ?,?", userId, offset, limit)
 
@@ -186,7 +186,7 @@ func (theService userbookService) getAllUserBooks(bearer string, userId int, off
 
 		// For each row, scan the result into our userbook composite object:
 		err = results.
-			Scan(&userBook.UserBookId, &userBook.UserId, &userBook.BookId, &userBook.Rating, &userBook.DateAdded)
+			Scan(&userBook.UserBookId, &userBook.UserId, &userBook.BookId, &userBook.Rating, &userBook.DateAdded, &userBook.Review)
 
 		if err != nil {
 			fmt.Println("Got error from mysql when getting all user books: " + err.Error())
@@ -401,7 +401,7 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 	// Only query if there are some IDs to search for
 	if len(finalUserBookIds) > 0 {
         selectString := "SELECT "+
-				"user_book_id, user_id, book_id, rating, date_added "+
+            "user_book_id, user_id, book_id, rating, date_added, review "+
 				"FROM userbook WHERE "+
 				"user_book_id in (" + convertIntArrayToCsv(finalUserBookIds) + ")"
 
@@ -419,7 +419,7 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 
 			// For each row, scan the result into our userbook composite object:
 			err = results.
-				Scan(&userBook.UserBookId, &userBook.UserId, &userBook.BookId, &userBook.Rating, &userBook.DateAdded)
+				Scan(&userBook.UserBookId, &userBook.UserId, &userBook.BookId, &userBook.Rating, &userBook.DateAdded, &userBook.Review)
 
 			if err != nil {
 				fmt.Println("Got error from mysql when getting all user books: " + err.Error())
@@ -514,7 +514,7 @@ func (theService userbookService) DeleteUserBook(userId int, userBookId int) err
 // returns:
 // userbook
 // error
-func (theService userbookService) CreateUserBook(bearer string, userId int, bookId int, rating bool, incomingTags []string) (UserBook, error) {
+func (theService userbookService) CreateUserBook(bearer string, userId int, bookId int, rating bool, incomingTags []string, review string) (UserBook, error) {
 
 	fmt.Println("")
 	fmt.Println("-- CreateUserBook --")
@@ -531,7 +531,7 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 	stmt, err := theService.mysqlDb.
 		Prepare("INSERT INTO userbook SET " +
 			"user_id=?, book_id=?, " +
-			"rating=?, date_added=? ")
+			"rating=?, date_added=?, review=? ")
 	defer stmt.Close()
 	if err != nil {
 		fmt.Println("Error preparing DB: ", err)
@@ -543,7 +543,7 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 
 	///////////////////////
 	// Execute Insert
-	res, err := stmt.Exec(userId, bookId, rating, now)
+	res, err := stmt.Exec(userId, bookId, rating, now, review)
 
 	if err != nil {
 		fmt.Println("Error inserting into userbook DB: ", err)
@@ -574,6 +574,7 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 		Tags:       tagNamesAdded,
 		UserId:     userId,
 		UserBookId: int(userBookId),
+        Review: review,
 		DateAdded:  now,
 	}
 
@@ -593,7 +594,7 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 //
 // returns:
 // error
-func (theService userbookService) UpdateUserBook(bearer string, userId int, userBookId int, bookId int, rating bool, incomingTags []string) (UserBook, error) {
+func (theService userbookService) UpdateUserBook(bearer string, userId int, userBookId int, bookId int, rating bool, incomingTags []string, review string) (UserBook, error) {
 	fmt.Println("")
 	fmt.Println("-- UpdateUserBook --")
 
@@ -609,6 +610,7 @@ func (theService userbookService) UpdateUserBook(bearer string, userId int, user
 	stmt, err := theService.mysqlDb.
 		Prepare("UPDATE userbook SET " +
 			"book_id=COALESCE(NULLIF(?,''),book_id), " +
+			"review=COALESCE(NULLIF(?,''),review), " +
 			"rating=COALESCE(NULLIF(?,''),rating)" +
 			"WHERE user_id=? AND user_book_id=?")
 	defer stmt.Close()
@@ -617,7 +619,7 @@ func (theService userbookService) UpdateUserBook(bearer string, userId int, user
 		return UserBook{}, errors.New("Unable to prepare a DB statement when updating userbook: ")
 	}
 
-	_, err = stmt.Exec(bookId, rating, userId, userBookId)
+	_, err = stmt.Exec(bookId, review, rating, userId, userBookId)
 
 	if err != nil {
 		fmt.Println("Error updating DB for userbook: ", err)

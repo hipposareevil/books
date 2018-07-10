@@ -99,7 +99,8 @@ func makeCreateUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
             req.UserId,
             req.BookId,
             req.Rating,
-            req.Tags)
+            req.Tags,
+            req.Review)
 
 		return createUserBookResponse{
 			Data: newBook,
@@ -122,7 +123,8 @@ func makeUpdateUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
             req.UserBookId,
             req.BookId,
             req.Rating,
-            req.Tags)
+            req.Tags,
+            req.Review)
 
 
 		return updateUserBookResponse{

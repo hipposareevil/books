@@ -54,6 +54,7 @@ create_generic_user_book() {
 read -r -d '' book_data <<EOF
 {
   "bookId": $book_id,
+  "review" : "super review for generic book",
   "tags": [
     "testit"
   ]
@@ -79,6 +80,7 @@ read -r -d '' book_data <<EOF
 {
   "bookId": $book_id,
   "rating": true,
+  "review" : "review for asimov book",
   "tags": [
     "ebook", "sci-fi", "best"
   ]
@@ -103,6 +105,7 @@ read -r -d '' book_data <<EOF
 {
   "bookId": $book_id,
   "rating": true,
+  "review" : "review for second book",
   "tags": [
     "ebook", "fake", "super"
   ]
@@ -512,11 +515,11 @@ validate_userbook_asimov() {
 
     # title
     title=$(echo "$user_book" | jq -r .title)
-    assert_string_equals "$title" "$asimov_book_title" "UserBook's mapped book title"
+    assert_string_equals "$asimov_book_title"  "$title" "UserBook's mapped book title"
 
     # author name
     authorname=$(echo "$user_book" | jq -r .authorName)
-    assert_string_equals "$authorname" "$asimov_book_author_name" "UserBook's mapped book author name"
+    assert_string_equals "$asimov_book_author_name" "$authorname"  "UserBook's mapped book author name"
 
     # author id
     authorid=$(echo "$user_book" | jq -r .authorId)
@@ -524,7 +527,11 @@ validate_userbook_asimov() {
 
     # rating
     rating=$(echo "$user_book" | jq -r .rating)
-    assert_string_equals "$rating"  "true" "UserBook's mapped book rating"
+    assert_string_equals "true" "$rating" "UserBook's mapped book rating"
+
+    # review
+    review=$(echo "$user_book" | jq -r .review)
+    assert_string_equals "review for asimov book" "$review" "UserBook's mapped review"
 
     # book year
     year=$(echo "$user_book" | jq -r .firstPublishedYear)
@@ -532,10 +539,10 @@ validate_userbook_asimov() {
 
     # book images
     image=$(echo "$user_book" | jq -r .imageMedium)
-    assert_string_equals "$image" "$asimov_book_image_medium" "UserBook's mapped book medium image"
+    assert_string_equals  "$asimov_book_image_medium" "$image" "UserBook's mapped book medium image"
 
     image=$(echo "$user_book" | jq -r .imageSmall)
-    assert_string_equals "$image" "$asimov_book_image_small" "UserBook's mapped book small image"
+    assert_string_equals "$asimov_book_image_small" "$image" "UserBook's mapped book small image"
 
     # tags
     tags=$(echo "$user_book" | jq -r '.tags | join(", ")')

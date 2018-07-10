@@ -237,6 +237,8 @@ definitions:
       firstPublishedYear:
         type: "integer"
         format: "int32"
+      review:
+        type: "string"
       imageSmall:
         type: "string"
       imageMedium:
@@ -249,6 +251,8 @@ definitions:
       bookId:
         type: "integer"
         format: "int32"
+      review:
+        type: "string"
       rating:
         type: "boolean"
         default: false

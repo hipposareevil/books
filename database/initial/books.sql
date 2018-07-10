@@ -28,6 +28,7 @@ CREATE TABLE `userbook` (
   `book_id`  int(11) NOT NULL,
   `rating` tinyint(1) DEFAULT 0,
   `date_added` DATETIME DEFAULT NULL,
+  `review` varchar(8000) DEFAULT '',
   PRIMARY KEY (`user_book_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
