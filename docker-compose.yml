@@ -55,7 +55,7 @@ services:
 
    # Manage books for user
    user_book:
-     container_name: books.user_books
+     container_name: books.user_book
      image: ${BOOK_REPOSITORY}books.user_book.go:latest
      expose:
        - 8080
@@ -92,8 +92,8 @@ services:
    # Frontend webpage + js
    frontend:
      container_name: books.frontend
-#     image: ${BOOK_REPOSITORY}books.frontend:dev
-     image: ${BOOK_REPOSITORY}books.frontend:prod
+     image: ${BOOK_REPOSITORY}books.frontend:dev
+#     image: ${BOOK_REPOSITORY}books.frontend:prod
      restart: always
      logging:
        driver: "json-file"

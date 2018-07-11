@@ -23,7 +23,7 @@
         <div v-else>
           <textarea class="textarea"
                     v-model="newValue"
-                    rows="10"
+                    rows="25"
                     placeholder="new value...">
           </textarea>
         </div>

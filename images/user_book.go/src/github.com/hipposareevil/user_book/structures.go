@@ -38,6 +38,7 @@ type createUserBookRequest struct {
 	BookId int      `json:"bookId"`
 	Rating bool     `json:"rating"`
 	Tags   []string `json:"tags"`
+	Review string   `json:"review"`
 }
 
 // PUT request to update user book
@@ -46,8 +47,9 @@ type updateUserBookRequest struct {
 	UserId     int      `json:"user_id"`
 	UserBookId int      `json:"user_book_id"`
 	BookId     int      `json:"bookId"`
-	Rating     bool     `json:"rating"`
-	Tags       []string `json:"tags"`
+	Rating     *bool     `json:"rating"`
+	Tags       *[]string `json:"tags"`
+	Review     *string   `json:"review"`
 }
 
 //////////////////////////////////
@@ -62,6 +64,7 @@ type UserBook struct {
 	UserBookId         int       `json:"userBookId"`
 	DateAdded          time.Time `json:"dateAdded"`
 	Title              string    `json:"title"`
+	Review             string    `json:"review"`
 	AuthorName         string    `json:"authorName"`
 	AuthorId           int       `json:"authorId"`
 	FirstPublishedYear int       `json:"firstPublishedYear"`

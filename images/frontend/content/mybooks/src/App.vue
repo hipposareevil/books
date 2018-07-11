@@ -11,9 +11,6 @@
            role="navigation"
            aria-label="main navigation">
         <div class="navbar-brand">
-          <a class="navbar-item" href="/">
-            <img src="./assets/leaningBooks.png">&nbsp;myBooks
-          </a>
 
           <!-- Mobile navigation -->
           <div class="navbar-burger"
@@ -39,7 +36,7 @@
                v-if="is_authenticated()">
               <router-link tag="div" to="/shelves" exact>
                 <span class="icon is-medium">
-                  <i class="fa fa-wpexplorer"></i>
+                  <i class="fas fa-wpexplorer"></i>
                 </span>
                 <span>My Books</span>
               </router-link>
@@ -52,7 +49,7 @@
                v-if="is_authenticated()">
               <router-link tag="span" to="/books" exact>
                 <span class="icon is-large">
-                  <i class="fa fa-book"></i>
+                  <i class="fas fa-book"></i>
                 </span>
                 <span>All Books</span>
               </router-link>
@@ -63,7 +60,7 @@
                @click="toggleMobileNav"
                v-if="is_authenticated()">
               <router-link tag="span" to="/authors" exact>
-                <span class="icon is-large"><i class="fa fa-grav"></i></span>
+                <span class="icon is-large"><i class="fab fa-grav"></i></span>
                 <span>All Authors</span>
               </router-link>
             </a>
@@ -92,10 +89,7 @@
             <!-- home -->
             <a class="navbar-item">
               <router-link tag="div" to="/" exact>
-                <span class="icon is-medium">
-                  <i class="fa fa-home"></i>
-                </span>
-                <span>Home</span>
+                <img src="./assets/leaningBooks.png">&nbsp;Home
               </router-link>
             </a>
 
@@ -104,34 +98,36 @@
                v-if="is_authenticated()">
               <router-link tag="div" to="/shelves" exact>
                 <span class="icon is-medium">
-                  <i class="fa fa-wpexplorer"></i>
+                  <i class="fab fa-wpexplorer"></i>
                 </span>
                 <span>My Books</span>
               </router-link>
             </a>
 
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                Browse
+              </a>
 
-            <!-- /books -->
-            <a class="navbar-item disabled"
-               v-if="is_authenticated()">
-              <router-link tag="span" to="/books" exact>
-                <span class="icon is-large">
-                  <i class="fa fa-book"></i>
-                </span>
-                <span>All Books</span>
-              </router-link>
-            </a>
+              <div class="navbar-dropdown is-boxed">
+                <!-- Books -->
+                <a class="navbar-item">
+                  <router-link tag="span" to="/books" exact>
+                    <span class="icon is-large"><i class="fa fa-book"></i></span>
+                    <span>Books</span>
+                  </router-link>
+                </a>
 
-
-            <!-- /authors -->
-            <a class="navbar-item"
-               v-if="is_authenticated()">
-              <router-link tag="span" to="/authors" exact>
-                <span class="icon is-large"><i class="fa fa-grav"></i></span>
-                <span>All Authors</span>
-              </router-link>
-            </a>
-
+                <!-- Autors -->
+                <a class="navbar-item">
+                  <router-link tag="span" to="/authors" exact>
+                    <span class="icon is-large"><i class="fab fa-grav"></i></span>
+                    <span>Authors</span>
+                  </router-link>
+                </a>
+              </div>
+            </div>
+            <!-- end of dropdown for browse -->
 
           </div> <!-- end navbar-start -->
 
@@ -364,7 +360,8 @@ a {
   color: #4a4a4a;
 }
 .is-active {
-  font-size: 160%;
+  font-size: 120%;
+  font-weight: bold;
   border-bottom: dashed lightgray 1px;
 }
 
