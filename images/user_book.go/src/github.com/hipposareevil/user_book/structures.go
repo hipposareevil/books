@@ -48,7 +48,7 @@ type updateUserBookRequest struct {
 	UserBookId int      `json:"user_book_id"`
 	BookId     int      `json:"bookId"`
 	Rating     bool     `json:"rating"`
-	Tags       []string `json:"tags"`
+	Tags       *[]string `json:"tags"`
 	Review string   `json:"review"`
 }
 

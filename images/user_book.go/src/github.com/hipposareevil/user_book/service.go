@@ -32,7 +32,7 @@ type UserBookService interface {
 	// UpdateUserBook
 	// Same as CreateUserBook but the first param is the ID of book to update
 	// first param: bearer
-	UpdateUserBook(string, int, int, int, bool, []string, string) (UserBook, error)
+	UpdateUserBook(string, int, int, int, bool, *[]string, string) (UserBook, error)
 
 	//////////////////////////////////////////////////
 
@@ -556,8 +556,6 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 
 	// get the id
 	userBookId, _ := res.LastInsertId()
-	fmt.Println("user book: ", userBookId)
-	fmt.Println("Want to add these tags: ", incomingTags)
 
 	///////////////////////
 	// Update the tag mappings
@@ -594,7 +592,7 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 //
 // returns:
 // error
-func (theService userbookService) UpdateUserBook(bearer string, userId int, userBookId int, bookId int, rating bool, incomingTags []string, review string) (UserBook, error) {
+func (theService userbookService) UpdateUserBook(bearer string, userId int, userBookId int, bookId int, rating bool, incomingTags *[]string, review string) (UserBook, error) {
 	fmt.Println("")
 	fmt.Println("-- UpdateUserBook --")
 
@@ -611,7 +609,7 @@ func (theService userbookService) UpdateUserBook(bearer string, userId int, user
 		Prepare("UPDATE userbook SET " +
 			"book_id=COALESCE(NULLIF(?,''),book_id), " +
 			"review=COALESCE(NULLIF(?,''),review), " +
-			"rating=COALESCE(NULLIF(?,''),rating)" +
+			"rating=? " + 
 			"WHERE user_id=? AND user_book_id=?")
 	defer stmt.Close()
 	if err != nil {
@@ -628,17 +626,20 @@ func (theService userbookService) UpdateUserBook(bearer string, userId int, user
 
 	//////////////////////
 	// Clear old tag mappings and add new ones
-	err = theService.deleteTagMappings(userId, userBookId)
-	if err != nil {
-		fmt.Println("Error updating tag mappings for updated userbook. UserBookId: ", userBookId)
-		return UserBook{}, err
-	}
 
-	_, err = theService.updateTagMappings(bearer, userId, int(userBookId), incomingTags)
-	if err != nil {
-		fmt.Println("Error updating tag mappings for updated userbook . userBookid: ", userBookId)
-		return UserBook{}, err
-	}
+    if incomingTags != nil {
+        err = theService.deleteTagMappings(userId, userBookId)
+        if err != nil {
+            fmt.Println("Error updating tag mappings for updated userbook. UserBookId: ", userBookId)
+            return UserBook{}, err
+        }
+
+        _, err = theService.updateTagMappings(bearer, userId, int(userBookId), *incomingTags)
+        if err != nil {
+            fmt.Println("Error updating tag mappings for updated userbook . userBookid: ", userBookId)
+            return UserBook{}, err
+        }
+    }
 
     ///////////////
     // Get full userbook
