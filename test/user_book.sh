@@ -163,8 +163,25 @@ update_user_book() {
 read -r -d '' book_data <<EOF
 {
 "tags": [
-        "superbook", "fantasy"
+        "superbook", "fantasy", "best"
 ]
+}
+EOF
+
+    _update_user_book $user_book_id "$book_data"
+}
+
+##########
+# Update user book w/ a new review
+#
+# param: user book id
+##########
+update_user_book_new_review() {
+    user_book_id=$1
+
+read -r -d '' book_data <<EOF
+{
+"review": "new review"
 }
 EOF
 
@@ -860,13 +877,30 @@ user_book::main_test() {
     assert_equals 1 $numBooks "Number of user books after deleting 2nd user book"
 
     echo ""
-    echo "Update first book"
+    echo "Update first book. adding superbook & fantasy to tags"
     updated_book=$(update_user_book "$asimov_user_book_id")
+
+    echo ""
+    echo "check tags on updated book"
+    tags=$(echo "$updated_book" | jq -r '.tags | join(", ")')
+    assert_contains "$tags" "fantasy" "Userbook tags"
+    assert_contains "$tags" "best" "Userbook tags"
+
+
+    echo ""
+    echo "Update first book by changing review."
+    updated_book=$(update_user_book_new_review "$asimov_user_book_id")
 
     echo "check tags on updated book"
     echo ""
     tags=$(echo "$updated_book" | jq -r '.tags | join(", ")')
     assert_contains "$tags" "fantasy" "Userbook tags"
+    assert_contains "$tags" "best" "Userbook tags"
+
+    echo ""
+    echo "check review on updated book"
+    review=$(echo "$updated_book" | jq -r '.review')
+    assert_string_equals "new review" "$review" "Userbooks review"
 
     user_book::clean
 }

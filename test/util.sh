@@ -162,7 +162,7 @@ assert_contains() {
     what="$3"
 
     if [[ $csv != *"${value}"* ]]; then
-        error "${bold}✗ ${normal} '${what}' ($csv) is missing '$value'"
+        error "${bold}✗ ${normal} '${what}' [$csv] is missing '$value'"
     else
         echo "✓ '${what}' contains '$value'"
         PASSED_TESTS=$(( $PASSED_TESTS + 1))
