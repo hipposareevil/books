@@ -32,7 +32,7 @@ type UserBookService interface {
 	// UpdateUserBook
 	// Same as CreateUserBook but the first param is the ID of book to update
 	// first param: bearer
-	UpdateUserBook(string, int, int, int, bool, *[]string, string) (UserBook, error)
+	UpdateUserBook(string, int, int, int, *bool, *[]string, *string) (UserBook, error)
 
 	//////////////////////////////////////////////////
 
@@ -592,7 +592,7 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 //
 // returns:
 // error
-func (theService userbookService) UpdateUserBook(bearer string, userId int, userBookId int, bookId int, rating bool, incomingTags *[]string, review string) (UserBook, error) {
+func (theService userbookService) UpdateUserBook(bearer string, userId int, userBookId int, bookId int, rating *bool, incomingTags *[]string, review *string) (UserBook, error) {
 	fmt.Println("")
 	fmt.Println("-- UpdateUserBook --")
 
@@ -607,9 +607,7 @@ func (theService userbookService) UpdateUserBook(bearer string, userId int, user
 	// Make query
 	stmt, err := theService.mysqlDb.
 		Prepare("UPDATE userbook SET " +
-			"book_id=COALESCE(NULLIF(?,''),book_id), " +
-			"review=COALESCE(NULLIF(?,''),review), " +
-			"rating=? " + 
+			"book_id=COALESCE(NULLIF(?,''),book_id) " +
 			"WHERE user_id=? AND user_book_id=?")
 	defer stmt.Close()
 	if err != nil {
@@ -617,12 +615,53 @@ func (theService userbookService) UpdateUserBook(bearer string, userId int, user
 		return UserBook{}, errors.New("Unable to prepare a DB statement when updating userbook: ")
 	}
 
-	_, err = stmt.Exec(bookId, review, rating, userId, userBookId)
+	_, err = stmt.Exec(bookId, userId, userBookId)
 
 	if err != nil {
 		fmt.Println("Error updating DB for userbook: ", err)
 		return UserBook{}, errors.New("Unable to run update against DB for userbook: ")
 	}
+
+    // Update rating
+    if rating != nil {
+        stmt, err := theService.mysqlDb.
+            Prepare("UPDATE userbook SET " +
+            "rating=? " +
+            "WHERE user_id=? AND user_book_id=?")
+        defer stmt.Close()
+        if err != nil {
+            fmt.Println("Error preparing DB when updating userbook: ", err)
+            return UserBook{}, errors.New("Unable to prepare a DB statement when updating userbook: ")
+        }
+
+        _, err = stmt.Exec(*rating, userId, userBookId)
+
+        if err != nil {
+            fmt.Println("Error updating DB.rating for userbook: ", err)
+            return UserBook{}, errors.New("Unable to run update against DB for userbook: ")
+        }
+    }
+
+    // Update review
+    if review != nil {
+        stmt, err := theService.mysqlDb.
+            Prepare("UPDATE userbook SET " +
+            "review=? " +
+            "WHERE user_id=? AND user_book_id=?")
+        defer stmt.Close()
+        if err != nil {
+            fmt.Println("Error preparing DB when updating userbook: ", err)
+            return UserBook{}, errors.New("Unable to prepare a DB statement when updating userbook: ")
+        }
+
+        _, err = stmt.Exec(*review, userId, userBookId)
+
+        if err != nil {
+            fmt.Println("Error updating DB.review for userbook: ", err)
+            return UserBook{}, errors.New("Unable to run update against DB for userbook: ")
+        }
+
+    }
 
 	//////////////////////
 	// Clear old tag mappings and add new ones

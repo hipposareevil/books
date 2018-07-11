@@ -126,7 +126,6 @@ func makeUpdateUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
             req.Tags,
             req.Review)
 
-
 		return updateUserBookResponse{
 			Data: book,
 			Err:  err,
