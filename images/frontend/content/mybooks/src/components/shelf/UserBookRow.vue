@@ -40,13 +40,11 @@
       <span class="icon is-medium clickable"
             v-bind:class="{'has-text-success' : ratingWasChanged.flag }" 
             v-on:dblclick="ratingClicked">
-
         <!-- thumbs up or down -->
         <i v-if="userBook.rating === true"
-           class="fa fa-thumbs-up"></i>
+           class="fas fa-thumbs-up"></i>
         <i v-if="userBook.rating === false"
-           class="fa fa-thumbs-down"></i>
-
+           class="fas fa-thumbs-down"></i>
       </span>
     </td>
     <!-- end rating -->

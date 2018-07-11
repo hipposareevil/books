@@ -35,6 +35,7 @@
           <span>Add To My Books</span>
         </button>
       </div>
+
       <div v-else>
         <!-- book not on a shelf -->
         <button class="button is-info is-small"
