@@ -91,7 +91,7 @@ func main() {
 	)
 	// Add middleware to authenticate the endpoint.
 	// first parameter denotes if only 'admin' group can access the endpoint.
-	usersHandler := Authenticate(true, redisPool, baseUsersHandler)
+	usersHandler := Authenticate(false, redisPool, baseUsersHandler)
 	router.Methods("GET").Path("/user").Handler(usersHandler)
 
 	//////
@@ -104,7 +104,7 @@ func main() {
 	)
 	// Add middleware to authenticate the endpoint.
 	// first parameter denotes if only 'admin' group can access the endpoint.
-	userHandler := Authenticate(true, redisPool, baseUserHandler)
+	userHandler := Authenticate(false, redisPool, baseUserHandler)
 	// 'user_id' is used in transport.go to grab the variable 'user_id' from the path
 	router.Methods("GET").Path("/user/{user_id}").Handler(userHandler)
 

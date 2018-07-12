@@ -1,0 +1,83 @@
+swagger: "2.0"
+info:
+  description: "Book Reviews REST web services."
+  title: "Book Reviews Web Service"
+  version: "1.0.0"  
+basePath: "/"
+schemes:
+- "http"
+paths:
+  /review/{book_id}:
+    get:
+      tags:
+      - "review"
+      summary: "Get list of reviews for a book."
+      description: "Requires authentication token in header with key AUTHORIZATION.\
+        \ Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
+      operationId: "getReview"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "book_id"
+        in: "path"
+        description: "ID of book to get reviews for."
+        required: true
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Where to start the returned data segment from the full result."
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "limit"
+        in: "query"
+        description: "size of the returned data segment."
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "Authorization"
+        in: "header"
+        description: "Bearer authorization"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Reviews"
+definitions:
+  Review:
+    type: "object"
+    properties:
+      bookId:
+        type: "integer"
+        format: "int32"
+      rating:
+        type: "boolean"
+        default: false
+      tags:
+        type: "array"
+        items:
+          type: "string"
+      review:
+        type: "string"
+      userName:
+        type: "string"
+  Reviews:
+    type: "object"
+    properties:
+      offset:
+        type: "integer"
+        format: "int32"
+      limit:
+        type: "integer"
+        format: "int32"
+      total:
+        type: "integer"
+        format: "int64"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/Review"

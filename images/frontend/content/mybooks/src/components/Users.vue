@@ -243,7 +243,7 @@
         }
 
         // Try to create a new user
-        this.$axios.post('/user/', data, { headers: ourheaders })
+        this.$axios.post('/user', data, { headers: ourheaders })
           .then((response) => {
             self.printMessage('Created new user ' + self.newUser.name)
             self.newUser.clear()
