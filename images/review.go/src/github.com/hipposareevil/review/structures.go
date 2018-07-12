@@ -21,6 +21,7 @@ type Review struct {
 	Tags     []string `json:"tags"`
 	Review   string   `json:"review"`
 	UserName string   `json:"userName"`
+	UserId   int      `json:"UserId"`
 }
 
 type Reviews struct {

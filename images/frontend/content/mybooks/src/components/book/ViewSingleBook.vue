@@ -196,21 +196,23 @@
             </p>
           </footer>
 
+
         </div> <!-- end card -->
 
       </div> <!-- end info column -->
 
-
     </div> <!-- end columns -->
 
 
-    <!-- more userbook info -->
-    <div v-if="! isEmpty(userBookData)">
-      <div class="columns">
-        <div class="column is-9">
-          <hr>
-          <h1 class="title is-4">My Review:</h1>
+    <!-- Reviews -->
+    <div class="columns">
+      <div class="column is-9">
 
+        <!-- our review -->
+        <div v-if="! isEmpty(userBookData)">
+          <hr>
+          <h1 class="title is-4 has-text-black">My Review:</h1>
+          
           <div class="isclickable subtitle"
                style="padding-top: 1em;"
                @dblclick="changeReview"
@@ -224,15 +226,74 @@
             </div>
           </div>
         </div>
+        <!-- end our review -->
         
-      </div>
+        <!-- other reviews -->
+        <div v-if="! isEmpty(reviews)">
+          <hr style="margin-top: 1em;">
+          <h1 class="title is-4 has-text-grey">Others Reviews:</h1>
+
+          <div v-for="current in reviews"
+               class="control">
+            <!-- single review -->
+            <div class="columns" style="margin-top: 1em;">
+              <!-- user name -->
+              <div class="column is-2">
+                <h3 class="subtitle is-4 has-text-weight-semibold has-text-dark">{{current.userName}}</h3>
+              </div>
+
+              <!-- overall review -->
+              <div class="column">
+
+                <!-- rating and tags -->
+                <nav class="level">
+                  <!-- Left side -->
+                  <div class="level-left">
+                    <div class="level-item">
+                      <p class="subtitle is-5">
+                        <i v-if="current.rating === true"
+                           class="fas fa-thumbs-up"></i>
+                        <i v-if="current.rating === false"
+                           class="fas fa-thumbs-down"></i>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Right side -->
+                  <div class="level-right">
+                    <span style="padding-right: 5px;">tags:</span>
+                    <div v-for="currentTag in current.tags"
+                         class="control">
+                      <!-- single tag -->
+                      <div class="tags has-addons">
+                        <span class="tag is-light">
+                          {{ currentTag }}
+                        </span>
+                      </div>
+                      <!-- end tag -->
+                      
+                    </div> <!-- end v-for -->
+                  </div>
+                </nav>
+                <!-- end rating and tags -->
+
+                <!-- review text -->
+                <div class="is-size-4"
+                     style="padding-top: 3px;">
+                  {{ current.review }}
+                </div>
+              </div>
+            </div>
+
+          </div> <!-- end is-9 columns -->
+        </div> <!-- end columns for reviews -->
+      </div> <!-- end v-if -->
+
+      <!-- end all reviews -->
     </div>
 
 
-    </div>
-    <!-- end userbook info -->
-
-  </div> <!-- main div -->
+    </div> <!-- main div -->
 </template>
 
 <script>
@@ -280,7 +341,9 @@
         // Flag to bring up the tags modal
         showTagModal: false,
         // Tags
-        allTags: {}
+        allTags: {},
+        // Reviews
+        reviews: {}
       }
     },
     /**
@@ -290,6 +353,7 @@
       this.getBook()
       this.getUserBook()
       this.getTags()
+      this.getReviews()
     },
     computed: {
       prettyDescription: function () {
@@ -348,7 +412,6 @@
             if (numberResults === 1) {
               var result = response.data.data[0]
               self.userBookData = result
-              console.log('got user book:', result)
             }
           })
           .catch(function (error) {
@@ -384,6 +447,42 @@
             self.allTags = response.data.data
             // Sort
             self.allTags = _.sortBy(self.allTags, ['name'])
+          })
+          .catch(function (error) {
+            if (error.response.status === 401) {
+              Event.$emit('got401')
+            } else {
+              console.log(error)
+            }
+          })
+      },
+      /**
+       * Get reviews
+       */
+      getReviews () {
+        const authString = Auth.getAuthHeader()
+        let self = this
+        self.reviews = {}
+        // convert userId into an integer so
+        // we can use it when removing from array
+        let userId = parseInt(Auth.user.id)
+
+        let params = {
+          offset: 0,
+          limit: 200
+        }
+
+        let url = '/review/' + self.bookId
+
+        self.$axios.get(url, {
+          headers: { Authorization: authString },
+          params: params })
+          .then((response) => {
+            self.reviews = response.data.data
+            // remove current user's review
+            _.remove(self.reviews, function (currentObject) {
+              return currentObject.UserId === userId
+            })
           })
           .catch(function (error) {
             if (error.response.status === 401) {

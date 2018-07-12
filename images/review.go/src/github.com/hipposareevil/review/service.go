@@ -60,6 +60,7 @@ func (theService reviewService) GetReviews(bearer string, offset int, limit int,
 				Rating:   userBook.Rating,
 				Tags:     userBook.Tags,
 				UserName: currentUser.Name,
+				UserId: currentUser.Id,
 				Review:   userBook.Review,
 			}
 			datum = append(datum, newReview)

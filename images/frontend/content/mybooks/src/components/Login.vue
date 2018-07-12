@@ -24,7 +24,7 @@
                    placeholder="Your name"
                    v-model="credentials.name">
             <span class="icon is-medium is-left">
-              <i class="fa fa-grav"></i>
+              <i class="fab fa-grav"></i>
             </span>
           </div>
         </div>

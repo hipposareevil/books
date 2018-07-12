@@ -65,6 +65,9 @@ definitions:
         type: "string"
       userName:
         type: "string"
+      userId:
+        type: "integer"
+        format: "int32"
   Reviews:
     type: "object"
     properties:
