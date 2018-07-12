@@ -21,6 +21,7 @@ export TOP_PID=$$
 . ${root_dir}/tags.sh
 . ${root_dir}/book.sh
 . ${root_dir}/user_book.sh
+. ${root_dir}/reviews.sh
 
 
 #################
@@ -40,6 +41,8 @@ clean() {
     book::clean
 
     user::clean
+
+    review::clean
 
     echo ""
     echo "*****************"
@@ -82,6 +85,7 @@ main() {
     test_author
     test_book
     test_user_books
+    test_reviews
 
     echo ""
     echo "[[[ Done with all tests ]]]"

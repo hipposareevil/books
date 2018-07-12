@@ -77,6 +77,18 @@ services:
      networks:
        - booknet
 
+   # List reviews
+   review:
+     container_name: books.review
+     image: ${BOOK_REPOSITORY}books.review.go:latest
+     expose:
+       - 8080
+     restart: always
+     logging:
+       driver: "json-file"
+     networks:
+       - booknet
+
    # Manage authorizations
    authorize:
      container_name: books.authorize
@@ -165,7 +177,7 @@ services:
     # COMBINE_URLS: comma separated list of URLs to gather yaml entries
     # Later yaml files will override previous yaml entries.
     # For example, gateway:80/swagger.yaml contains 'info' which will override any existing 'info' entries.
-      - COMBINE_URLS=books.author:8080/swagger.yaml,books.user:8080/swagger.yaml,books.authorize:8080/swagger.yaml,books.book:8080/swagger.yaml,books.tag:8080/swagger.yaml,books.user_book:8080/swagger.yaml,books.query:8080/swagger.yaml,books.gateway:80/swagger.yaml
+      - COMBINE_URLS=books.author:8080/swagger.yaml,books.user:8080/swagger.yaml,books.authorize:8080/swagger.yaml,books.book:8080/swagger.yaml,books.tag:8080/swagger.yaml,books.user_book:8080/swagger.yaml,books.query:8080/swagger.yaml,books.gateway:80/swagger.yaml,books.review:8080/swagger.yaml
       - DEPLOY_HOST_NAME=${DEPLOY_HOST_NAME}
 
 

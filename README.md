@@ -24,6 +24,7 @@ Table of Contents
          * [user](#user)
          * [user_book](#user_book)
          * [tag](#tag)
+         * [review](#review)
          * [authorize](#authorize)
          * [swagger](#swagger)
       * [Databases](#databases)
@@ -180,6 +181,7 @@ Endpoint | Purpose
 /user | Manage users.
 /user_book | Manage books for a user. 
 /tag | Manage tags.
+/review | List user reviews for a book. 
 /authorize | Authorize access to endpoints.
 /swagger/ | [swagger](http://swagger.io) documentation describing the REST APIs.
 
@@ -231,6 +233,12 @@ Microservice to manage tags. Tags can be applied to a user's set of books via th
 See [tag.go](https://github.com/hipposareevil/books/blob/master/images/tag.go/README.md) for more information. 
 
 See *deprecated* [tag](https://github.com/hipposareevil/books/blob/master/images.java/tag/README.md) for more information. 
+
+
+### review
+Microservice to list reviews for a book.
+
+See [review.go](https://github.com/hipposareevil/books/blob/master/images/review.go/README.md) for more information. 
 
 
 ### authorize
