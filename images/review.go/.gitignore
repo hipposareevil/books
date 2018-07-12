@@ -1,0 +1,4 @@
+/user_book
+**/vendor/*
+**/Gopkg*
+pkg/*
