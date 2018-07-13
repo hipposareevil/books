@@ -780,9 +780,11 @@
     cursor: pointer;
 }
 
+/*
 .hoverme:hover {
    background-color: rgb(245,245,245)
 }
+*/
 
 /*
 .isclickable:hover {

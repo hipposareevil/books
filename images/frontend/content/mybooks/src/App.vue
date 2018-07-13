@@ -9,6 +9,7 @@
 
       <nav class="navbar is-size-5"
            role="navigation"
+           style="margin-top: 5px;"
            aria-label="main navigation">
         <div class="navbar-brand">
 
@@ -35,7 +36,7 @@
                @click="toggleMobileNav"
                v-if="is_authenticated()">
               <router-link tag="div" to="/shelves" exact>
-                <span class="icon is-medium">
+                <span class="icon is-large">
                   <i class="fas fa-wpexplorer"></i>
                 </span>
                 <span>My Books</span>
@@ -80,51 +81,54 @@
         <!-- end  mobile -->
         
         <!-- normal -->
-        <div v-if="!showMobile"
+        <div v-else
           class="navbar-menu">
 
           <!-- left side -->
           <div class="navbar-start">
 
             <!-- home -->
-            <a class="navbar-item">
-              <router-link tag="div" to="/" exact>
+            <router-link tag="div" to="/" exact>
+              <a class="navbar-item is-medium">
                 <img src="./assets/leaningBooks.png">&nbsp;Home
-              </router-link>
-            </a>
+              </a>
+            </router-link>
 
             <!-- user books -->
-            <a class="navbar-item"
-               v-if="is_authenticated()">
-              <router-link tag="div" to="/shelves" exact>
+            <router-link tag="div" to="/shelves" exact>
+              <a class="navbar-item"
+                 v-if="is_authenticated()">
                 <span class="icon is-medium">
                   <i class="fab fa-wpexplorer"></i>
                 </span>
                 <span>My Books</span>
-              </router-link>
-            </a>
+              </a>
+            </router-link>
 
             <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link">
-                Browse
+              <a class="navbar-link" style="margin-top: -5px;">
+                <span class="icon is-medium">
+                  <i class="fas fa-eye"></i>
+                </span>
+                <span>Browse</span>
               </a>
 
               <div class="navbar-dropdown is-boxed">
                 <!-- Books -->
-                <a class="navbar-item">
                   <router-link tag="span" to="/books" exact>
-                    <span class="icon is-large"><i class="fa fa-book"></i></span>
-                    <span>Books</span>
+                    <a class="navbar-item">
+                      <span class="icon is-large"><i class="fa fa-book"></i></span>
+                      <span>Books</span>
+                    </a>
                   </router-link>
-                </a>
 
-                <!-- Autors -->
-                <a class="navbar-item">
+                  <!-- Authors -->
                   <router-link tag="span" to="/authors" exact>
-                    <span class="icon is-large"><i class="fab fa-grav"></i></span>
-                    <span>Authors</span>
+                    <a class="navbar-item">
+                      <span class="icon is-large"><i class="fab fa-grav"></i></span>
+                      <span>Authors</span>
+                    </a>
                   </router-link>
-                </a>
               </div>
             </div>
             <!-- end of dropdown for browse -->
@@ -139,45 +143,50 @@
             <!-- Do not show if mobila navigation is turned on -->
             <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link">
-                Admin
+                <span class="icon is-medium">
+                  <i class="fas fa-lock"></i>
+                </span>
+                <span>Admin</span>
               </a>
 
               <div class="navbar-dropdown is-boxed">
                 <!-- Manage Users -->
-                <a class="navbar-item">
-                  <router-link tag="span" to="/users" exact>
+                <router-link tag="span" to="/users" exact>
+                  <a class="navbar-item">
                     <span class="icon is-large"><i class="fa fa-users"></i></span>
                     <span>Users</span>
-                  </router-link>
-                </a>
+                  </a>
+                </router-link>
+
 
                 <!-- Add Author -->
-                <a class="navbar-item">
-                  <router-link tag="span" to="/addauthor" exact>
+                <router-link tag="span" to="/addauthor" exact>
+                  <a class="navbar-item">
                     <span class="icon is-large"><i class="fa fa-user-circle"></i></span>
                     <span>Add Author</span>
-                  </router-link>
-                </a>
+                  </a>
+                </router-link>
 
                 <!-- Add Book -->
-                <a class="navbar-item">
-                  <router-link tag="span" to="/addbook" exact>
+                <router-link tag="span" to="/addbook" exact>
+                  <a class="navbar-item">
                     <span class="icon is-large"><i class="fa fa-book"></i></span>
                     <span>Add Book</span>
-                  </router-link>
-                </a>
+                  </a>
+                </router-link>
 
                 <!-- Add Tag -->
-                <a class="navbar-item">
-                  <router-link tag="span" to="/addtag" exact>
+                <router-link tag="span" to="/addtag" exact>
+                  <a class="navbar-item">
                     <span class="icon is-large"><i class="fa fa-tags"></i></span>
                     <span>Tags</span>
-                  </router-link>
-                </a>
+                  </a>
+                </router-link>
+
 
                 <hr class="navbar-divider">
                 <div class="navbar-item">
-                  myBooks 0.1.0
+                  myBooks 0.1.1
                 </div>
               </div>
             </div>
@@ -202,17 +211,22 @@
 
           <div class="navbar-item">
             <div v-if="is_authenticated()">
-              <button class="button" @click="do_logout()">Log out</button>
+              <button class="button" @click="do_logout()">
+                <i class="fas fa-sign-out-alt"></i>&nbsp;
+                Log out
+              </button>
             </div>
             <div v-if="! is_authenticated()">
-              <button class="button" @click="do_login()">Log In</button>
+              <button class="button" @click="do_login()">
+                <i class="fas fa-sign-in-alt"></i>&nbsp; 
+                Log In
+              </button>
             </div>
           </div>
         </div>
         <!-- end normal -->
 
       </nav> <!-- end navbar -->
-
 
       <div class="section">
         <!-- Show the view -->
@@ -360,7 +374,6 @@ a {
   color: #4a4a4a;
 }
 .is-active {
-  font-size: 120%;
   font-weight: bold;
   border-bottom: dashed lightgray 1px;
 }
