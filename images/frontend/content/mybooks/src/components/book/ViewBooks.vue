@@ -8,6 +8,7 @@
                 :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
                 :isLoading="isLoading"
+                :grabIsLoading="grabIsLoading"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
@@ -89,6 +90,8 @@
         },
         // flag denoting loading or not
         isLoading: false,
+        // flag denoting loading ALL or not
+        grabIsLoading: false,
         /**
          * Current state of the view
          */
@@ -112,20 +115,8 @@
      * Add event listeners
      */
     mounted: function () {
-      // get books from store
-      let temp = this.$store.state.allBooks
-      if (temp && temp.BooksJson) {
-        this.AllData = temp
-      }
-
       // Check status of filters and maybe get all values
       this.checkFilterStatus()
-
-      // Get list/grid status
-      temp = this.$store.state.booksView
-      if (temp && temp.valid) {
-        this.ViewState = temp
-      }
 
       Event.$on('updatedb_book_409', (eventmessage) => this.conflictError(eventmessage))
       Event.$on('updatedb_user_book_409', (eventmessage) => this.conflictError(eventmessage))
@@ -158,6 +149,9 @@
           params: params })
           .then((response) => {
             self.isLoading = false
+
+            self.grabIsLoading = false
+
             // Get data segment information
             let incomingData = response.data.data
             // start of data inside total set
@@ -211,6 +205,7 @@
           })
           .catch(function (error) {
             self.isLoading = false
+            self.grabIsLoading = false
             if ($state) {
               $state.complete()
             }
@@ -227,14 +222,12 @@
        * Show the grid view
        */
       showGrid () {
-        this.ViewState.viewAsList = false
         this.$store.commit('setBooksView', this.ViewState)
       },
       /**
        * Show the list view
        */
       showList () {
-        this.ViewState.viewAsList = true
         this.$store.commit('setBooksView', this.ViewState)
       },
       /**
@@ -282,6 +275,8 @@
                   return
                 }
 
+                self.grabIsLoading = true
+
                 // Now get all those books
                 self.AllData.lengthToGet = numBooks
                 self.AllData.dataStart = 0
@@ -305,6 +300,7 @@
        * Grab all values
        */
       grabAll () {
+        this.grabIsLoading = true
         // Calculate the length to get in order to grab all data
         this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
         if (this.AllData.lengthToGet <= 0) {

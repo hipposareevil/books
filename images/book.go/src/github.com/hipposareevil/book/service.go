@@ -20,7 +20,7 @@ const BOOK_CACHE = "book.info"
 type BookService interface {
 	// GetBooks: offset, limit, title, authorIds, titleIds
 	// first param: bearer
-	GetBooks(string, int, int, string, []int, []int) (Books, error)
+	GetBooks(string, int, int, string, []int, []int, string) (Books, error)
 
 	// GetBook: bearer, id
 	GetBook(string, int) (Book, error)
@@ -110,7 +110,6 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
     // Save to cache
     bookAsBytes, err := json.Marshal(book)
     if err == nil {
-        fmt.Println("Saving book to book cache")
         go theService.cache.SetBytes(BOOK_CACHE, bookId, bookAsBytes)
     } else {
         fmt.Println("Unable to save book to cache:", err)
@@ -126,7 +125,7 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 // returns:
 // books
 // error
-func (theService bookService) GetBooks(bearer string, offset int, limit int, title string, authorIds []int, bookIds []int) (Books, error) {
+func (theService bookService) GetBooks(bearer string, offset int, limit int, title string, authorIds []int, bookIds []int, authorName string) (Books, error) {
 	////////////////////
 	// Get data from mysql
 	// mysql
@@ -154,7 +153,6 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 
 	// Update query according to which other queryParams come in (title, authorIds, bookIds)
 	updated := false
-
     var appendedString string
 
 
@@ -163,12 +161,20 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 		updated = true
 		appendedString = "WHERE title LIKE '%" + title + "%' "
 	}
+    
+    // Author name
+    // convert into authorIds
+    if len(authorName) > 0 {
+        ids := getAuthorIdsByName(bearer, authorName)
+        authorIds = append(authorIds, ids...)
+    }
+
 	// Author IDs
 	if len(authorIds) > 0 {
 		var prependValue string
 
 		if updated {
-			prependValue = " AND"
+			prependValue = " OR"
 		} else {
 			prependValue = " WHERE"
 		}
@@ -181,7 +187,7 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 		var prependValue string
 
 		if updated {
-			prependValue = " AND"
+			prependValue = " OR"
 		} else {
 			prependValue = " WHERE"
 		}
@@ -190,6 +196,7 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 
 		updated = true
 	}
+
 
     // Re get total # of rows for the return value
     countQuery := "SELECT COUNT(*) FROM book " + appendedString;
@@ -243,7 +250,6 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
         // Save to cache
         bookAsBytes, err := json.Marshal(book)
         if err == nil {
-            fmt.Println("Saving book to book cache")
             go theService.cache.SetBytes(BOOK_CACHE, book.Id, bookAsBytes)
         } else {
             fmt.Println("Unable to save book to cache:", err)

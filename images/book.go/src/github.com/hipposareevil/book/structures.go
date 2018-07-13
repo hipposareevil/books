@@ -7,12 +7,13 @@ package main
 // - offset
 // - limit
 type getAllBooksRequest struct {
-	Bearer   string `json:"bearer"`
-	Offset   int    `json:"offset"`
-	Limit    int    `json:"limit"`
-	Title    string `json:"title"`
-	AuthorId []int  `json:"author_id"`
-	BookId   []int  `json:"book_id"`
+	Bearer     string `json:"bearer"`
+	Offset     int    `json:"offset"`
+	Limit      int    `json:"limit"`
+	Title      string `json:"title"`
+	AuthorName string `json:"author_name"`
+	AuthorId   []int  `json:"author_id"`
+	BookId     []int  `json:"book_id"`
 }
 
 // GET request for single book

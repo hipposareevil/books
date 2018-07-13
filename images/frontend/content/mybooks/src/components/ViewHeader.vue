@@ -1,13 +1,12 @@
 <template>
   <div style="padding-bottom: 0.5em; margin-bottom: 1em; border-bottom: solid gray 1px;">
 
-    <nav class="level">
+   <nav class="level">
 
       <div class="level-left">
         <div class="level-item has-text-centered">
 
           <div class="level-item">
-
             <!-- search and clear -->
             <div class="field has-addons">
               <p class="control">
@@ -38,48 +37,22 @@
 
 
       <div class="level-right">
-
         <div class="level-item has-text-centered">
-
           <div class="level-item">
-            <div class="field has-addons">
 
-            <!-- list the number of things -->
-            <p class="control"
-               style="margin-right: 1em;"
-               title="Click to get all"
-               v-if="numberOfThings">
+              <!-- right side of header -->
+              <RightHeader
+                :numberOfThings="numberOfThings"
+                :totalNumber="totalNumber"
+                :showAsList="showAsList"
+                :isLoading="isLoading"
+                :grabIsLoading="showGrabLoading"
+                @gridOn="sendShowGrid"
+                @listOn="sendShowList"
+                @grabAll="sendGrabAll">
+              </RightHeader>
 
-                <a class="button"
-                   @click="grabAll()">
-                  <span class="is-size-7">
-                    ({{ numberOfThings }}
-                    <span v-if="totalNumber">&nbsp;of {{ totalNumber }})</span>
-                  </span>
-                </a>
-            </p>
-
-              <!-- List -->
-              <button class="button"
-                      v-bind:class="{ 'is-info': showList, 'is-outlined': showList }"
-                      @click="viewAsList">
-                <span class="icon is-medium">
-                  <i class="fa fa-bars"></i>
-                </span>
-              </button>
-
-              <!-- Grid -->
-              <button v-bind:class="{ 'is-info': !showList, 'is-outlined': !showList }"
-                      class="button"
-                      @click="viewAsGrid" >
-                <span class="icon is-medium">
-                  <i class="fa fa-th"></i>
-                </span>
-              </button>
-            </div>
           </div>
-
-
         </div>
       </div>
     </nav>
@@ -89,13 +62,15 @@
 
 <script>
   import _ from 'lodash'
+  import RightHeader from './RightHeader.vue'
 
   /**
    * Data and methods
    */
   export default {
+    components: { RightHeader },
     // Props for this component
-    props: [ 'theThing', 'numberOfThings', 'showAsList', 'totalNumber', 'isLoading' ],
+    props: ['theThing', 'numberOfThings', 'showAsList', 'totalNumber', 'isLoading', 'grabIsLoading'],
     // Data for this component
     data () {
       return {
@@ -104,23 +79,22 @@
         // when true, view as list
         showList: this.showAsList,
         // when true, the clear button is loading
-        showLoading: this.isLoading
+        showLoading: this.isLoading,
+        // when true, the graball button is loading
+        showGrabLoading: this.grabIsLoading
       }
     },
     methods: {
-      /**
-       * User clicked on List view
-       */
-      viewAsList () {
-        this.showList = true
-        this.$emit('listOn')
-      },
-      /**
-       * User clicked on Grid view
-       */
-      viewAsGrid () {
-        this.showList = false
+      sendShowGrid () {
         this.$emit('gridOn')
+        this.showList = false
+      },
+      sendShowList () {
+        this.$emit('listOn')
+        this.showList = true
+      },
+      sendGrabAll () {
+        this.$emit('grabAll')
       },
       /**
        * Create 'placeholder' string
@@ -142,19 +116,13 @@
         this.searchString = ''
         this.$emit('searchString', this.searchString)
         this.$emit('clearCalled')
-      },
-      /**
-       * Signal to grab everything
-       */
-      grabAll () {
-        this.$emit('grabAll')
       }
     },
     /**
      * debounce some functions
      */
     created: function () {
-      this.debouncedSearch = _.debounce(this.search, 250)
+      this.debouncedSearch = _.debounce(this.search, 500)
     },
    /**
     * What strings to watch for
@@ -165,6 +133,9 @@
       },
       isLoading: function (val, oldVal) {
         this.showLoading = val
+      },
+      grabIsLoading: function (val, oldVal) {
+        this.showGrabLoading = val
       }
     }
   }

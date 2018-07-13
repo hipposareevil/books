@@ -9,6 +9,7 @@ import ViewShelf from '@/components/shelf/ViewShelf'
 import ViewAuthors from '@/components/author/ViewAuthors'
 import ViewSingleAuthor from '@/components/author/ViewSingleAuthor'
 import ViewBooks from '@/components/book/ViewBooks'
+import SearchBooks from '@/components/book/Search'
 import ViewSingleBook from '@/components/book/ViewSingleBook'
 
 Vue.use(Router)
@@ -54,6 +55,11 @@ const router = new Router({
       path: '/books',
       name: 'ViewBooks',
       component: ViewBooks
+    },
+    {
+      path: '/search',
+      name: 'SearchBooks',
+      component: SearchBooks
     },
     {
       path: '/books/:id',

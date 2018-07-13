@@ -14,7 +14,7 @@ paths:
       - "book"
       summary: "Get books via optional 'title' query param or optional 'ids' query\
         \ param. The three query params may be used at the same time."
-      description: "Returns list of books. When no 'title', 'ids', or 'authorIds'\
+      description: "Returns list of books. When no 'title', 'ids', 'author_name', or 'author_id'\
         \ are specified, all books in database are returned. Requires authentication\
         \ token in header with key AUTHORIZATION. Example: AUTHORIZATION: Bearer qwerty-1234-asdf-9876."
       operationId: "getBooks"
@@ -24,6 +24,11 @@ paths:
       - name: "title"
         in: "query"
         description: "Title or partial title of book to retrieve."
+        required: false
+        type: "string"
+      - name: "author_name"
+        in: "query"
+        description: "Name or partial name of author(s) of books to retrieve."
         required: false
         type: "string"
       - name: "book_id"
