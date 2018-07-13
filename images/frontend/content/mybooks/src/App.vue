@@ -80,9 +80,9 @@
         </div>
         <!-- end  mobile -->
         
-        <!-- normal -->
+        <!-- normal view -->
         <div v-else
-          class="navbar-menu">
+             class="navbar-menu">
 
           <!-- left side -->
           <div class="navbar-start">
@@ -105,6 +105,7 @@
               </a>
             </router-link>
 
+            <!-- Browse books/authors -->
             <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link" style="margin-top: -5px;">
                 <span class="icon is-medium">
@@ -132,6 +133,24 @@
               </div>
             </div>
             <!-- end of dropdown for browse -->
+
+            <!--  search -->
+            <div class="navbar-item is-medium">
+              <div class="field">
+                <p class="control has-icons-right">
+                  <input class="input"
+                         size="40"
+                         v-model="searchString"
+                         v-on:keyup.enter="enterClicked"
+                         placeholder="Search books">
+                  <span class="icon is-small is-right">
+                    <i class="fas fa-search"></i>
+                  </span>
+                </p>
+              </div>
+            </div>
+            <!-- end search -->
+
 
           </div> <!-- end navbar-start -->
 
@@ -269,7 +288,9 @@ export default {
       // Error message
       errorMessage: '',
       // Show the navigation on right
-      showMobile: false
+      showMobile: false,
+      // String to search on
+      searchString: ''
     }
   },
   /**
@@ -340,6 +361,16 @@ export default {
       this.printError('Server error: ' + serverError)
     },
     /**
+     * Enter was hit on the search field.
+     * We save the search string in the store and redirect to the /search page.
+     *
+     */
+    enterClicked () {
+      this.$store.commit('setSearchString', this.searchString)
+      this.$router.push({ name: 'SearchBooks' })
+      this.searchString = ''
+    },
+    /**
      * Print an Error to the user
      */
     printError (printThis) {
@@ -377,11 +408,20 @@ a {
   font-weight: bold;
   border-bottom: dashed lightgray 1px;
 }
+.isclickable {
+    cursor: pointer;
+}
+
 
 .grid-div {
     border: solid lightgray 1px;
     padding: 1em;
     margin: 1em;
+}
+
+.searchinput {
+    background-repeat: no-repeat;
+    background-position: right;
 }
 
 .grid-figure {

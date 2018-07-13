@@ -22,7 +22,11 @@ const store = new Vuex.Store({
     allAuthors: {},
     authorsView: {},
     userBooks: {},
-    userBooksView: {}
+    userBooksView: {},
+    searchString: ''
+  },
+  getters: {
+    search: state => state.searchString
   },
   mutations: {
     // Clear everything from this store
@@ -35,6 +39,10 @@ const store = new Vuex.Store({
       state.authorsView = {}
       state.userBooks = {}
       state.userBooksView = {}
+      state.searchString = ''
+    },
+    setSearchString (state, text) {
+      state.searchString = text
     },
     // The currently loaded set of 'books'
     // Note this is an object containing the books JSON and

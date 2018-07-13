@@ -115,20 +115,8 @@
      * Add event listeners
      */
     mounted: function () {
-      // get books from store
-      let temp = this.$store.state.allBooks
-      if (temp && temp.BooksJson) {
-        this.AllData = temp
-      }
-
       // Check status of filters and maybe get all values
       this.checkFilterStatus()
-
-      // Get list/grid status
-      temp = this.$store.state.booksView
-      if (temp && temp.valid) {
-        this.ViewState = temp
-      }
 
       Event.$on('updatedb_book_409', (eventmessage) => this.conflictError(eventmessage))
       Event.$on('updatedb_user_book_409', (eventmessage) => this.conflictError(eventmessage))
@@ -234,14 +222,12 @@
        * Show the grid view
        */
       showGrid () {
-        this.ViewState.viewAsList = false
         this.$store.commit('setBooksView', this.ViewState)
       },
       /**
        * Show the list view
        */
       showList () {
-        this.ViewState.viewAsList = true
         this.$store.commit('setBooksView', this.ViewState)
       },
       /**
