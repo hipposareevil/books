@@ -39,7 +39,8 @@ func makeGetBooksEndpoint(svc BookService) endpoint.Endpoint {
 			req.Limit,
 			req.Title,
 			req.AuthorId,
-			req.BookId)
+			req.BookId,
+            req.AuthorName)
 		return booksResponse{
 			Data: books,
 			Err:  err,
@@ -158,6 +159,9 @@ func decodeGetAllBooksRequest(_ context.Context, r *http.Request) (interface{}, 
 	// get Title
 	title := values.Get("title")
 
+	// get author name
+	authorName := values.Get("author_name")
+
 	// get AuthorId list
     tempAuthorIds := values["author_id"]
     temp := strings.Join(tempAuthorIds, ",")
@@ -180,6 +184,7 @@ func decodeGetAllBooksRequest(_ context.Context, r *http.Request) (interface{}, 
 		Title:    title,
 		AuthorId: authorIds,
 		BookId:   bookIds,
+        AuthorName: authorName,
 	}
 
 	return request, nil
@@ -347,23 +352,15 @@ func parseBookId(r *http.Request) (int, error) {
 func splitCsvStringAsInts(csv string) []int {
 	var newArray []int
 
-	fmt.Println("Converting csv string:" + csv + ": into array of ints")
-
 	if len(csv) > 0 {
 		stringArray := strings.Split(csv, ",")
-
-		fmt.Println("new string array>", stringArray)
-		fmt.Println("new string array>", len(stringArray))
 
 		// Convert each string to int
 		for _, element := range stringArray {
 			temp, _ := strconv.Atoi(element)
-			fmt.Println("Got element: ", element)
 			newArray = append(newArray, temp)
 		}
 	}
-
-	fmt.Println("returning newarray:", newArray)
 
 	return newArray
 }
@@ -405,8 +402,6 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	// Write actual error code
 	code := codeFrom(err)
 	w.WriteHeader(code)
-
-	fmt.Println("Sending back error '" + err.Error() + "'")
 
 	// write out the error message
 	json.NewEncoder(w).Encode(map[string]interface{}{

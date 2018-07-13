@@ -200,7 +200,7 @@ get_books_by_multiple_ids() {
 
 
 ##########
-# get book by author
+# get book by author ID
 #
 ##########
 get_books_by_author_id() {
@@ -213,13 +213,42 @@ get_books_by_author_id() {
              -H 'cache-control: no-cache' \
              -H 'content-type: application/json')
     if [ $? -ne 0 ]; then
-        error "Error making GET to /book for book '$bookName'"
+        error "Error making GET to /book for author '$author_id'"
     fi
 
     # get code
     code=$(echo "$result" |  awk -FCODE '{print $2}' | xargs)
     if [[ "$code" -ne "200" ]]; then
-        error "Error getting book '$bookName'. code: $code: $error"
+        error "Error getting book. code: $code: $error"
+    fi
+
+    # strip code
+    result=$(echo "$result" | sed "s/CODE${code}CODE//g")
+    echo "$result"
+}
+
+
+##########
+# get book by author name
+#
+##########
+get_books_by_author_name() {
+    author_name="$1"
+    query=$(url_encode "$author_name")
+
+    result=$(curl -s -w 'CODE%{http_code}CODE' \
+             -X GET "${ROOT_URL}/book?author_name=$query" \
+             -H "authorization: $BEARER" \
+             -H 'cache-control: no-cache' \
+             -H 'content-type: application/json')
+    if [ $? -ne 0 ]; then
+        error "Error making GET to /book for book '$author_name'"
+    fi
+
+    # get code
+    code=$(echo "$result" |  awk -FCODE '{print $2}' | xargs)
+    if [[ "$code" -ne "200" ]]; then
+        error "Error getting book. code: $code: $error"
     fi
 
     # strip code
@@ -667,6 +696,7 @@ book::main_test() {
     authors_name=$(echo "$books" | jq -r .data[0].authorName)
     assert_string_equals "Isaac Asimov" "$authors_name" "Search by title's author name"
 
+    # by author id
     echo ""
     echo "By author id"
     books=$(get_books_by_author_id "$author_asimov_id")
@@ -676,9 +706,29 @@ book::main_test() {
 
     echo ""
     echo "Check limit & offset for query by id"
+    offset=$(echo "$books" | jq -r .offset)
     limit=$(echo "$books" | jq -r .limit)
     total=$(echo "$books" | jq -r .total)
+    assert_equals 1 $limit "limit number of books"
+    assert_equals 1 $total "total number of books"
+    assert_equals 0 $offset "Offset into books"
+
+    # by author name
+    echo ""
+    echo "Check limit & offset for query by name"
+    books=$(get_books_by_author_name "Isaac Asimo")
+
     offset=$(echo "$books" | jq -r .offset)
+    limit=$(echo "$books" | jq -r .limit)
+    total=$(echo "$books" | jq -r .total)
+    assert_equals 1 $limit "limit number of books"
+    assert_equals 1 $total "total number of books"
+    assert_equals 0 $offset "Offset into books"
+
+    echo ""
+    echo "By author name"
+    title=$(echo "$books" | jq -r .data[0].title)
+    assert_string_equals "The Currents Of Space" "$title" "Query by author name"
 
     book::clean
 }
