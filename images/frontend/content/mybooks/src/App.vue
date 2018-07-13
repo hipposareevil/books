@@ -106,7 +106,8 @@
             </router-link>
 
             <!-- Browse books/authors -->
-            <div class="navbar-item has-dropdown is-hoverable">
+            <div v-if="is_authenticated()"
+                 class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link" style="margin-top: -5px;">
                 <span class="icon is-medium">
                   <i class="fas fa-eye"></i>
@@ -135,7 +136,8 @@
             <!-- end of dropdown for browse -->
 
             <!--  search -->
-            <div class="navbar-item is-medium">
+            <div v-if="is_authenticated()"
+                 class="navbar-item is-medium">
               <div class="field">
                 <p class="control has-icons-right">
                   <input class="input"
