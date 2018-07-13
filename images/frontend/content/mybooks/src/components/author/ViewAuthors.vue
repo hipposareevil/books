@@ -8,6 +8,7 @@
                 :totalNumber="AllData.totalNumData"
                 :showAsList="ViewState.viewAsList"
                 :isLoading="isLoading"
+                :grabIsLoading="grabIsLoading"
                 @gridOn="showGrid"
                 @listOn="showList"
                 @searchString="searchStringUpdated"
@@ -82,6 +83,8 @@
         },
         // flag denoting loading or not
         isLoading: false,
+        // flag denoting loading ALL or not
+        grabIsLoading: false,
         /**
          * Current state of the view
          */
@@ -148,6 +151,8 @@
           params: params })
           .then((response) => {
             self.isLoading = false
+            self.grabIsLoading = false
+
             // Get data segment information
             let incomingData = response.data.data
             // start of data inside total set
@@ -200,6 +205,7 @@
           })
           .catch(function (error) {
             self.isLoading = false
+            self.grabIsLoading = false
             if ($state) {
               $state.complete()
             }
@@ -271,6 +277,8 @@
                   return
                 }
 
+                self.grabIsLoading = true
+
                 // Now get all those authors
                 self.AllData.lengthToGet = numAuthors
                 self.AllData.dataStart = 0
@@ -294,6 +302,8 @@
        * Grab all values
        */
       grabAll () {
+        this.grabIsLoading = true
+
         // Calculate the length to get in order to grab all data
         this.AllData.lengthToGet = this.AllData.totalNumData - this.AllData.end
         this.AllData.getAll = true

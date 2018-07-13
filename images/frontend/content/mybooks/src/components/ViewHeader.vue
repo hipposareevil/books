@@ -50,13 +50,14 @@
                title="Click to get all"
                v-if="numberOfThings">
 
-                <a class="button"
+                <button class="button"
+                   v-bind:class="{'is-loading' : showGrabLoading }"
                    @click="grabAll()">
                   <span class="is-size-7">
                     ({{ numberOfThings }}
                     <span v-if="totalNumber">&nbsp;of {{ totalNumber }})</span>
                   </span>
-                </a>
+                </button>
             </p>
 
               <!-- List -->
@@ -95,7 +96,7 @@
    */
   export default {
     // Props for this component
-    props: [ 'theThing', 'numberOfThings', 'showAsList', 'totalNumber', 'isLoading' ],
+    props: [ 'theThing', 'numberOfThings', 'showAsList', 'totalNumber', 'isLoading', 'grabIsLoading' ],
     // Data for this component
     data () {
       return {
@@ -104,7 +105,9 @@
         // when true, view as list
         showList: this.showAsList,
         // when true, the clear button is loading
-        showLoading: this.isLoading
+        showLoading: this.isLoading,
+        // when true, the graball button is loading
+        showGrabLoading: this.grabIsLoading
       }
     },
     methods: {
@@ -154,7 +157,7 @@
      * debounce some functions
      */
     created: function () {
-      this.debouncedSearch = _.debounce(this.search, 250)
+      this.debouncedSearch = _.debounce(this.search, 500)
     },
    /**
     * What strings to watch for
@@ -165,6 +168,9 @@
       },
       isLoading: function (val, oldVal) {
         this.showLoading = val
+      },
+      grabIsLoading: function (val, oldVal) {
+        this.showGrabLoading = val
       }
     }
   }
