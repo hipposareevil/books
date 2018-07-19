@@ -222,12 +222,14 @@
        * Show the grid view
        */
       showGrid () {
+        this.ViewState.viewAsList = false
         this.$store.commit('setBooksView', this.ViewState)
       },
       /**
        * Show the list view
        */
       showList () {
+        this.ViewState.viewAsList = true
         this.$store.commit('setBooksView', this.ViewState)
       },
       /**
