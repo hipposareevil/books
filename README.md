@@ -2,6 +2,7 @@ Table of Contents
 =================
 
    * [Introduction](#introduction)
+   * [Screenshot](#screenshot)
    * [tldr](#tldr)
    * [Build, Run, and Access](#build-run-and-access)
       * [Prerequisites](#prerequisites)
@@ -45,6 +46,10 @@ The frontend web application is a [SPA](https://en.wikipedia.org/wiki/Single-pag
 The backend is a set of micro-services written in Golang, backed by [mysql](https://www.mysql.com/) and [redis](https://redis.io/) databases.  There are various (micro-service) endpoints for interfacing with and querying the data, see [endpoints](#endpoints) below. Most endpoints requires authorization, which is obtained at the */authorize* endpoint. See the */swagger* endpoint for full information.  
 
 There is an initial user of *admin* with same password. The *admin* user can create a new user, or update the *admin* user via the */user* endpoint or the main web application. 
+
+# Screenshot
+
+![Entry page](https://github.com/hipposareevil/books/blob/master/entrypage.png)
 
 # tldr
 * build: *./books.sh build*
