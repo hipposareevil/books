@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
-    "net/url"
 )
 
 // Struct returned by /author service
@@ -20,7 +20,6 @@ type Author struct {
 	AuthorId int    `json:"id"`
 }
 
-
 type Authors struct {
 	Offset int      `json:"offset"`
 	Limit  int      `json:"limit"`
@@ -28,47 +27,42 @@ type Authors struct {
 	Data   []Author `json:"data"`
 }
 
-
-
 ////////////
 // Query the /author endpoint for author information by name
 // will return array of IDs
-//  
+//
 func getAuthorIdsByName(bearer string, authorName string) []int {
-    var ids []int
+	var ids []int
 
-    // Make request to other service
-    authorName = url.QueryEscape(authorName)
+	// Make request to other service
+	authorName = url.QueryEscape(authorName)
 
 	fullUrl := "http://author:8080/author?name=" + authorName
-    body, err := makeRequest(bearer, fullUrl)
-    if err != nil {
-        fmt.Println("Unable to make request to /author: ", err)
-        return ids
-    }
+	body, err := makeRequest(bearer, fullUrl)
+	if err != nil {
+		fmt.Println("Unable to make request to /author: ", err)
+		return ids
+	}
 
 	// get author info
-    authors := Authors{}
+	authors := Authors{}
 	jsonErr := json.Unmarshal(body, &authors)
 	if jsonErr != nil {
 		fmt.Println("Unable to unmarshall response from /author")
 		return ids
 	}
 
-    // get each author
-    for _, current := range authors.Data {
-        ids = append(ids, current.AuthorId)
-    }
+	// get each author
+	for _, current := range authors.Data {
+		ids = append(ids, current.AuthorId)
+	}
 
-    return ids
+	return ids
 }
-
-
-
 
 ////////////
 // Query the /author endpoint for author name via ID
-// 
+//
 func getAuthorNameById(cache CacheLayer, bearer string, authorId int) string {
 	// Check cache
 	authorName := cache.Get(AUTHOR_CACHE, authorId)
@@ -77,15 +71,15 @@ func getAuthorNameById(cache CacheLayer, bearer string, authorId int) string {
 		return authorName
 	}
 
-    // no cache
+	// no cache
 
-    // Make request to other service
+	// Make request to other service
 	fullUrl := "http://author:8080/author/" + strconv.Itoa(authorId)
-    body, err := makeRequest(bearer, fullUrl)
-    if err != nil {
-        fmt.Println("Unable to make request to /author: ", err)
-        return ""
-    }
+	body, err := makeRequest(bearer, fullUrl)
+	if err != nil {
+		fmt.Println("Unable to make request to /author: ", err)
+		return ""
+	}
 
 	// get author info
 	authorBean := Author{}
@@ -98,17 +92,14 @@ func getAuthorNameById(cache CacheLayer, bearer string, authorId int) string {
 	return authorBean.Name
 }
 
-
-
-
 // Perform the boilerplate portion of making an http request
 //
 // param:
 // bearer
 // URL to query
-// 
+//
 func makeRequest(bearer string, queryUrl string) ([]byte, error) {
-    ///////////////
+	///////////////
 	// make client
 	superClient := http.Client{
 		Timeout: time.Second * 2, // Maximum of 2 secs
@@ -126,7 +117,6 @@ func makeRequest(bearer string, queryUrl string) ([]byte, error) {
 	req.Header.Set("accept", "application/json")
 	req.Header.Set("content-type", "application/json")
 	req.Header.Set("authorization", "Bearer "+bearer)
-
 
 	// send request
 	res, getErr := superClient.Do(req)
@@ -148,9 +138,6 @@ func makeRequest(bearer string, queryUrl string) ([]byte, error) {
 		return nil, err
 	}
 
-    return body, nil
+	return body, nil
 
 }
-
-
-

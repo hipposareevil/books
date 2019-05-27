@@ -20,7 +20,7 @@ import (
 	// gorilla routing
 	"github.com/gorilla/mux"
 
-    "time"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -46,8 +46,8 @@ func main() {
 		panic(err.Error())
 	}
 	defer db.Close()
-    db.SetMaxIdleConns(0)
-    db.SetConnMaxLifetime(time.Second * 10)
+	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(time.Second * 10)
 
 	///////////////////
 	// create services and endpoints
@@ -71,8 +71,8 @@ func main() {
 	var cache CacheLayer
 	cache = cacheLayer{redisPool}
 
-    // clear the cache on startup
-    cache.ClearAll(BOOK_CACHE)
+	// clear the cache on startup
+	cache.ClearAll(BOOK_CACHE)
 
 	///////////////
 	// 'book' service

@@ -11,6 +11,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,7 +40,7 @@ func makeGetBooksEndpoint(svc BookService) endpoint.Endpoint {
 			req.Title,
 			req.AuthorId,
 			req.BookId,
-            req.AuthorName)
+			req.AuthorName)
 		return booksResponse{
 			Data: books,
 			Err:  err,
@@ -83,7 +84,10 @@ func makeDeleteBookEndpoint(svc BookService) endpoint.Endpoint {
 func makeCreateBookEndpoint(svc BookService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		// convert request into a createBookRequest
-		req := request.(createBookRequest)
+		req, ok := request.(createBookRequest)
+		if !ok {
+			fmt.Println("Error creating 'createBookRequest'")
+		}
 
 		// call actual service with data from the req
 		newBook, err := svc.CreateBook(
@@ -99,6 +103,8 @@ func makeCreateBookEndpoint(svc BookService) endpoint.Endpoint {
 			req.OpenlibraryWorkUrl,
 			req.Subjects,
 			req.Title)
+
+		fmt.Println("[book.transport] got error: ", err)
 
 		return createBookResponse{
 			Data: newBook,
@@ -162,13 +168,13 @@ func decodeGetAllBooksRequest(_ context.Context, r *http.Request) (interface{}, 
 	authorName := values.Get("author_name")
 
 	// get AuthorId list
-    tempAuthorIds := values["author_id"]
-    temp := strings.Join(tempAuthorIds, ",")
+	tempAuthorIds := values["author_id"]
+	temp := strings.Join(tempAuthorIds, ",")
 	authorIds := splitCsvStringAsInts(temp)
 
 	// Get BookId list
-    tempIds := values["book_id"]
-    temp = strings.Join(tempIds, ",")
+	tempIds := values["book_id"]
+	temp = strings.Join(tempIds, ",")
 	bookIds := splitCsvStringAsInts(temp)
 
 	// Get bearer from headers
@@ -177,13 +183,13 @@ func decodeGetAllBooksRequest(_ context.Context, r *http.Request) (interface{}, 
 	// Make request for all books
 	var request getAllBooksRequest
 	request = getAllBooksRequest{
-		Bearer:   bearer,
-		Offset:   realOffset,
-		Limit:    realLimit,
-		Title:    title,
-		AuthorId: authorIds,
-		BookId:   bookIds,
-        AuthorName: authorName,
+		Bearer:     bearer,
+		Offset:     realOffset,
+		Limit:      realLimit,
+		Title:      title,
+		AuthorId:   authorIds,
+		BookId:     bookIds,
+		AuthorName: authorName,
 	}
 
 	return request, nil
@@ -242,6 +248,7 @@ func decodeCreateBookRequest(_ context.Context, r *http.Request) (interface{}, e
 	// Parse body
 	var createBookRequest createBookRequest
 	if err := json.NewDecoder(r.Body).Decode(&createBookRequest); err != nil {
+		fmt.Println("Error decoding book request: ", err)
 		return nil, err
 	}
 
