@@ -89,7 +89,7 @@
           <label class="label">Published Year</label>
           <div class="control">
             <input class="input"
-                   type="text"
+                   type="number"
                    v-model="book.firstPublishedYear"
                    placeholder="Published Year">
           </div>
