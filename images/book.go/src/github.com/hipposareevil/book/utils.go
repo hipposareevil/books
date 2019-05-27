@@ -1,21 +1,18 @@
 package main
 
 import (
-    "strings"
-    "strconv"
-
+	"strconv"
+	"strings"
 )
-
-
 
 ////////////
 // Split a CSV string into array
 func splitCsvStringToArray(subjectCsv string) []string {
-    if len(subjectCsv) > 0 {
-        return strings.Split(subjectCsv, ",")
-    } else {
-        return make([]string, 0)
-    }
+	if len(subjectCsv) > 0 {
+		return strings.Split(subjectCsv, ",")
+	} else {
+		return make([]string, 0)
+	}
 }
 
 ////////////

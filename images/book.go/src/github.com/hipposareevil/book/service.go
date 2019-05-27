@@ -4,15 +4,16 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
-    "encoding/json"
 	_ "github.com/go-sql-driver/mysql"
 	"strings"
 )
 
 // namespace for author cache, this will be indexed by author id
 const AUTHOR_CACHE = "author.name"
+
 // namespace for this book cache, this will be indexed by book id
 const BOOK_CACHE = "book.info"
 
@@ -61,8 +62,7 @@ type bookService struct {
 // book
 // error
 func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
-	fmt.Println("")
-	fmt.Println("-- GetBook --")
+	fmt.Println("[GetBook]")
 
 	////////////////////
 	// Get data from mysql
@@ -92,7 +92,7 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 	case err == sql.ErrNoRows:
 		return Book{}, ErrNotFound
 	case err != nil:
-		fmt.Println("Got error from select: ", err)
+		fmt.Println("[GetBook] Got error from select: ", err)
 		return Book{}, ErrServerError
 	}
 
@@ -107,14 +107,13 @@ func (theService bookService) GetBook(bearer string, bookId int) (Book, error) {
 	// Convert isbns from CSV to string array
 	book.Isbns = splitCsvStringToArray(isbnsAsCsv)
 
-    // Save to cache
-    bookAsBytes, err := json.Marshal(book)
-    if err == nil {
-        go theService.cache.SetBytes(BOOK_CACHE, bookId, bookAsBytes)
-    } else {
-        fmt.Println("Unable to save book to cache:", err)
-    }
-
+	// Save to cache
+	bookAsBytes, err := json.Marshal(book)
+	if err == nil {
+		go theService.cache.SetBytes(BOOK_CACHE, bookId, bookAsBytes)
+	} else {
+		fmt.Println("[GetBook] Unable to save book to cache:", err)
+	}
 
 	return book, nil
 }
@@ -149,25 +148,24 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 		"image_small, image_medium, image_large, goodreads_url " +
 		"FROM book "
 
-	fmt.Println("-- GetBooks --")
+	fmt.Println("[GetBooks]")
 
 	// Update query according to which other queryParams come in (title, authorIds, bookIds)
 	updated := false
-    var appendedString string
-
+	var appendedString string
 
 	// Title
 	if len(title) > 0 {
 		updated = true
 		appendedString = "WHERE title LIKE '%" + title + "%' "
 	}
-    
-    // Author name
-    // convert into authorIds
-    if len(authorName) > 0 {
-        ids := getAuthorIdsByName(bearer, authorName)
-        authorIds = append(authorIds, ids...)
-    }
+
+	// Author name
+	// convert into authorIds
+	if len(authorName) > 0 {
+		ids := getAuthorIdsByName(bearer, authorName)
+		authorIds = append(authorIds, ids...)
+	}
 
 	// Author IDs
 	if len(authorIds) > 0 {
@@ -179,7 +177,7 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 			prependValue = " WHERE"
 		}
 		authorIdsAsCsv := convertIntArrayToCsv(authorIds)
-        appendedString += prependValue + " author_id in (" + authorIdsAsCsv + ")"
+		appendedString += prependValue + " author_id in (" + authorIdsAsCsv + ")"
 		updated = true
 	}
 	// Book IDs
@@ -192,26 +190,25 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 			prependValue = " WHERE"
 		}
 		bookIdsAsCsv := convertIntArrayToCsv(bookIds)
-        appendedString += prependValue + " book_id in (" + bookIdsAsCsv + ")"
+		appendedString += prependValue + " book_id in (" + bookIdsAsCsv + ")"
 
 		updated = true
 	}
 
-
-    // Re get total # of rows for the return value
-    countQuery := "SELECT COUNT(*) FROM book " + appendedString;
+	// Re get total # of rows for the return value
+	countQuery := "SELECT COUNT(*) FROM book " + appendedString
 	_ = theService.mysqlDb.QueryRow(countQuery).Scan(&totalNumberOfRows)
 
-    // real select string
-    selectString = selectString + appendedString
+	// real select string
+	selectString = selectString + appendedString
 
-    // Make query
+	// Make query
 	results, err := theService.mysqlDb.
 		Query(selectString+
 			"LIMIT ?,?", offset, limit)
 
 	if err != nil {
-		fmt.Println("Got error from mysql: " + err.Error())
+		fmt.Println("[GetBooks] Got error from mysql: " + err.Error())
 		return Books{}, errors.New("unable to create query in mysql")
 	}
 
@@ -232,7 +229,7 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 				&book.ImageSmall, &book.ImageMedium, &book.ImageLarge, &book.GoodReadsUrl)
 
 		if err != nil {
-			fmt.Println("Got error from mysql when getting all books: " + err.Error())
+			fmt.Println("[GetBooks] Got error from mysql when getting all books: " + err.Error())
 			return Books{}, errors.New("Unable to scan mysql for all books.")
 		}
 
@@ -247,17 +244,17 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 
 		datum = append(datum, book)
 
-        // Save to cache
-        bookAsBytes, err := json.Marshal(book)
-        if err == nil {
-            go theService.cache.SetBytes(BOOK_CACHE, book.Id, bookAsBytes)
-        } else {
-            fmt.Println("Unable to save book to cache:", err)
-        }
+		// Save to cache
+		bookAsBytes, err := json.Marshal(book)
+		if err == nil {
+			go theService.cache.SetBytes(BOOK_CACHE, book.Id, bookAsBytes)
+		} else {
+			fmt.Println("[GetBooks] Unable to save book to cache:", err)
+		}
 	}
 
-    // reset the limit (number of things being returned)
-    limit = len(datum)
+	// reset the limit (number of things being returned)
+	limit = len(datum)
 
 	// Create Books to return
 	returnValue := Books{
@@ -279,8 +276,7 @@ func (theService bookService) GetBooks(bearer string, offset int, limit int, tit
 // returns:
 // error
 func (theService bookService) DeleteBook(bookId int) error {
-	fmt.Println("")
-	fmt.Println("-- DeleteBook --")
+	fmt.Println("[DeleteBook]")
 
 	////////////////////
 	// Get data from mysql
@@ -291,7 +287,7 @@ func (theService bookService) DeleteBook(bookId int) error {
 	}
 
 	// Verify the book exists, if not, throw ErrNotFound
-    // first param is empty for the bearer as we don't need to get the extra info
+	// first param is empty for the bearer as we don't need to get the extra info
 	_, getErr := theService.GetBook("", bookId)
 	if getErr != nil {
 		return getErr
@@ -300,8 +296,8 @@ func (theService bookService) DeleteBook(bookId int) error {
 	// Make DELETE query
 	_, err := theService.mysqlDb.Exec("DELETE FROM book WHERE book_id = ?", bookId)
 
-    // remove from cache
-    theService.cache.Clear(BOOK_CACHE, bookId)
+	// remove from cache
+	theService.cache.Clear(BOOK_CACHE, bookId)
 
 	return err
 }
@@ -326,8 +322,7 @@ func (theService bookService) CreateBook(
 	subjects []string,
 	title string) (Book, error) {
 
-	fmt.Println("")
-	fmt.Println("-- CreateBook --")
+	fmt.Println("[CreateBook]")
 
 	////////////////////
 	// verify mysql
@@ -350,7 +345,7 @@ func (theService bookService) CreateBook(
 
 	defer stmt.Close()
 	if err != nil {
-		fmt.Println("Error preparing DB: ", err)
+		fmt.Println("[CreateBook] Error preparing DB: ", err)
 		return Book{}, errors.New("Unable to prepare a DB statement: ")
 	}
 
@@ -359,7 +354,7 @@ func (theService bookService) CreateBook(
 		imageSmall, imageMedium, imageLarge)
 
 	if err != nil {
-		fmt.Println("Error inserting into DB: ", err)
+		fmt.Println("[CreateBook] Error inserting into DB: ", err)
 		if strings.Contains(err.Error(), "Duplicate entry ") {
 			return Book{}, ErrAlreadyExists
 		} else {
@@ -396,8 +391,7 @@ func (theService bookService) UpdateBook(
 	subjects []string,
 	title string) (Book, error) {
 
-	fmt.Println("")
-	fmt.Println("-- UpdateBook --")
+	fmt.Println("[UpdateBook]")
 
 	////////////////////
 	// Get data from mysql
@@ -424,7 +418,7 @@ func (theService bookService) UpdateBook(
 			"WHERE book_id = ?")
 	defer stmt.Close()
 	if err != nil {
-		fmt.Println("Error preparing DB: ", err)
+		fmt.Println("[UpdateBook] Error preparing DB: ", err)
 		return Book{}, errors.New("Unable to prepare a DB statement: ")
 	}
 
@@ -437,15 +431,14 @@ func (theService bookService) UpdateBook(
 		imageSmall, imageMedium, imageLarge, bookId)
 
 	if err != nil {
-		fmt.Println("Error updatingDB for book: ", err)
+		fmt.Println("[UpdateBook] Error updatingDB for book: ", err)
 		return Book{}, errors.New("Unable to run update against DB for book: ")
 	}
 
-    // This next call will save the book into the cache and overwrite existing data
+	// This next call will save the book into the cache and overwrite existing data
 
 	// get the book back
 	bookToReturn, err := theService.GetBook(bearer, bookId)
 
 	return bookToReturn, err
 }
-
