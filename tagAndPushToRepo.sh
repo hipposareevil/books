@@ -17,27 +17,27 @@ fi
 tag_and_push() {
     what_to_tag=$1
 
-    image=$(docker images | grep -v $BOOK_REPOSITORY | grep $what_to_tag | awk '{print $3}')
+    image=$(docker images $what_to_tag | grep -v REPOSITORY | awk '{print $3}')
     if [ -z "$image" ]; then
         echo "Unable to find $what_to_tag image"
         exit 1
     fi
     echo ""
-    echo "Tagging $image as ${BOOK_REPOSITORY}$what_to_tag"
-    docker tag $image ${BOOK_REPOSITORY}${what_to_tag}:latest
-    docker push ${BOOK_REPOSITORY}${what_to_tag}:latest
-
+    echo "Tagging and pushing '${image}' as '${BOOK_REPOSITORY}${what_to_tag}'"
+    docker tag $image ${BOOK_REPOSITORY}${what_to_tag}
+    docker push ${BOOK_REPOSITORY}${what_to_tag}
 }
 
 
-# query
-tag_and_push "books.query"
 
-# author
-tag_and_push "books.author"
-
-# title
-tag_and_push "books.title"
-
-# nginx
-tag_and_push "books.nginx"
+tag_and_push "books.author.go"
+tag_and_push "books.authorize.go"
+tag_and_push "books.book.go"
+tag_and_push "books.frontend:dev"
+tag_and_push "books.frontend:prod"
+tag_and_push "books.gateway"
+tag_and_push "books.query.go"
+tag_and_push "books.review.go"
+tag_and_push "books.tag.go"
+tag_and_push "books.user.go"
+tag_and_push "books.user_book.go"
