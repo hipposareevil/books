@@ -77,10 +77,15 @@ clean-cache() {
 
 
 ############
-# Build all images
+# Perform a build
+#
+# params:
+# 1- param passed to build.sh in each directory. This can be empty
 # 
 ############
-build() {
+_build() {
+    build_param="$1"
+
     ####
     # build all projects and their docker images
 
@@ -97,8 +102,8 @@ build() {
         echo ""
         echo " -------------------------------------------------"
         echo ""
-        echo "  Building project '$project'"
-        $project/build.sh 
+        echo "  Building project '$project'}"
+        $project/build.sh ${build_param} 
         if [ $? -ne 0 ]; then
             echo "Unable to build $project, exiting."
             exit 1
@@ -109,6 +114,23 @@ build() {
 
     echo ""
     echo "All webservices built!" 
+}
+
+############
+# Build everything
+# 
+############
+build() {
+    _build
+}
+
+
+############
+# Build just images
+# 
+############
+buildimages() {
+    _build "buildimage"
 }
 
 ###########
@@ -174,6 +196,10 @@ main() {
 	        ;;
             "build")
                 build
+                exit 0
+                ;;
+            "buildimages")
+                buildimages
                 exit 0
                 ;;
             "clean")

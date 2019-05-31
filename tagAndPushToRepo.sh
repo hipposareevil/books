@@ -30,14 +30,13 @@ tag_and_push() {
 
 
 
-tag_and_push "books.author.go"
-tag_and_push "books.authorize.go"
-tag_and_push "books.book.go"
-tag_and_push "books.frontend:dev"
-tag_and_push "books.frontend:prod"
+tag_and_push "books.author"
+tag_and_push "books.authorize"
+tag_and_push "books.book"
+tag_and_push "books.frontend"
 tag_and_push "books.gateway"
-tag_and_push "books.query.go"
-tag_and_push "books.review.go"
-tag_and_push "books.tag.go"
-tag_and_push "books.user.go"
-tag_and_push "books.user_book.go"
+tag_and_push "books.query"
+tag_and_push "books.review"
+tag_and_push "books.tag"
+tag_and_push "books.user"
+tag_and_push "books.user_book"

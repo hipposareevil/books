@@ -8,7 +8,6 @@
            class="input is-small"
            type="text"
            autofocus
-           :value="user.name"
            v-model="user.name"
            v-on:blur="mutate"
            @keyup.enter="submit"></input>

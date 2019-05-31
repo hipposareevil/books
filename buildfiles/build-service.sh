@@ -24,10 +24,15 @@ initialize_variables() {
         exit 1
     fi
 
-    # Get name of project
-    project=$(cat $our_directory/webservice.name | xargs)
+    # root for all images
+    ROOT_NAME="books"
 
-    image_name="books.$project:latest"
+    # Get name and version of project
+    project=$(cat $our_directory/webservice.name | xargs)
+    project_version=$(cat $our_directory/../webservice.version | xargs)
+
+    image_base_name="${ROOT_NAME}.${project}"
+    image_name="${image_base_name}:${project_version}"
 }
 
 #########
@@ -71,9 +76,10 @@ build_image() {
     local then=$(date +%s)
     echo "[[Building Docker image '$image_name']]"
 
+    # These are image labels
     # set build time
     BUILD_TIME=$(date +%Y-%m-%dT%H:%M:%S%Z)
-    VERSION_TAG="latest"
+    VERSION_TAG="$project_version"
 
     # run docker build
     (cd $our_directory;
@@ -90,7 +96,16 @@ build_image() {
 
     if [ $build_result -eq 0 ]; then
         echo ""
-        echo "[[Built $image_name in $elapsed seconds (done at: $rightnow)]]"
+        echo "[[Built \"${image_name}\" in $elapsed seconds (done at: $rightnow)]]"
+
+        # tag as latest now
+        output=$(docker tag ${image_name} ${image_base_name}:latest)
+        tag_result=$?
+        if [ $tag_result -eq 0 ]; then
+            echo "[[Tagged \"${image_name}\" as \"${image_base_name}:latest\"]]"
+        else
+            echo "[[Unable to tag image as latest!!!!]]"
+        fi
     else
         echo ""
         echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
