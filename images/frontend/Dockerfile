@@ -9,6 +9,13 @@ RUN npm install -g vue-cli
 # caller should mount into /scratch to run the dev server
 WORKDIR /scratch/
 
+# Putting LABEL last so we can re-use the preceding caching layers
+LABEL org.label-schema.build-date="$BUILD_TIME" \
+      org.label-schema.vendor="github.com/hipposareevil" \
+      org.label-schema.version="$VERSION" \
+      org.label-schema.description="Dev Frontend SPA webpage for books application." \
+      org.label-schema.name="books.frontend" 
+
 #ENTRYPOINT ["npm", "run", "dev"]
 CMD npm run dev
 
