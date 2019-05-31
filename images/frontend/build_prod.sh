@@ -1,6 +1,6 @@
 #!/bin/bash
 
-1####################
+####################
 #
 # Build the dev and production versions of frontend.
 #
