@@ -9,6 +9,11 @@ RUN npm install -g vue-cli
 # caller should mount into /scratch to run the dev server
 WORKDIR /scratch/
 
+# Args passed in via 'docker build'
+# Used by the LABELs
+ARG BUILD_TIME
+ARG VERSION
+
 # Putting LABEL last so we can re-use the preceding caching layers
 LABEL org.label-schema.build-date="$BUILD_TIME" \
       org.label-schema.vendor="github.com/hipposareevil" \

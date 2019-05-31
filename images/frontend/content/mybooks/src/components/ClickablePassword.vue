@@ -7,7 +7,6 @@
     <input v-else
            class="input is-small"
            type="password"
-           :value="formValue"
            v-model="formValue"
            @keyup.enter="submit"
            v-on:blur="mutate"></input>
