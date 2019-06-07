@@ -61,7 +61,6 @@ func (theResponse putTagResponse) error() error {
 	return theResponse.Err
 }
 
-
 ////////////////////
 /// DELETE TAG (single)
 // response for tag (single)

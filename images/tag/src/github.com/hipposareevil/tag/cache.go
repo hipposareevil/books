@@ -72,7 +72,6 @@ func (theCache cacheLayer) Set(namespace string, key int, value string) {
 	fmt.Println("cache.Set: ", elapsed)
 }
 
-
 ////////////
 // Set a value in the cache
 //
@@ -81,8 +80,8 @@ func (theCache cacheLayer) Set(namespace string, key int, value string) {
 // key  Key to store
 // value Byte Value to store
 func (theCache cacheLayer) SetBytes(namespace string, key int, value []byte) {
-    valueAsString := string(value[:])
-    theCache.Set(namespace, key, valueAsString)
+	valueAsString := string(value[:])
+	theCache.Set(namespace, key, valueAsString)
 }
 
 ////////////
@@ -162,7 +161,6 @@ func (theCache cacheLayer) ClearAll(namespace string) {
 	}
 }
 
-
 ////////////
 // Get a byte array value from the cache
 //
@@ -173,16 +171,15 @@ func (theCache cacheLayer) ClearAll(namespace string) {
 // returns:
 // value, or empty byte array if none exists
 func (theCache cacheLayer) GetBytes(namespace string, key int) []byte {
-    stringValue := theCache.Get(namespace, key)
-    var byteValue []byte
+	stringValue := theCache.Get(namespace, key)
+	var byteValue []byte
 
-    if len(stringValue) > 0 {
-        byteValue = []byte(stringValue)
-    }
+	if len(stringValue) > 0 {
+		byteValue = []byte(stringValue)
+	}
 
-    return byteValue    
+	return byteValue
 }
-
 
 ////////////
 // Get a value from the cache

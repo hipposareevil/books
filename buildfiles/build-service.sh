@@ -96,7 +96,7 @@ build_image() {
 
     if [ $build_result -eq 0 ]; then
         echo ""
-        echo "[[Built \"${image_name}\" in $elapsed seconds (done at: $rightnow)]]"
+        echo "[[Built image \"${image_name}\" in $elapsed seconds (done at: $rightnow)]]"
 
         # tag as latest now
         output=$(docker tag ${image_name} ${image_base_name}:latest)
@@ -120,7 +120,10 @@ build_image() {
 #
 #############
 build() {
-    echo "[[Building project '$project']]"
+    echo "[[Building project '${project}']]"
+
+    # start of overall build
+    local then=$(date +%s)
 
     ## Build project
     # Determine build type:
@@ -134,8 +137,12 @@ build() {
     ## Build image
     build_image
 
-    date=$(date)
-    echo "[[Build for '$project' complete on $date]]"
+    local now=$(date +%s)
+    local elapsed=$(expr $now - $then)
+    rightnow=$(date)
+
+    echo "[[Build for '$project' complete on '${rightnow}' in ${elapsed} seconds.]]"
+
 }
 
 

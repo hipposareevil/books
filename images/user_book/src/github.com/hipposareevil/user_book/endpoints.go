@@ -19,7 +19,7 @@ type dataHolder interface {
 // response for userBooks (vs. single userBook)
 type userBooksResponse struct {
 	Data UserBooks `json:"all,omitempty"`
-	Err  error `json:"err,omitempty"`
+	Err  error     `json:"err,omitempty"`
 }
 
 func (theResponse userBooksResponse) error() error {
@@ -34,8 +34,8 @@ func (theResponse userBooksResponse) getData() interface{} {
 /// USERBOOK (single)
 // response for userBook (single)
 type userBookResponse struct {
-	Data UserBook  `json:"all,omitempty"`
-	Err  error `json:"err,omitempty"`
+	Data UserBook `json:"all,omitempty"`
+	Err  error    `json:"err,omitempty"`
 }
 
 func (theResponse userBookResponse) error() error {
@@ -61,8 +61,8 @@ func (theResponse deleteUserBookResponse) error() error {
 /// Create USERBOOK
 // response for create userBook
 type createUserBookResponse struct {
-	Data UserBook  `json:"all,omitempty"`
-	Err  error `json:"err,omitempty"`
+	Data UserBook `json:"all,omitempty"`
+	Err  error    `json:"err,omitempty"`
 }
 
 func (theResponse createUserBookResponse) error() error {
@@ -77,8 +77,8 @@ func (theResponse createUserBookResponse) getData() interface{} {
 /// Update USERBOOK
 // response for update userBook
 type updateUserBookResponse struct {
-	Err  error `json:"err,omitempty"`
-	Data UserBook  `json:"all,omitempty"`
+	Err  error    `json:"err,omitempty"`
+	Data UserBook `json:"all,omitempty"`
 }
 
 func (theResponse updateUserBookResponse) error() error {

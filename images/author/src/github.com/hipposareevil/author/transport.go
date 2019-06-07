@@ -132,17 +132,17 @@ func makeUpdateAuthorEndpoint(svc AuthorService) endpoint.Endpoint {
 func decodeGetAllAuthorsRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	realOffset, realLimit := parseOffsetAndLimit(r)
 
-    // Get name
+	// Get name
 	r.ParseForm()
 	values := r.Form
-    name := values.Get("name")
+	name := values.Get("name")
 
 	// Make request for all authors
 	var request getAllAuthorsRequest
 	request = getAllAuthorsRequest{
 		Offset: realOffset,
 		Limit:  realLimit,
-        Name: name,
+		Name:   name,
 	}
 
 	return request, nil

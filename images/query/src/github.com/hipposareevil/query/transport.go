@@ -1,7 +1,7 @@
 package main
 
 // Transport module
-// 
+//
 // Contains:
 // - endpoint creation
 // - encode responses to client
@@ -20,7 +20,6 @@ import (
 //
 // Create endpoints
 
-
 // GET /query/author
 func makeQueryAuthorEndpoint(svc QueryService) endpoint.Endpoint {
 
@@ -29,14 +28,13 @@ func makeQueryAuthorEndpoint(svc QueryService) endpoint.Endpoint {
 		req := request.(queryAuthorRequest)
 
 		// call actual service with data from the request
-        authors, err := svc.QueryAuthor(req.Author, req.Offset, req.Limit)
+		authors, err := svc.QueryAuthor(req.Author, req.Offset, req.Limit)
 		return authorsResponse{
 			Data: authors,
 			Err:  err,
 		}, nil
 	}
 }
-
 
 // GET /query/title
 func makeQueryTitleEndpoint(svc QueryService) endpoint.Endpoint {
@@ -46,10 +44,10 @@ func makeQueryTitleEndpoint(svc QueryService) endpoint.Endpoint {
 		req := request.(queryTitleRequest)
 
 		// call actual service with data from the request
-        titles, err := svc.QueryTitle(req.Author,
-            req.Title,
-            req.Isbn,
-            req.Offset, req.Limit)
+		titles, err := svc.QueryTitle(req.Author,
+			req.Title,
+			req.Isbn,
+			req.Offset, req.Limit)
 		return titlesResponse{
 			Data: titles,
 			Err:  err,
@@ -57,39 +55,35 @@ func makeQueryTitleEndpoint(svc QueryService) endpoint.Endpoint {
 	}
 }
 
-
 //////////////////////////////////////////////////////////
 //
 // Decode
-
 
 // Create a queryAuthorRequest
 func decodeQueryAuthorRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	realOffset, realLimit := parseOffsetAndLimit(r)
 
-    // Get author name
+	// Get author name
 	r.ParseForm()
 	values := r.Form
 
 	authorName := values.Get("author")
 
 	var request queryAuthorRequest
-	request = queryAuthorRequest {
+	request = queryAuthorRequest{
 		Offset: realOffset,
 		Limit:  realLimit,
-        Author: authorName,
+		Author: authorName,
 	}
 
 	return request, nil
 }
 
-
-
 // Create a queryTitleRequest
 func decodeQueryTitleRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	realOffset, realLimit := parseOffsetAndLimit(r)
 
-    // Get params
+	// Get params
 	r.ParseForm()
 	values := r.Form
 
@@ -98,18 +92,16 @@ func decodeQueryTitleRequest(_ context.Context, r *http.Request) (interface{}, e
 	isbn := values.Get("isbn")
 
 	var request queryTitleRequest
-	request = queryTitleRequest {
+	request = queryTitleRequest{
 		Offset: realOffset,
 		Limit:  realLimit,
-        Author: authorName,
-        Isbn: isbn,
-        Title: title,
+		Author: authorName,
+		Isbn:   isbn,
+		Title:  title,
 	}
 
 	return request, nil
 }
-
-
 
 // Decode the common parts of a request:
 // * offset
@@ -148,7 +140,6 @@ func parseOffsetAndLimit(r *http.Request) (int, int) {
 	return realOffset, realLimit
 }
 
-
 //////////////////////////////////////////////////////////
 //
 //  Encode responses to client
@@ -184,12 +175,12 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	// Write actual error code
-    code := codeFrom(err)
+	code := codeFrom(err)
 	w.WriteHeader(code)
 
 	// write out the error message
 	json.NewEncoder(w).Encode(map[string]interface{}{
-        "code": code,
+		"code":    code,
 		"message": err.Error(),
 	})
 }
@@ -203,6 +194,3 @@ func codeFrom(err error) int {
 		return http.StatusInternalServerError
 	}
 }
-
-
-

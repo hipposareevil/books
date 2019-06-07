@@ -19,7 +19,7 @@ type dataHolder interface {
 // response for reviews
 type reviewResponse struct {
 	Data Reviews `json:"all,omitempty"`
-	Err  error `json:"err,omitempty"`
+	Err  error   `json:"err,omitempty"`
 }
 
 func (theResponse reviewResponse) error() error {
@@ -29,4 +29,3 @@ func (theResponse reviewResponse) error() error {
 func (theResponse reviewResponse) getData() interface{} {
 	return theResponse.Data
 }
-

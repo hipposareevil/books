@@ -28,7 +28,7 @@ type OpenLibraryTitles struct {
 // Individual Title response
 type OpenLibraryTitle struct {
 	Title            string   `json:"title_suggest"`
-	CoverImage       int   `json:"cover_i"`
+	CoverImage       int      `json:"cover_i"`
 	FirstPublishYear int      `json:"first_publish_year"`
 	WorksKey         string   `json:"key"`
 	AuthorKeys       []string `json:"author_key"`
@@ -39,15 +39,13 @@ type OpenLibraryTitle struct {
 	EditionKeys      []string `json:"edition_key"`
 }
 
-
 // Description JSON returned for a given works url
 type MetaDescription struct {
-    Type string `json:"Type"`
-    Value string `json:"value"`
-
+	Type  string `json:"Type"`
+	Value string `json:"value"`
 }
 
 type OpenLibraryDescription struct {
-    Description MetaDescription `json:"description"`
-    Subject     []string `json:"subjects"`
+	Description MetaDescription `json:"description"`
+	Subject     []string        `json:"subjects"`
 }

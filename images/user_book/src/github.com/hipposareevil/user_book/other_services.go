@@ -1,9 +1,7 @@
 package main
 
-
 ///////////////////
 // Set of functions to make calls to other services
-
 
 import (
 	"encoding/json"
@@ -11,46 +9,45 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
-    "net/url"
 	"time"
-    "strconv"
 )
 
-
 // namespace for looking up tags.
-const TAG_CACHE="tag"
-// namespace for looking up books by book id.
-const BOOK_CACHE="book.info"
+const TAG_CACHE = "tag"
 
+// namespace for looking up books by book id.
+const BOOK_CACHE = "book.info"
 
 ////////////
 // Query the /tag endpoint for all tags
 //
 // cache: Cache to utilize
 // bearer: BEARER string used to connect to other web service
-// 
+//
 // returns Tags, which has array of Tag objects
 func getAllTags(cache CacheLayer, bearer string) Tags {
-    // Check the cache
-    tagsAsBytes := cache.GetBytes(TAG_CACHE, 0)
-    if len(tagsAsBytes) > 0 {
-        allTags := Tags{}
-        err := json.Unmarshal(tagsAsBytes, &allTags)
-        if err == nil {
-            // Check that there are actual tags in this data
-            numTags := len(allTags.Data)
-            if numTags > 0 {
-                fmt.Println("Got ",numTags," 'tags' from cache")
-                return allTags                
-            } else {
-                fmt.Println("Not using 'tags' from cache as it is empty")
-            }
-        }
-    }
+	// Check the cache
+	tagsAsBytes := cache.GetBytes(TAG_CACHE, 0)
+	if len(tagsAsBytes) > 0 {
+		allTags := Tags{}
+		err := json.Unmarshal(tagsAsBytes, &allTags)
+		if err == nil {
+			// Check that there are actual tags in this data
+			numTags := len(allTags.Data)
+			if numTags > 0 {
+				fmt.Println("Got ", numTags, " 'tags' from cache")
+				return allTags
+			} else {
+				fmt.Println("Not using 'tags' from cache as it is empty")
+			}
+		}
+	}
 
-    ///////////
-    // Get from tag service
+	///////////
+	// Get from tag service
 
 	// make client
 	superClient := http.Client{
@@ -91,14 +88,14 @@ func getAllTags(cache CacheLayer, bearer string) Tags {
 	}
 
 	// get tags
-    allTags := Tags{}
+	allTags := Tags{}
 	jsonErr := json.Unmarshal(body, &allTags)
 	if jsonErr != nil {
 		fmt.Println("Unable to unmarshall response from /tag")
 		return Tags{}
 	}
 
-    return allTags
+	return allTags
 }
 
 ///////////
@@ -109,34 +106,33 @@ func getAllTags(cache CacheLayer, bearer string) Tags {
 // bearer: BEARER string used to connect to other web service
 // bookId: ID of book to get
 // userBook: UserBook to fill in with book data retrieved from /book service
-// 
-func getBookById(cache CacheLayer, bearer string, bookId int, userBook *UserBook) (error) {
-    // Check the cache
-    bookAsBytes := cache.GetBytes(BOOK_CACHE, bookId)
-    if len(bookAsBytes) > 0 {
-        book := Book{}
+//
+func getBookById(cache CacheLayer, bearer string, bookId int, userBook *UserBook) error {
+	// Check the cache
+	bookAsBytes := cache.GetBytes(BOOK_CACHE, bookId)
+	if len(bookAsBytes) > 0 {
+		book := Book{}
 
-        err := json.Unmarshal(bookAsBytes, &book)
-        if err == nil {
-            // Fill in book info
-            userBook.Title = book.Title
-            userBook.AuthorName = book.AuthorName
-            userBook.AuthorId = book.AuthorId
-            userBook.FirstPublishedYear = book.FirstPublishedYear
-            userBook.ImageSmall = book.ImageSmall
-            userBook.ImageMedium = book.ImageMedium
-            userBook.ImageLarge = book.ImageLarge
+		err := json.Unmarshal(bookAsBytes, &book)
+		if err == nil {
+			// Fill in book info
+			userBook.Title = book.Title
+			userBook.AuthorName = book.AuthorName
+			userBook.AuthorId = book.AuthorId
+			userBook.FirstPublishedYear = book.FirstPublishedYear
+			userBook.ImageSmall = book.ImageSmall
+			userBook.ImageMedium = book.ImageMedium
+			userBook.ImageLarge = book.ImageLarge
 
-            return nil
-        }
-    }
+			return nil
+		}
+	}
 
+	///////////
+	// Get from book service
 
-    ///////////
-    // Get from book service
-    
-    // book id as string
-    bookIdAsString := strconv.Itoa(bookId)
+	// book id as string
+	bookIdAsString := strconv.Itoa(bookId)
 
 	// make client
 	superClient := http.Client{
@@ -145,7 +141,6 @@ func getBookById(cache CacheLayer, bearer string, bookId int, userBook *UserBook
 
 	// make request object
 	fullUrl := "http://book:8080/book/" + bookIdAsString
-
 
 	req, err := http.NewRequest(http.MethodGet, fullUrl, nil)
 	if err != nil {
@@ -167,43 +162,43 @@ func getBookById(cache CacheLayer, bearer string, bookId int, userBook *UserBook
 	// Check status code
 	if !strings.Contains(res.Status, "200") {
 		fmt.Println("getBook: Unable to connect to '" + fullUrl + "' to get names. HTTP code: " + res.Status)
-        return nil
+		return nil
 	}
 
 	// parse body
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
 		fmt.Println("Unable to parse response from /book")
-        return nil
+		return nil
 	}
 
 	// get books
-    book := Book{}
+	book := Book{}
 	jsonErr := json.Unmarshal(body, &book)
 	if jsonErr != nil {
 		fmt.Println("Unable to unmarshall response from /book")
-		return  nil
+		return nil
 	}
 
-    // Set values on incoming UserBook
-    userBook.Title = book.Title
-    userBook.AuthorName = book.AuthorName
-    userBook.AuthorId = book.AuthorId
-    userBook.FirstPublishedYear = book.FirstPublishedYear
-    userBook.ImageSmall = book.ImageSmall
-    userBook.ImageMedium = book.ImageMedium
-    userBook.ImageLarge = book.ImageLarge
-    
-    return nil
+	// Set values on incoming UserBook
+	userBook.Title = book.Title
+	userBook.AuthorName = book.AuthorName
+	userBook.AuthorId = book.AuthorId
+	userBook.FirstPublishedYear = book.FirstPublishedYear
+	userBook.ImageSmall = book.ImageSmall
+	userBook.ImageMedium = book.ImageMedium
+	userBook.ImageLarge = book.ImageLarge
+
+	return nil
 }
 
 ///////////
 // Query the /book endpoint for all books that match the incoming title
 func getBooksByTitle(bearer string, title string) (Books, error) {
-    title = url.QueryEscape(title)
+	title = url.QueryEscape(title)
 
 	fullUrl := "http://book:8080/book?title=" + title
-    fmt.Println("Making title query with url '",fullUrl,"'")
+	fmt.Println("Making title query with url '", fullUrl, "'")
 
 	// make client
 	superClient := http.Client{
@@ -225,30 +220,29 @@ func getBooksByTitle(bearer string, title string) (Books, error) {
 	res, getErr := superClient.Do(req)
 	if getErr != nil {
 		fmt.Println("Unable to send request to /book")
-		return Books{},ErrServerError
+		return Books{}, ErrServerError
 	}
 
 	// Check status code
 	if !strings.Contains(res.Status, "200") {
 		fmt.Println("getBooksByTitle: Unable to connect to '" + fullUrl + "' to get names. HTTP code: " + res.Status)
-		return Books{},ErrServerError
+		return Books{}, ErrServerError
 	}
 
 	// parse body
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
 		fmt.Println("Unable to parse response from /book")
-		return Books{},ErrServerError
+		return Books{}, ErrServerError
 	}
 
 	// get books
-    books := Books{}
+	books := Books{}
 	jsonErr := json.Unmarshal(body, &books)
 	if jsonErr != nil {
 		fmt.Println("Unable to unmarshall response from /book")
 		return Books{}, ErrServerError
 	}
 
-    return books, nil
+	return books, nil
 }
-

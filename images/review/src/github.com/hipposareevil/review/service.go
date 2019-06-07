@@ -60,7 +60,7 @@ func (theService reviewService) GetReviews(bearer string, offset int, limit int,
 				Rating:   userBook.Rating,
 				Tags:     userBook.Tags,
 				UserName: currentUser.Name,
-				UserId: currentUser.Id,
+				UserId:   currentUser.Id,
 				Review:   userBook.Review,
 			}
 			datum = append(datum, newReview)
@@ -69,34 +69,34 @@ func (theService reviewService) GetReviews(bearer string, offset int, limit int,
 		}
 	}
 
-    ///////////////
-    // Update return data
+	///////////////
+	// Update return data
 
-    // Get the total number of rows
-    realNumberRows := len(datum)
-    realLimit := limit
+	// Get the total number of rows
+	realNumberRows := len(datum)
+	realLimit := limit
 
-    // fix offset
-    if (offset > realNumberRows) || (offset < 0) {
-        offset = 0        
-    }
+	// fix offset
+	if (offset > realNumberRows) || (offset < 0) {
+		offset = 0
+	}
 
-    // fix limit
-    if (realLimit < 0) {
-        realLimit = len(datum)
-    }
+	// fix limit
+	if realLimit < 0 {
+		realLimit = len(datum)
+	}
 
-    if (realLimit > realNumberRows) {
-        realLimit = realNumberRows
-    }
+	if realLimit > realNumberRows {
+		realLimit = realNumberRows
+	}
 
-    // determine slice of datum to use
-    whereToEnd := offset + realLimit
-    if (whereToEnd > realNumberRows) {
-        whereToEnd = realNumberRows
-    }
+	// determine slice of datum to use
+	whereToEnd := offset + realLimit
+	if whereToEnd > realNumberRows {
+		whereToEnd = realNumberRows
+	}
 
-    datum = datum[offset:whereToEnd]
+	datum = datum[offset:whereToEnd]
 
 	// Create Reviews to return
 	returnValue := Reviews{

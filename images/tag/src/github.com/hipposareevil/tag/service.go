@@ -14,21 +14,20 @@ import (
 
 	"errors"
 
-    "encoding/json"
+	"encoding/json"
 
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const TAG_CACHE="tag"
-
+const TAG_CACHE = "tag"
 
 // Service interface exposed to clients
 type TagService interface {
 	// GetTag: bearer, tag_id
 	GetTag(string, int) (Tag, error)
 
-    // Get tags: bearer, offset, limit
+	// Get tags: bearer, offset, limit
 	GetTags(string, int, int) (Tags, error)
 
 	// GetTag: bearer, tag_id
@@ -39,7 +38,6 @@ type TagService interface {
 
 	// Update tag: bearer, tag name
 	UpdateTag(string, string, int) error
-
 }
 
 ////////////////////////
@@ -48,7 +46,7 @@ type TagService interface {
 // - mysqlDb    DB for MySQL
 // - cache layer
 type tagService struct {
-	mysqlDb   *sql.DB
+	mysqlDb *sql.DB
 	cache   CacheLayer
 }
 
@@ -79,7 +77,7 @@ func (theService tagService) GetTag(bearer string, tagId int) (Tag, error) {
 
 	// Make query
 	var tag Tag
-    // Scan the DB info into 'tag' variable
+	// Scan the DB info into 'tag' variable
 	err := theService.mysqlDb.QueryRow("SELECT tag_id, name FROM tag WHERE tag_id = ?", tagId).Scan(&tag.ID, &tag.Name)
 
 	switch {
@@ -107,7 +105,6 @@ func (theService tagService) GetTag(bearer string, tagId int) (Tag, error) {
 func (theService tagService) GetTags(bearer string, offset int, limit int) (Tags, error) {
 	fmt.Println(" ")
 	fmt.Println("-- GetTags --")
-
 
 	////////////////////
 	// Get data from mysql
@@ -155,20 +152,19 @@ func (theService tagService) GetTags(bearer string, offset int, limit int) (Tags
 		Data:   datum,
 	}
 
-    // Save all tags into cache if we have values
-    if totalNumberOfRows > 0 {
-    tagsAsBytes, err := json.Marshal(returnValue)
-    if err == nil {
-        // save to cache
-        fmt.Println("Saving bytes to tag cache")
-        go theService.cache.SetBytes(TAG_CACHE, 0, tagsAsBytes)
-    } else {
-        fmt.Println("Unable to save tags to cache:", err)
-    }
-    } else {
-        fmt.Println("Not saving tags to cache as there are no datum yet")
-    }
-    
+	// Save all tags into cache if we have values
+	if totalNumberOfRows > 0 {
+		tagsAsBytes, err := json.Marshal(returnValue)
+		if err == nil {
+			// save to cache
+			fmt.Println("Saving bytes to tag cache")
+			go theService.cache.SetBytes(TAG_CACHE, 0, tagsAsBytes)
+		} else {
+			fmt.Println("Unable to save tags to cache:", err)
+		}
+	} else {
+		fmt.Println("Not saving tags to cache as there are no datum yet")
+	}
 
 	return returnValue, nil
 }
@@ -195,22 +191,22 @@ func (theService tagService) DeleteTag(bearer string, tagId int) error {
 	}
 
 	// Verify the tag exists, if not, throw ErrNotFound
-    _, getErr := theService.GetTag(bearer, tagId)
-    if getErr != nil {
-        return getErr
-    }
+	_, getErr := theService.GetTag(bearer, tagId)
+	if getErr != nil {
+		return getErr
+	}
 
 	// Make DELETE query
 	_, err := theService.mysqlDb.Exec("DELETE FROM tag WHERE tag_id = ?", tagId)
 
-    // Delete from tagmapping as well.
-    // Ignore the error for now.
+	// Delete from tagmapping as well.
+	// Ignore the error for now.
 	_, _ = theService.mysqlDb.Exec("DELETE FROM tagmapping WHERE tag_id = ?", tagId)
 
-    // Delete the cache
-    fmt.Println("Clearing TAG cache as we deleted a tag")
-    theService.cache.Clear(TAG_CACHE, 0)
-    
+	// Delete the cache
+	fmt.Println("Clearing TAG cache as we deleted a tag")
+	theService.cache.Clear(TAG_CACHE, 0)
+
 	return err
 }
 
@@ -238,7 +234,7 @@ func (theService tagService) CreateTag(bearer string, tagName string) (Tag, erro
 
 	// Make query
 	stmt, err := theService.mysqlDb.Prepare("INSERT INTO tag SET name=?")
-    defer stmt.Close()
+	defer stmt.Close()
 	if err != nil {
 		fmt.Println("Error preparing DB: ", err)
 		return Tag{}, errors.New("Unable to prepare a DB statement: ")
@@ -264,10 +260,10 @@ func (theService tagService) CreateTag(bearer string, tagName string) (Tag, erro
 		Name: tagName,
 	}
 
-    // Delete the cache
-    fmt.Println("Clearing TAG cache as we added a tag")
-    theService.cache.Clear(TAG_CACHE, 0)
-    
+	// Delete the cache
+	fmt.Println("Clearing TAG cache as we added a tag")
+	theService.cache.Clear(TAG_CACHE, 0)
+
 	return tag, nil
 }
 
@@ -296,26 +292,25 @@ func (theService tagService) UpdateTag(bearer string, tagName string, tagId int)
 
 	// Make query
 	stmt, err := theService.mysqlDb.Prepare("UPDATE tag SET name=? WHERE tag_id = ?")
-    defer stmt.Close()
+	defer stmt.Close()
 	if err != nil {
 		fmt.Println("Error preparing DB: ", err)
 		return errors.New("Unable to prepare a DB statement: ")
 	}
 
-    // Delete the cache
-    fmt.Println("Clearing TAG cache as we updated a tag")
-    theService.cache.Clear(TAG_CACHE, 0)
-    
+	// Delete the cache
+	fmt.Println("Clearing TAG cache as we updated a tag")
+	theService.cache.Clear(TAG_CACHE, 0)
+
 	_, err = stmt.Exec(tagName, tagId)
 	if err != nil {
 		fmt.Println("Error updatingDB: ", err)
 		if strings.Contains(err.Error(), "Duplicate entry ") {
-			return  ErrAlreadyExists
+			return ErrAlreadyExists
 		} else {
-			return  errors.New("Unable to run update against DB: ")
+			return errors.New("Unable to run update against DB: ")
 		}
 	}
 
 	return nil
 }
-

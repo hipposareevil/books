@@ -12,7 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const AUTHOR_CACHE="author.name"
+const AUTHOR_CACHE = "author.name"
 
 // Service interface exposed to clients
 type AuthorService interface {
@@ -40,7 +40,7 @@ type AuthorService interface {
 // - mysqlDb    DB for MySQL
 type authorService struct {
 	mysqlDb *sql.DB
-    cache CacheLayer
+	cache   CacheLayer
 }
 
 //////////
@@ -72,12 +72,12 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 	// Scan the DB info into 'author' composite variable
 	err := theService.mysqlDb.
 		QueryRow("SELECT author_id, name, birth_date, "+
-        "image_small, image_medium, image_large, "+
-        "ol_key, goodreads_url, subjects "+
-        "FROM author WHERE author_id = ?", authorId).
+			"image_small, image_medium, image_large, "+
+			"ol_key, goodreads_url, subjects "+
+			"FROM author WHERE author_id = ?", authorId).
 		Scan(&author.Id, &author.Name, &author.BirthDate,
-        &author.ImageSmall, &author.ImageMedium, &author.ImageLarge,
-        &author.OlKey, &author.GoodReadsUrl, &subjectAsCsv)
+			&author.ImageSmall, &author.ImageMedium, &author.ImageLarge,
+			&author.OlKey, &author.GoodReadsUrl, &subjectAsCsv)
 
 	switch {
 	case err == sql.ErrNoRows:
@@ -92,8 +92,8 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 	// Convert subjects from CSV to string array
 	author.Subjects = splitCsvStringToArray(subjectAsCsv)
 
-    // Cache author name by id
-    go theService.cache.Set(AUTHOR_CACHE, authorId, author.Name)
+	// Cache author name by id
+	go theService.cache.Set(AUTHOR_CACHE, authorId, author.Name)
 
 	return author, nil
 }
@@ -110,8 +110,8 @@ func (theService authorService) GetAuthor(authorId int) (Author, error) {
 // authors
 // error
 func (theService authorService) GetAuthors(offset int, limit int, name string) (Authors, error) {
-    fmt.Println("")
-    fmt.Println("-- GetAuthors --")
+	fmt.Println("")
+	fmt.Println("-- GetAuthors --")
 
 	////////////////////
 	// Get data from mysql
@@ -123,9 +123,9 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 
 	// Get total number of rows
 	var totalNumberOfRows int
-    countQuery := "SELECT COUNT(*) FROM author "
+	countQuery := "SELECT COUNT(*) FROM author "
 	_ = theService.mysqlDb.QueryRow(countQuery).
-        Scan(&totalNumberOfRows)
+		Scan(&totalNumberOfRows)
 
 	if limit > totalNumberOfRows {
 		limit = totalNumberOfRows
@@ -140,24 +140,23 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 		"ol_key, goodreads_url, subjects " +
 		"FROM author "
 
+		// Make query
+	if len(name) > 0 {
+		// Update query to add 'name'
+		appendString := " WHERE name LIKE '%" + name + "%' "
+		fmt.Println("Looking for author with name like '" + name + "'")
+
+		selectString += appendString
+		countQuery += appendString
+	}
+
+	// Redo the total number of rows
+	_ = theService.mysqlDb.QueryRow(countQuery).Scan(&totalNumberOfRows)
+
 	// Make query
-    if len(name) > 0 {
-        // Update query to add 'name'
-        appendString :=" WHERE name LIKE '%" + name + "%' "
-        fmt.Println("Looking for author with name like '" + name + "'")
-
-        selectString += appendString
-        countQuery += appendString
-    }
-
-
-    // Redo the total number of rows
-    _ = theService.mysqlDb.QueryRow(countQuery).Scan(&totalNumberOfRows)
-
-    // Make query
-   results, err := theService.mysqlDb.Query(
-       selectString + "LIMIT ?,?",
-       offset, limit)
+	results, err := theService.mysqlDb.Query(
+		selectString+"LIMIT ?,?",
+		offset, limit)
 
 	if err != nil {
 		fmt.Println("Got error from mysql when querying for all authors: " + err.Error())
@@ -167,8 +166,8 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 	// slice of Author entities
 	datum := make([]Author, 0, 0)
 
-    // Make hashmap of author ID to author name for the cache
-    kvMap := make(map[int]string)
+	// Make hashmap of author ID to author name for the cache
+	kvMap := make(map[int]string)
 
 	// Parse results
 	for results.Next() {
@@ -188,17 +187,17 @@ func (theService authorService) GetAuthors(offset int, limit int, name string) (
 		// Convert subjects from CSV to string array
 		author.Subjects = splitCsvStringToArray(subjectAsCsv)
 
-        // Save the authors name indexed by id
-        kvMap[author.Id] = author.Name
+		// Save the authors name indexed by id
+		kvMap[author.Id] = author.Name
 
 		datum = append(datum, author)
 	}
 
-    // Cache author name by id for all authors found
-    go theService.cache.SetMultiple(AUTHOR_CACHE, kvMap)
+	// Cache author name by id for all authors found
+	go theService.cache.SetMultiple(AUTHOR_CACHE, kvMap)
 
-    // reset the limit (number of things being returned)
-    limit = len(datum)
+	// reset the limit (number of things being returned)
+	limit = len(datum)
 
 	// Create Authors to return
 	returnValue := Authors{
@@ -237,8 +236,8 @@ func (theService authorService) DeleteAuthor(authorId int) error {
 	// Make DELETE query
 	_, err := theService.mysqlDb.Exec("DELETE FROM author WHERE author_id = ?", authorId)
 
-    // Clear cache for this author
-    theService.cache.Clear(AUTHOR_CACHE, authorId)
+	// Clear cache for this author
+	theService.cache.Clear(AUTHOR_CACHE, authorId)
 
 	return err
 }
@@ -293,7 +292,7 @@ func (theService authorService) CreateAuthor(authorName string,
 	// get the id
 	id, _ := res.LastInsertId()
 
-    author, err := theService.GetAuthor(int(id))
+	author, err := theService.GetAuthor(int(id))
 
 	return author, err
 }
@@ -350,20 +349,18 @@ func (theService authorService) UpdateAuthor(authorId int,
 		return errors.New("Unable to run update against DB: ")
 	}
 
-    // Clear cache for this author
-    theService.cache.Clear(AUTHOR_CACHE, authorId)
+	// Clear cache for this author
+	theService.cache.Clear(AUTHOR_CACHE, authorId)
 
 	return nil
 }
 
-
-
 ////////////
 // Split a CSV string into array
 func splitCsvStringToArray(subjectCsv string) []string {
-    if len(subjectCsv) > 0 {
-        return strings.Split(subjectCsv, ",")
-    } else {
-        return make([]string, 0)
-    }
+	if len(subjectCsv) > 0 {
+		return strings.Split(subjectCsv, ",")
+	} else {
+		return make([]string, 0)
+	}
 }
