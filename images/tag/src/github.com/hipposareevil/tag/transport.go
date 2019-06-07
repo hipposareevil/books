@@ -1,7 +1,7 @@
 package main
 
 // Transport module
-// 
+//
 // Contains:
 // - endpoint creation
 // - encode responses to client
@@ -57,7 +57,6 @@ func makePostTagEndpoint(svc TagService) endpoint.Endpoint {
 	}
 }
 
-
 // PUT /tag/
 // Make endpoint for updating (via put) a tag
 func makePutTagEndpoint(svc TagService) endpoint.Endpoint {
@@ -68,11 +67,10 @@ func makePutTagEndpoint(svc TagService) endpoint.Endpoint {
 		// call actual service with data from the req (putTagRequest)
 		err := svc.UpdateTag(req.Bearer, req.NewTagName, req.TagId)
 		return putTagResponse{
-			Err:  err,
+			Err: err,
 		}, nil
 	}
 }
-
 
 // GET /tag/<tag_id>
 // Make endpoint for getting single TAG
@@ -110,7 +108,6 @@ func makeDeleteTagEndpoint(svc TagService) endpoint.Endpoint {
 //
 // Structures
 
-
 // GET request for single tag, contains:
 // - tag_id
 // - bearer
@@ -119,7 +116,6 @@ type tagRequest struct {
 	Bearer string `json:"bearer"`
 }
 
-
 // DELETE request for single tag, contains:
 // - tag_id
 // - bearer
@@ -127,7 +123,6 @@ type deleteTagRequest struct {
 	TagId  int    `json:"tag_id"`
 	Bearer string `json:"bearer"`
 }
-
 
 // GET request for tags, contains:
 // - offset
@@ -152,17 +147,14 @@ type postTagRequest struct {
 // - Updated tag name
 // - tag id
 type putTagRequest struct {
-	TagId  int    `json:"tag_id"`
+	TagId      int    `json:"tag_id"`
 	Bearer     string `json:"bearer"`
 	NewTagName string `json:"String"`
 }
 
-
-
 //////////////////////////////////////////////////////////
 //
 // Decode
-
 
 // Create a tagRequest
 // (used by getTag and deleteTag
@@ -172,8 +164,8 @@ type putTagRequest struct {
 // - TagId   ID of tag taken from the path
 // - Bearer  Authorization token
 func decodeTagRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    ///////////////////
-    // Parse the URL
+	///////////////////
+	// Parse the URL
 
 	// Demux the gorilla parsing
 	vars := mux.Vars(r)
@@ -215,8 +207,8 @@ func decodeTagRequest(_ context.Context, r *http.Request) (interface{}, error) {
 // - Name    Name of tag to create
 // - Bearer  Authorization token
 func decodePostTagRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    ///////////////////
-    // Parse body
+	///////////////////
+	// Parse body
 
 	// Decode the incoming JSON into a NewTag struct
 
@@ -248,7 +240,6 @@ func decodePostTagRequest(_ context.Context, r *http.Request) (interface{}, erro
 	return request, nil
 }
 
-
 // Create a PUT tagRequest
 // /TAG/<tag_id>
 //
@@ -257,8 +248,8 @@ func decodePostTagRequest(_ context.Context, r *http.Request) (interface{}, erro
 // - Bearer  Authorization token
 // - Name    Name of tag to update
 func decodePutTagRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    ///////////////////
-    // Parse the URL
+	///////////////////
+	// Parse the URL
 
 	// Demux the gorilla parsing
 	vars := mux.Vars(r)
@@ -268,14 +259,14 @@ func decodePutTagRequest(_ context.Context, r *http.Request) (interface{}, error
 		return nil, ErrBadRouting
 	}
 
-    // Get tag id
+	// Get tag id
 	var tagId int
 	if id != "" {
 		tagId, _ = strconv.Atoi(id)
 	}
 
-    ///////////////////
-    // Parse body
+	///////////////////
+	// Parse body
 	var updatedTag NewTag
 	if err := json.NewDecoder(r.Body).Decode(&updatedTag); err != nil {
 		return nil, err
@@ -297,14 +288,13 @@ func decodePutTagRequest(_ context.Context, r *http.Request) (interface{}, error
 	// Make request for single tag
 	var request putTagRequest
 	request = putTagRequest{
-		Bearer: realBearer,
-		TagId:  tagId,
-        NewTagName: updatedTag.Name,
+		Bearer:     realBearer,
+		TagId:      tagId,
+		NewTagName: updatedTag.Name,
 	}
 
 	return request, nil
 }
-
 
 // Create a tagsRequest from the context and http.Request
 // /TAG/
@@ -397,12 +387,12 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	// Write actual error code
-    code := codeFrom(err)
+	code := codeFrom(err)
 	w.WriteHeader(code)
 
 	// write out the error message
 	json.NewEncoder(w).Encode(map[string]interface{}{
-        "code": code,
+		"code":    code,
 		"message": err.Error(),
 	})
 }

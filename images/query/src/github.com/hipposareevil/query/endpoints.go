@@ -18,8 +18,8 @@ type dataHolder interface {
 /// Authors
 // response for query author
 type authorsResponse struct {
-	Data Authors  `json:"all,omitempty"`
-	Err  error `json:"err,omitempty"`
+	Data Authors `json:"all,omitempty"`
+	Err  error   `json:"err,omitempty"`
 }
 
 // authorsResponse.error
@@ -32,13 +32,12 @@ func (theResponse authorsResponse) getData() interface{} {
 	return theResponse.Data
 }
 
-
 ////////////////////
 /// Titles
 // response for query title
 type titlesResponse struct {
-	Data Titles  `json:"all,omitempty"`
-	Err  error `json:"err,omitempty"`
+	Data Titles `json:"all,omitempty"`
+	Err  error  `json:"err,omitempty"`
 }
 
 // titlesResponse.error
@@ -50,4 +49,3 @@ func (theResponse titlesResponse) error() error {
 func (theResponse titlesResponse) getData() interface{} {
 	return theResponse.Data
 }
-

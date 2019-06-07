@@ -63,7 +63,7 @@ func main() {
 	// Endpoints
 
 	//////
-	// GET /review/<book_id>   
+	// GET /review/<book_id>
 	reviewsEndpoint := makeGetReviewsEndpoint(reviewSvc)
 	baseReviewsHandler := httptransport.NewServer(
 		reviewsEndpoint,
@@ -71,11 +71,11 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	// first parameter: When true, the authenticated user's ID must match the userid in the url
 	reviewsHandler := Authenticate(false, redisPool, baseReviewsHandler)
 	// The id is used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("GET").Path("/review/{book_id}").Handler(reviewsHandler)
-    
+
 	//////////////
 	// Start server
 	addr := ":8080"

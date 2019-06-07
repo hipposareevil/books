@@ -2,15 +2,14 @@ package main
 
 // Main application
 //
-// This will create the databases, router, static files 
-// and wire everything together 
-
+// This will create the databases, router, static files
+// and wire everything together
 
 import (
 	"fmt"
-    "time"
 	"net/http"
 	"os"
+	"time"
 
 	// mysql
 	"database/sql"
@@ -48,9 +47,8 @@ func main() {
 		panic(err.Error())
 	}
 	defer db.Close()
-    db.SetMaxIdleConns(0)
-    db.SetConnMaxLifetime(time.Second * 10)
-
+	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(time.Second * 10)
 
 	///////////////////
 	// create services and endpoints
@@ -74,89 +72,88 @@ func main() {
 	var cache CacheLayer
 	cache = cacheLayer{redisPool}
 
-    // clear the cache as we are starting fresh
-    cache.ClearAll(TAG_CACHE)
+	// clear the cache as we are starting fresh
+	cache.ClearAll(TAG_CACHE)
 
-    ///////////////
-    // 'tag' service
-    var tagSvc TagService
-    tagSvc = tagService{db, cache}
-    
-    // Add middleware here
+	///////////////
+	// 'tag' service
+	var tagSvc TagService
+	tagSvc = tagService{db, cache}
 
-    // Set up the endpoints on our service
-    // Note the Authentication middleware is done on each endpoint
-    // individually so we can tightly control each one.
+	// Add middleware here
 
+	// Set up the endpoints on our service
+	// Note the Authentication middleware is done on each endpoint
+	// individually so we can tightly control each one.
 
-    ////////////////
-    // Endpoints
+	////////////////
+	// Endpoints
 
 	// GET /tag
-    tagsEndpoint := makeTagsEndpoint(tagSvc)
+	tagsEndpoint := makeTagsEndpoint(tagSvc)
 	baseTagsHandler := httptransport.NewServer(
-        tagsEndpoint,
+		tagsEndpoint,
 		decodeTagsRequest,
 		encodeResponse,
 	)
-    // Add middleware to authenticate the endpoint.
-    // first parameter denotes if only 'admin' group can access the endpoint.
-    tagsHandler := Authenticate(false, redisPool, baseTagsHandler)
+	// Add middleware to authenticate the endpoint.
+	// first parameter denotes if only 'admin' group can access the endpoint.
+	tagsHandler := Authenticate(false, redisPool, baseTagsHandler)
 	router.Methods("GET").Path("/tag").Handler(tagsHandler)
 
-	// GET /tag/<tag_id> 
-    tagEndpoint := makeTagEndpoint(tagSvc)
+	// GET /tag/<tag_id>
+	tagEndpoint := makeTagEndpoint(tagSvc)
 	baseTagHandler := httptransport.NewServer(
-        tagEndpoint,
+		tagEndpoint,
 		decodeTagRequest,
 		encodeResponse,
 	)
-    // Add middleware to authenticate the endpoint.
-    // first parameter denotes if only 'admin' group can access the endpoint.
-    tagHandler := Authenticate(false, redisPool, baseTagHandler)
+	// Add middleware to authenticate the endpoint.
+	// first parameter denotes if only 'admin' group can access the endpoint.
+	tagHandler := Authenticate(false, redisPool, baseTagHandler)
 	// 'tag_id' is used in transport.go to grab the variable 'tag_id' from the path
 	router.Methods("GET").Path("/tag/{tag_id}").Handler(tagHandler)
 
 	// PUT /tag/<tag_id>
-    putTagEndpoint := makePutTagEndpoint(tagSvc)
+	putTagEndpoint := makePutTagEndpoint(tagSvc)
 	basePutTagHandler := httptransport.NewServer(
 		putTagEndpoint,
 		decodePutTagRequest,
 		encodeResponse,
 	)
-    // Add middleware to authenticate the endpoint.
-    // first parameter denotes if only 'admin' group can access the endpoint.
-    putTagHandler := Authenticate(true, redisPool, basePutTagHandler)
+	// Add middleware to authenticate the endpoint.
+	// first parameter denotes if only 'admin' group can access the endpoint.
+	putTagHandler := Authenticate(true, redisPool, basePutTagHandler)
 	// 'tag_id' is used in transport.go to grab the variable 'tag_id' from the path
 	router.Methods("PUT").Path("/tag/{tag_id}").Handler(putTagHandler)
 
 	// POST /tag
-    postTagEndpoint := makePostTagEndpoint(tagSvc)
+	postTagEndpoint := makePostTagEndpoint(tagSvc)
 	basePostTagHandler := httptransport.NewServer(
 		postTagEndpoint,
 		decodePostTagRequest,
 		encodeResponse,
 	)
-    // Add middleware to authenticate the endpoint.
-    // first parameter denotes if only 'admin' group can access the endpoint.
-    postTagHandler := Authenticate(true, redisPool, basePostTagHandler)
+	// Add middleware to authenticate the endpoint.
+	// first parameter denotes if only 'admin' group can access the endpoint.
+	postTagHandler := Authenticate(true, redisPool, basePostTagHandler)
 	router.Methods("POST").Path("/tag").Handler(postTagHandler)
 
 	// DELETE /tag
 	// This reuses 'decodeTagRequest' as it is the same for GET and DELETE
-    deleteTagEndpoint := makeDeleteTagEndpoint(tagSvc)
+	deleteTagEndpoint := makeDeleteTagEndpoint(tagSvc)
 	baseDeleteTagHandler := httptransport.NewServer(
 		deleteTagEndpoint,
 		decodeTagRequest,
 		encodeResponse,
 	)
-    // Add middleware to authenticate the endpoint.
-    // first parameter denotes if only 'admin' group can access the endpoint.
-    deleteTagHandler := Authenticate(true, redisPool, baseDeleteTagHandler)
+	// Add middleware to authenticate the endpoint.
+	// first parameter denotes if only 'admin' group can access the endpoint.
+	deleteTagHandler := Authenticate(true, redisPool, baseDeleteTagHandler)
 	// 'tag_id' is used in transport.go to grab the variable 'tag_id' from the path
-    router.Methods("DELETE").Path("/tag/{tag_id}").Handler(deleteTagHandler)
+	router.Methods("DELETE").Path("/tag/{tag_id}").Handler(deleteTagHandler)
 
-    //////////////
+	//////////////
 	// Start server
 	addr := ":8080"
 	logger.Log("msg", "HTTP", "addr", addr)

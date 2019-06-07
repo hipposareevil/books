@@ -1,51 +1,45 @@
 package main
 
 import (
-    "strings"
-    "strconv"
-
+	"strconv"
+	"strings"
 )
-
-
-
 
 ////////
 // Return a untion of the two incoming arrays
 //
 //
 func Union(left []int, right []int) []int {
-    var result []int
+	var result []int
 
-    for _, leftValue := range left {
-        // See if leftValue is in right array
-        if inArray(leftValue, right) {
-            result = append(result, leftValue)
-        }
-    }
+	for _, leftValue := range left {
+		// See if leftValue is in right array
+		if inArray(leftValue, right) {
+			result = append(result, leftValue)
+		}
+	}
 
-    return result
+	return result
 }
-
 
 func inArray(valueToCheck int, array []int) bool {
-    for _, currentValue := range array {
-        if currentValue == valueToCheck {
-            return true
-        }
-    }
-    return false
+	for _, currentValue := range array {
+		if currentValue == valueToCheck {
+			return true
+		}
+	}
+	return false
 }
-
 
 ////////////
 // Split a CSV string into array
 func splitCsvStringToArray(csv string) []string {
-    if len(csv) == 0 {
-        return []string{}
-    } else {    
-        array := strings.Split(csv, ",")
-        return array
-    }
+	if len(csv) == 0 {
+		return []string{}
+	} else {
+		array := strings.Split(csv, ",")
+		return array
+	}
 }
 
 //////////
@@ -67,14 +61,14 @@ func convertIntArrayToCsv(intArray []int) string {
 
 ////////////
 // Convert Tags structure into map of Tag objects indexed by name
-// 
-func convertTagsJsonToArray(tags Tags) map[string]Tag  {
-    newMap := make(map[string]Tag)
+//
+func convertTagsJsonToArray(tags Tags) map[string]Tag {
+	newMap := make(map[string]Tag)
 
-    for _, item := range tags.Data {
-        name := item.Name
-        newMap[name] = item
-    }
+	for _, item := range tags.Data {
+		name := item.Name
+		newMap[name] = item
+	}
 
-    return newMap
+	return newMap
 }

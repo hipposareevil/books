@@ -38,15 +38,15 @@ func AuthenticateForUserBook(onlyMatchingUser bool, redisPool *pool.Pool, next h
 		}
 		defer redisPool.Put(conn)
 
-        ///////////////////
-        // Parse url
-        userIdInUrl, err := parseUserId(request)
+		///////////////////
+		// Parse url
+		userIdInUrl, err := parseUserId(request)
 
-        if err != nil {
-            // unable to get the userid from the request
-            fmt.Println("Unable to get user-id from redis:", err)
-            writeUnauthorizedError(writer)
-        }
+		if err != nil {
+			// unable to get the userid from the request
+			fmt.Println("Unable to get user-id from redis:", err)
+			writeUnauthorizedError(writer)
+		}
 
 		///////////////////
 		// Parse headers
@@ -66,44 +66,44 @@ func AuthenticateForUserBook(onlyMatchingUser bool, redisPool *pool.Pool, next h
 
 		if err != nil {
 			// No authorization -> send a 401
-            fmt.Println("Unable to fine data in redis for name:", redisHashName)
+			fmt.Println("Unable to fine data in redis for name:", redisHashName)
 			writeUnauthorizedError(writer)
 		} else {
-            // get data from redis
+			// get data from redis
 
-            // group name
-            groupName, err := conn.Cmd("HGET", redisHashName, "group").Str()
-            if err != nil {
-                // No group authorization -> send a 401
-                writeUnauthorizedError(writer)
-            }
+			// group name
+			groupName, err := conn.Cmd("HGET", redisHashName, "group").Str()
+			if err != nil {
+				// No group authorization -> send a 401
+				writeUnauthorizedError(writer)
+			}
 
-            // user id
-            userIdFromRedis, err := conn.Cmd("HGET", redisHashName, "id").Int()
-            if err != nil {
-                // No group authorization -> send a 401
-                writeUnauthorizedError(writer)
-            }
+			// user id
+			userIdFromRedis, err := conn.Cmd("HGET", redisHashName, "id").Int()
+			if err != nil {
+				// No group authorization -> send a 401
+				writeUnauthorizedError(writer)
+			}
 
-            // If the authenticated user is an 'admin' OR
-            // (when onlyMatchingUser is true) the authenticated user ID is the same as in the URL
-            if (strings.Compare(groupName, "admin") == 0) {
-                // In admin group, go ahead
-                next.ServeHTTP(writer, request)
-            } else if (onlyMatchingUser) {
-                // Check user ids
-                
-                if (userIdFromRedis == userIdInUrl) {
-                    // matching ids, go ahead
-                    next.ServeHTTP(writer, request)
-                } else {
-                    // IDs don't match, error out
-                    writeUnauthorizedError(writer)
-                }
-            } else {
-                // No need to check ids
-                next.ServeHTTP(writer, request)
-            }
+			// If the authenticated user is an 'admin' OR
+			// (when onlyMatchingUser is true) the authenticated user ID is the same as in the URL
+			if strings.Compare(groupName, "admin") == 0 {
+				// In admin group, go ahead
+				next.ServeHTTP(writer, request)
+			} else if onlyMatchingUser {
+				// Check user ids
+
+				if userIdFromRedis == userIdInUrl {
+					// matching ids, go ahead
+					next.ServeHTTP(writer, request)
+				} else {
+					// IDs don't match, error out
+					writeUnauthorizedError(writer)
+				}
+			} else {
+				// No need to check ids
+				next.ServeHTTP(writer, request)
+			}
 		}
 	})
 }

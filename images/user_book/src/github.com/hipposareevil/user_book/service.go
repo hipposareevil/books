@@ -89,11 +89,11 @@ func (theService userbookService) GetUserBook(bearer string, userId int, userBoo
 	// Scan the DB info into 'book' composite variable
 	err := theService.mysqlDb.
 		QueryRow("SELECT "+
-        "user_book_id, user_id, book_id, rating, date_added, review "+
+			"user_book_id, user_id, book_id, rating, date_added, review "+
 			"FROM userbook "+
 			"WHERE user_id=? AND user_book_id=?",
 			userId, userBookId).
-                Scan(&userBook.UserBookId, &userBook.UserId, &userBook.BookId, &userBook.Rating, &userBook.DateAdded, &userBook.Review)
+		Scan(&userBook.UserBookId, &userBook.UserId, &userBook.BookId, &userBook.Rating, &userBook.DateAdded, &userBook.Review)
 
 	switch {
 	case err == sql.ErrNoRows:
@@ -168,7 +168,7 @@ func (theService userbookService) getAllUserBooks(bearer string, userId int, off
 	// Make query
 	results, err := theService.mysqlDb.
 		Query("SELECT "+
-        "user_book_id, user_id, book_id, rating, date_added, review "+
+			"user_book_id, user_id, book_id, rating, date_added, review "+
 			"FROM userbook WHERE "+
 			"user_id=? LIMIT ?,?", userId, offset, limit)
 
@@ -241,12 +241,12 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 	// - title
 	// - bookId
 
-    // full set of userBook IDs to return
-    finalUserBookIds := []int{}
+	// full set of userBook IDs to return
+	finalUserBookIds := []int{}
 
-    userBookIdsInTagBucket := []int{}
-    userBookIdsInTitleBucket := []int{}
-    userBookIdsInIdBucket := []int{}
+	userBookIdsInTagBucket := []int{}
+	userBookIdsInTitleBucket := []int{}
+	userBookIdsInIdBucket := []int{}
 
 	//////////////////
 	// #1: by Tag
@@ -270,12 +270,12 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 	if len(tagIds) > 0 {
 		// Get all user_book IDs for the tags
 
-        selectString := "SELECT user_book_id FROM tagmapping WHERE " +
-            "tag_id IN (" + convertIntArrayToCsv(tagIds) + ") " +
-            " AND user_id=?"
+		selectString := "SELECT user_book_id FROM tagmapping WHERE " +
+			"tag_id IN (" + convertIntArrayToCsv(tagIds) + ") " +
+			" AND user_id=?"
 
 		results, err := theService.mysqlDb.Query(selectString,
-            userId)
+			userId)
 
 		// Parse results
 		for results.Next() {
@@ -287,44 +287,43 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 				return UserBooks{}, errors.New("Unable to scan userbook (by tag): " + err.Error())
 			}
 
-            userBookIdsInTagBucket = append(userBookIdsInTagBucket, userBookId)
+			userBookIdsInTagBucket = append(userBookIdsInTagBucket, userBookId)
 		}
 
-        finalUserBookIds = userBookIdsInTagBucket
+		finalUserBookIds = userBookIdsInTagBucket
 	}
 
 	////////////////
 	// #2: by title
 
 	// Get list of books for the incoming title
-    desiredTitle = strings.TrimSpace(desiredTitle)
-    // list of book ids we want
-    var bookIds []int
+	desiredTitle = strings.TrimSpace(desiredTitle)
+	// list of book ids we want
+	var bookIds []int
 
-    if len(desiredTitle) > 0 {
-        var booksByTitle Books
-        booksByTitle, err := getBooksByTitle(bearer, desiredTitle)
-        if err != nil {
-            return UserBooks{}, ErrServerError
-        }
+	if len(desiredTitle) > 0 {
+		var booksByTitle Books
+		booksByTitle, err := getBooksByTitle(bearer, desiredTitle)
+		if err != nil {
+			return UserBooks{}, ErrServerError
+		}
 
-        for _, currentBook := range booksByTitle.Data {
-            // Get user book ID for this bookid
-            bookIds = append(bookIds, currentBook.Id)
-        }
-    }
-
+		for _, currentBook := range booksByTitle.Data {
+			// Get user book ID for this bookid
+			bookIds = append(bookIds, currentBook.Id)
+		}
+	}
 
 	// only look for book ids if we have some to scan
 	if len(bookIds) > 0 {
-        bookIdsAsString := convertIntArrayToCsv(bookIds)
+		bookIdsAsString := convertIntArrayToCsv(bookIds)
 
 		// Get all user_book IDs for these book ids
-        selectString := "SELECT user_book_id FROM userbook WHERE book_id in (" +
-            bookIdsAsString + ") AND user_id=?"
+		selectString := "SELECT user_book_id FROM userbook WHERE book_id in (" +
+			bookIdsAsString + ") AND user_id=?"
 
 		results, err := theService.mysqlDb.
-            Query(selectString, userId)
+			Query(selectString, userId)
 
 		if err != nil {
 			return UserBooks{}, ErrServerError
@@ -339,27 +338,26 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 			if err != nil {
 				return UserBooks{}, errors.New("Unable to scan userbook (by title): " + err.Error())
 			}
-            userBookIdsInTitleBucket = append(userBookIdsInTitleBucket, userBookId)
+			userBookIdsInTitleBucket = append(userBookIdsInTitleBucket, userBookId)
 		}
 
-        finalUserBookIds = userBookIdsInTitleBucket
+		finalUserBookIds = userBookIdsInTitleBucket
 
-        // update final set
-        if len(tagIds) > 0 {
-            // if tags were queried for, union them with the final set
-            finalUserBookIds = Union(finalUserBookIds, userBookIdsInTagBucket)
-        }
+		// update final set
+		if len(tagIds) > 0 {
+			// if tags were queried for, union them with the final set
+			finalUserBookIds = Union(finalUserBookIds, userBookIdsInTagBucket)
+		}
 	}
 
-
-    ///////////////////
+	///////////////////
 	// #3: by book_id
-	if (desiredBookId > 0) {
+	if desiredBookId > 0 {
 		// Get all user_book IDs for these book ids
-        selectString := "SELECT user_book_id FROM userbook WHERE book_id =? AND user_id=?"
+		selectString := "SELECT user_book_id FROM userbook WHERE book_id =? AND user_id=?"
 
 		results, err := theService.mysqlDb.
-            Query(selectString, desiredBookId, userId)
+			Query(selectString, desiredBookId, userId)
 
 		if err != nil {
 			fmt.Println("Got error from mysql when getting book ids: " + err.Error())
@@ -375,22 +373,22 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 			if err != nil {
 				return UserBooks{}, errors.New("Unable to scan userbook (by title): " + err.Error())
 			}
-            
-            userBookIdsInIdBucket = append(userBookIdsInIdBucket, userBookId)
+
+			userBookIdsInIdBucket = append(userBookIdsInIdBucket, userBookId)
 		}
 
-        finalUserBookIds = userBookIdsInIdBucket
+		finalUserBookIds = userBookIdsInIdBucket
 
-        // update final set
-        if len(tagIds) > 0 {
-            // if tags were queried for, union them with the final set
-            finalUserBookIds = Union(finalUserBookIds, userBookIdsInTagBucket)
-        }        
-        if len(desiredTitle) > 0 {
-            // if title was queried for, union that with the final set
-            finalUserBookIds = Union(finalUserBookIds, userBookIdsInTitleBucket)
-        }        
-    }
+		// update final set
+		if len(tagIds) > 0 {
+			// if tags were queried for, union them with the final set
+			finalUserBookIds = Union(finalUserBookIds, userBookIdsInTagBucket)
+		}
+		if len(desiredTitle) > 0 {
+			// if title was queried for, union that with the final set
+			finalUserBookIds = Union(finalUserBookIds, userBookIdsInTitleBucket)
+		}
+	}
 
 	////////////////////////
 	// Now for each user book id, get the real user books
@@ -400,10 +398,10 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 
 	// Only query if there are some IDs to search for
 	if len(finalUserBookIds) > 0 {
-        selectString := "SELECT "+
-            "user_book_id, user_id, book_id, rating, date_added, review "+
-				"FROM userbook WHERE "+
-				"user_book_id in (" + convertIntArrayToCsv(finalUserBookIds) + ")"
+		selectString := "SELECT " +
+			"user_book_id, user_id, book_id, rating, date_added, review " +
+			"FROM userbook WHERE " +
+			"user_book_id in (" + convertIntArrayToCsv(finalUserBookIds) + ")"
 
 		// Make query
 		results, err := theService.mysqlDb.Query(selectString)
@@ -450,34 +448,34 @@ func (theService userbookService) getUserBooksByFilter(bearer string, userId int
 		}
 	}
 
-    //////////////
-    // Update return data
-    
-    // Get the total number of rows
-    realNumberRows := len(datum)
-    realLimit := limit
+	//////////////
+	// Update return data
 
-    // fix offset
-    if (offset > realNumberRows) || (offset < 0) {
-        offset = 0        
-    }
+	// Get the total number of rows
+	realNumberRows := len(datum)
+	realLimit := limit
 
-    // fix limit
-    if (realLimit < 0) {
-        realLimit = len(datum)
-    }
+	// fix offset
+	if (offset > realNumberRows) || (offset < 0) {
+		offset = 0
+	}
 
-    if (realLimit > realNumberRows) {
-        realLimit = realNumberRows
-    }
+	// fix limit
+	if realLimit < 0 {
+		realLimit = len(datum)
+	}
 
-    // determine slice of datum to use
-    whereToEnd := offset + realLimit
-    if (whereToEnd > realNumberRows) {
-        whereToEnd = realNumberRows
-    }
+	if realLimit > realNumberRows {
+		realLimit = realNumberRows
+	}
 
-    datum = datum[offset:whereToEnd]
+	// determine slice of datum to use
+	whereToEnd := offset + realLimit
+	if whereToEnd > realNumberRows {
+		whereToEnd = realNumberRows
+	}
+
+	datum = datum[offset:whereToEnd]
 
 	// Create Books to return
 	returnValue := UserBooks{
@@ -572,7 +570,7 @@ func (theService userbookService) CreateUserBook(bearer string, userId int, book
 		Tags:       tagNamesAdded,
 		UserId:     userId,
 		UserBookId: int(userBookId),
-        Review: review,
+		Review:     review,
 		DateAdded:  now,
 	}
 
@@ -622,68 +620,68 @@ func (theService userbookService) UpdateUserBook(bearer string, userId int, user
 		return UserBook{}, errors.New("Unable to run update against DB for userbook: ")
 	}
 
-    // Update rating
-    if rating != nil {
-        stmt, err := theService.mysqlDb.
-            Prepare("UPDATE userbook SET " +
-            "rating=? " +
-            "WHERE user_id=? AND user_book_id=?")
-        defer stmt.Close()
-        if err != nil {
-            fmt.Println("Error preparing DB when updating userbook: ", err)
-            return UserBook{}, errors.New("Unable to prepare a DB statement when updating userbook: ")
-        }
+	// Update rating
+	if rating != nil {
+		stmt, err := theService.mysqlDb.
+			Prepare("UPDATE userbook SET " +
+				"rating=? " +
+				"WHERE user_id=? AND user_book_id=?")
+		defer stmt.Close()
+		if err != nil {
+			fmt.Println("Error preparing DB when updating userbook: ", err)
+			return UserBook{}, errors.New("Unable to prepare a DB statement when updating userbook: ")
+		}
 
-        _, err = stmt.Exec(*rating, userId, userBookId)
+		_, err = stmt.Exec(*rating, userId, userBookId)
 
-        if err != nil {
-            fmt.Println("Error updating DB.rating for userbook: ", err)
-            return UserBook{}, errors.New("Unable to run update against DB for userbook: ")
-        }
-    }
+		if err != nil {
+			fmt.Println("Error updating DB.rating for userbook: ", err)
+			return UserBook{}, errors.New("Unable to run update against DB for userbook: ")
+		}
+	}
 
-    // Update review
-    if review != nil {
-        stmt, err := theService.mysqlDb.
-            Prepare("UPDATE userbook SET " +
-            "review=? " +
-            "WHERE user_id=? AND user_book_id=?")
-        defer stmt.Close()
-        if err != nil {
-            fmt.Println("Error preparing DB when updating userbook: ", err)
-            return UserBook{}, errors.New("Unable to prepare a DB statement when updating userbook: ")
-        }
+	// Update review
+	if review != nil {
+		stmt, err := theService.mysqlDb.
+			Prepare("UPDATE userbook SET " +
+				"review=? " +
+				"WHERE user_id=? AND user_book_id=?")
+		defer stmt.Close()
+		if err != nil {
+			fmt.Println("Error preparing DB when updating userbook: ", err)
+			return UserBook{}, errors.New("Unable to prepare a DB statement when updating userbook: ")
+		}
 
-        _, err = stmt.Exec(*review, userId, userBookId)
+		_, err = stmt.Exec(*review, userId, userBookId)
 
-        if err != nil {
-            fmt.Println("Error updating DB.review for userbook: ", err)
-            return UserBook{}, errors.New("Unable to run update against DB for userbook: ")
-        }
+		if err != nil {
+			fmt.Println("Error updating DB.review for userbook: ", err)
+			return UserBook{}, errors.New("Unable to run update against DB for userbook: ")
+		}
 
-    }
+	}
 
 	//////////////////////
 	// Clear old tag mappings and add new ones
 
-    if incomingTags != nil {
-        err = theService.deleteTagMappings(userId, userBookId)
-        if err != nil {
-            fmt.Println("Error updating tag mappings for updated userbook. UserBookId: ", userBookId)
-            return UserBook{}, err
-        }
+	if incomingTags != nil {
+		err = theService.deleteTagMappings(userId, userBookId)
+		if err != nil {
+			fmt.Println("Error updating tag mappings for updated userbook. UserBookId: ", userBookId)
+			return UserBook{}, err
+		}
 
-        _, err = theService.updateTagMappings(bearer, userId, int(userBookId), *incomingTags)
-        if err != nil {
-            fmt.Println("Error updating tag mappings for updated userbook . userBookid: ", userBookId)
-            return UserBook{}, err
-        }
-    }
+		_, err = theService.updateTagMappings(bearer, userId, int(userBookId), *incomingTags)
+		if err != nil {
+			fmt.Println("Error updating tag mappings for updated userbook . userBookid: ", userBookId)
+			return UserBook{}, err
+		}
+	}
 
-    ///////////////
-    // Get full userbook
-    fmt.Println("Get updated user book for user:",userId, " and book id:", userBookId)
-    userBookToReturn, err := theService.GetUserBook(bearer, userId, userBookId)
+	///////////////
+	// Get full userbook
+	fmt.Println("Get updated user book for user:", userId, " and book id:", userBookId)
+	userBookToReturn, err := theService.GetUserBook(bearer, userId, userBookId)
 
 	return userBookToReturn, nil
 }
@@ -700,7 +698,7 @@ func (theService userbookService) getTagMappings(userId int, userBookId int) ([]
 	}
 
 	var tagsToReturn []string
-    tagsToReturn = make([]string, 0)
+	tagsToReturn = make([]string, 0)
 
 	// make query
 	results, err := theService.mysqlDb.

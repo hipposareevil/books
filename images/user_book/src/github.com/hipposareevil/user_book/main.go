@@ -20,7 +20,7 @@ import (
 	// gorilla routing
 	"github.com/gorilla/mux"
 
-    "time"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -46,9 +46,8 @@ func main() {
 		panic(err.Error())
 	}
 	defer db.Close()
-    db.SetMaxIdleConns(0)
-    db.SetConnMaxLifetime(time.Second * 10)
-
+	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(time.Second * 10)
 
 	///////////////////
 	// create services and endpoints
@@ -95,7 +94,7 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	// first parameter: When true, the authenticated user's ID must match the userid in the url
 	userBooksHandler := AuthenticateForUserBook(false, redisPool, baseUserBooksHandler)
 	// The id is used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("GET").Path("/user_book/{user_id}").Handler(userBooksHandler)
@@ -109,7 +108,7 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	// first parameter: When true, the authenticated user's ID must match the userid in the url
 	userBookHandler := AuthenticateForUserBook(false, redisPool, baseBookHandler)
 	// The id's are used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("GET").Path("/user_book/{user_id}/{user_book_id}").Handler(userBookHandler)
@@ -123,7 +122,7 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	// first parameter: When true, the authenticated user's ID must match the userid in the url
 	deleteUserBookHandler := AuthenticateForUserBook(true, redisPool, baseDeleteUserBookHandler)
 	// The id's are used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("DELETE").Path("/user_book/{user_id}/{user_book_id}").Handler(deleteUserBookHandler)
@@ -137,7 +136,7 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	// first parameter: When true, the authenticated user's ID must match the userid in the url
 	createUserBookHandler := AuthenticateForUserBook(true, redisPool, baseCreateUserBookHandler)
 	router.Methods("POST").Path("/user_book/{user_id}").Handler(createUserBookHandler)
 
@@ -150,7 +149,7 @@ func main() {
 		encodeResponse,
 	)
 	// Add middleware to authenticate the endpoint.
-    // first parameter: When true, the authenticated user's ID must match the userid in the url
+	// first parameter: When true, the authenticated user's ID must match the userid in the url
 	updateUserBookHandler := AuthenticateForUserBook(true, redisPool, baseUpdateUserBookHandler)
 	// The id's are used in transport.go to grab the variable 'book_id' from the path
 	router.Methods("PUT").Path("/user_book/{user_id}/{user_book_id}").Handler(updateUserBookHandler)

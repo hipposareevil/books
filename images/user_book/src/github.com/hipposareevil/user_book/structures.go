@@ -43,10 +43,10 @@ type createUserBookRequest struct {
 
 // PUT request to update user book
 type updateUserBookRequest struct {
-	Bearer     string   `json:"bearer"`
-	UserId     int      `json:"user_id"`
-	UserBookId int      `json:"user_book_id"`
-	BookId     int      `json:"bookId"`
+	Bearer     string    `json:"bearer"`
+	UserId     int       `json:"user_id"`
+	UserBookId int       `json:"user_book_id"`
+	BookId     int       `json:"bookId"`
 	Rating     *bool     `json:"rating"`
 	Tags       *[]string `json:"tags"`
 	Review     *string   `json:"review"`
@@ -80,11 +80,9 @@ type UserBooks struct {
 	Data   []UserBook `json:"data"`
 }
 
-
 //////////////////////////////////////
 // json structures from calling other services
 //
-
 
 type Tag struct {
 	ID   int    `json:"id"`
@@ -99,7 +97,6 @@ type Tags struct {
 	Total  int   `json:"total"`
 	Data   []Tag `json:"data"`
 }
-
 
 // Single book
 type Book struct {
@@ -117,7 +114,6 @@ type Book struct {
 	Subjects           []string `json:"subjects"`
 	Title              string   `json:"title"`
 }
-
 
 type Books struct {
 	Offset int    `json:"offset"`

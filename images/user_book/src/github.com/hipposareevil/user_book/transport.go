@@ -34,13 +34,13 @@ func makeGetUserBooksEndpoint(svc UserBookService) endpoint.Endpoint {
 
 		// call actual service with data from the req
 		userBooks, err := svc.GetUserBooks(
-            req.Bearer,
-            req.UserId,
-            req.Offset,
-            req.Limit,
-            req.BookId,
-            req.Title,
-            req.Tag)
+			req.Bearer,
+			req.UserId,
+			req.Offset,
+			req.Limit,
+			req.BookId,
+			req.Title,
+			req.Tag)
 
 		return userBooksResponse{
 			Data: userBooks,
@@ -58,9 +58,9 @@ func makeGetUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 
 		// call actual service with data from the req
 		book, err := svc.GetUserBook(
-            req.Bearer,
-            req.UserId,
-            req.UserBookId)
+			req.Bearer,
+			req.UserId,
+			req.UserBookId)
 
 		return userBookResponse{
 			Data: book,
@@ -78,8 +78,8 @@ func makeDeleteUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 
 		// call actual service with data from the req
 		err := svc.DeleteUserBook(
-            req.UserId,
-            req.UserBookId)
+			req.UserId,
+			req.UserBookId)
 		return deleteUserBookResponse{
 			Err: err,
 		}, nil
@@ -95,12 +95,12 @@ func makeCreateUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 
 		// call actual service with data from the req
 		newBook, err := svc.CreateUserBook(
-            req.Bearer,
-            req.UserId,
-            req.BookId,
-            req.Rating,
-            req.Tags,
-            req.Review)
+			req.Bearer,
+			req.UserId,
+			req.BookId,
+			req.Rating,
+			req.Tags,
+			req.Review)
 
 		return createUserBookResponse{
 			Data: newBook,
@@ -118,13 +118,13 @@ func makeUpdateUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 
 		// call actual service with data from the req (putBookRequest)
 		book, err := svc.UpdateUserBook(
-            req.Bearer,
-            req.UserId,
-            req.UserBookId,
-            req.BookId,
-            req.Rating,
-            req.Tags,
-            req.Review)
+			req.Bearer,
+			req.UserId,
+			req.UserBookId,
+			req.BookId,
+			req.Rating,
+			req.Tags,
+			req.Review)
 
 		return updateUserBookResponse{
 			Data: book,
@@ -141,11 +141,11 @@ func makeUpdateUserBookEndpoint(svc UserBookService) endpoint.Endpoint {
 // /user_book/<user_id>
 //
 func decodeGetAllUserBooksRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    // Get offset, limit and bearer
+	// Get offset, limit and bearer
 	realOffset, realLimit := parseOffsetAndLimit(r)
 	bearer := parseBearer(r)
 
-    // Get userId
+	// Get userId
 	userId, err := parseUserId(r)
 	if err != nil {
 		return nil, err
@@ -156,28 +156,28 @@ func decodeGetAllUserBooksRequest(_ context.Context, r *http.Request) (interface
 	r.ParseForm()
 	values := r.Form
 
-    temp := values["tag"]
-    tagsString := strings.Join(temp, ",")
+	temp := values["tag"]
+	tagsString := strings.Join(temp, ",")
 	tags := splitCsvStringToArray(tagsString)
 
-    // get book_id
+	// get book_id
 	tempId := values.Get("book_id")
 	bookId, _ := strconv.Atoi(tempId)
 
-    // get title
+	// get title
 	title := values.Get("title")
 
 	// Make request for all books
 	var request getAllUserBooksRequest
-	request = getAllUserBooksRequest {
-		Bearer:   bearer,
-		Offset:   realOffset,
-		Limit:    realLimit,
+	request = getAllUserBooksRequest{
+		Bearer: bearer,
+		Offset: realOffset,
+		Limit:  realLimit,
 
-        UserId:   userId,
-		Title:    title,
-		BookId:   bookId,
-        Tag:      tags,
+		UserId: userId,
+		Title:  title,
+		BookId: bookId,
+		Tag:    tags,
 	}
 
 	return request, nil
@@ -189,13 +189,13 @@ func decodeGetAllUserBooksRequest(_ context.Context, r *http.Request) (interface
 func decodeGetUserBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	bearer := parseBearer(r)
 
-    // Get userId
+	// Get userId
 	userId, err := parseUserId(r)
 	if err != nil {
 		return nil, err
 	}
 
-    // Get user_book_id
+	// Get user_book_id
 	userBookId, err := parseUserBookId(r)
 	if err != nil {
 		return nil, err
@@ -203,10 +203,10 @@ func decodeGetUserBookRequest(_ context.Context, r *http.Request) (interface{}, 
 
 	// Make request for all books
 	var request getUserBookRequest
-	request = getUserBookRequest {
-		Bearer:   bearer,
-        UserId:   userId,
-        UserBookId:   userBookId,
+	request = getUserBookRequest{
+		Bearer:     bearer,
+		UserId:     userId,
+		UserBookId: userBookId,
 	}
 
 	return request, nil
@@ -217,13 +217,13 @@ func decodeGetUserBookRequest(_ context.Context, r *http.Request) (interface{}, 
 // DELETE /user_book/<user_id>/<user_book_id>
 //
 func decodeDeleteUserBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    // Get userId
+	// Get userId
 	userId, err := parseUserId(r)
 	if err != nil {
 		return nil, err
 	}
 
-    // Get user_book_id
+	// Get user_book_id
 	userBookId, err := parseUserBookId(r)
 	if err != nil {
 		return nil, err
@@ -231,9 +231,9 @@ func decodeDeleteUserBookRequest(_ context.Context, r *http.Request) (interface{
 
 	// Make request for all books
 	var request deleteUserBookRequest
-	request = deleteUserBookRequest {
-        UserId:   userId,
-        UserBookId:   userBookId,
+	request = deleteUserBookRequest{
+		UserId:     userId,
+		UserBookId: userBookId,
 	}
 
 	return request, nil
@@ -243,7 +243,7 @@ func decodeDeleteUserBookRequest(_ context.Context, r *http.Request) (interface{
 // Create creatUsereBookRequest
 //  POST /user_book/<user_id>
 func decodeCreateUserBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    // Get userId
+	// Get userId
 	userId, err := parseUserId(r)
 	if err != nil {
 		return nil, err
@@ -261,7 +261,7 @@ func decodeCreateUserBookRequest(_ context.Context, r *http.Request) (interface{
 
 	// Set rest on update request
 	request.UserId = userId
-    request.Bearer = bearer
+	request.Bearer = bearer
 
 	return request, nil
 }
@@ -269,13 +269,13 @@ func decodeCreateUserBookRequest(_ context.Context, r *http.Request) (interface{
 // Create updateBookRequest
 //  PUT /user_book/<user_id>/<user_book_id>
 func decodeUpdateUserBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    // Get userId
+	// Get userId
 	userId, err := parseUserId(r)
 	if err != nil {
 		return nil, err
 	}
 
-    // Get user_book_id
+	// Get user_book_id
 	userBookId, err := parseUserBookId(r)
 	if err != nil {
 		return nil, err
@@ -294,7 +294,7 @@ func decodeUpdateUserBookRequest(_ context.Context, r *http.Request) (interface{
 	// Set rest on update request
 	request.UserId = userId
 	request.UserBookId = userBookId
-    request.Bearer = bearer
+	request.Bearer = bearer
 
 	return request, nil
 }

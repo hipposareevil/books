@@ -35,12 +35,12 @@ func makeGetReviewsEndpoint(svc ReviewService) endpoint.Endpoint {
 
 		// call actual service with data from the req
 		reviews, err := svc.GetReviews(
-            req.Bearer,
-            req.Offset,
-            req.Limit,
-            req.BookId)
+			req.Bearer,
+			req.Offset,
+			req.Limit,
+			req.BookId)
 
-		return reviewResponse {
+		return reviewResponse{
 			Data: reviews,
 			Err:  err,
 		}, nil
@@ -55,24 +55,23 @@ func makeGetReviewsEndpoint(svc ReviewService) endpoint.Endpoint {
 // /review/<book_id>
 //
 func decodeGetReviewsRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    // Get offset, limit and bearer
+	// Get offset, limit and bearer
 	realOffset, realLimit := parseOffsetAndLimit(r)
 	bearer := parseBearer(r)
 
-    // Get book id
+	// Get book id
 	bookId, err := parseBookId(r)
 	if err != nil {
 		return nil, err
 	}
 
-
 	// Make request for all books
 	var request getReviewsRequest
-	request = getReviewsRequest {
-		Bearer:   bearer,
-		Offset:   realOffset,
-		Limit:    realLimit,
-		BookId:   bookId,
+	request = getReviewsRequest{
+		Bearer: bearer,
+		Offset: realOffset,
+		Limit:  realLimit,
+		BookId: bookId,
 	}
 
 	return request, nil

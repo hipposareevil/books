@@ -1,6 +1,5 @@
 package main
 
-
 ///////////////////
 // Structures
 
@@ -9,8 +8,8 @@ package main
 // - limit
 // - name
 type getAllAuthorsRequest struct {
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
+	Offset int    `json:"offset"`
+	Limit  int    `json:"limit"`
 	Name   string `json:"name"`
 }
 

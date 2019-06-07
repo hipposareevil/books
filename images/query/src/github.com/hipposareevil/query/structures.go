@@ -39,15 +39,15 @@ type Authors struct {
 }
 
 type Title struct {
-	Title              string `json:"title"`
-	AuthorKey          string `json:"authorKey"`
-	AuthorName         string `json:"authorName"`
-	Description        string `json:"description"`
-	FirstPublishedYear int    `json:"firstPublishedYear"`
-	ImageLarge         string `json:"imageLarge"`
-	ImageMedium        string `json:"imageMedium"`
-	ImageSmall         string `json:"imageSmall"`
-	OpenLibraryWorkUrl string `json:"openLibraryWorkUrl"`
+	Title              string   `json:"title"`
+	AuthorKey          string   `json:"authorKey"`
+	AuthorName         string   `json:"authorName"`
+	Description        string   `json:"description"`
+	FirstPublishedYear int      `json:"firstPublishedYear"`
+	ImageLarge         string   `json:"imageLarge"`
+	ImageMedium        string   `json:"imageMedium"`
+	ImageSmall         string   `json:"imageSmall"`
+	OpenLibraryWorkUrl string   `json:"openLibraryWorkUrl"`
 	OpenLibraryKeys    []string `json:"openLibraryKeys"`
 	Isbns              []string `json:"isbns"`
 	Subjects           []string `json:"subjects"`

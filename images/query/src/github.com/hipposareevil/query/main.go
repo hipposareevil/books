@@ -2,9 +2,8 @@ package main
 
 // Main application
 //
-// This will create the router, static files 
-// and wire everything together 
-
+// This will create the router, static files
+// and wire everything together
 
 import (
 	"net/http"
@@ -38,37 +37,37 @@ func main() {
 	fs := http.FileServer(http.Dir(htmlDir))
 	router.PathPrefix("/swagger.yaml").Handler(http.StripPrefix("/", fs))
 
-    ///////////////
-    // 'query' service
-    var querySvc QueryService
-    querySvc = queryService{}
-    
-    ////////////////
-    // Endpoints
+	///////////////
+	// 'query' service
+	var querySvc QueryService
+	querySvc = queryService{}
+
+	////////////////
+	// Endpoints
 
 	// GET /author
 
-    queryAuthorEndpoint := makeQueryAuthorEndpoint(querySvc)
-    queryAuthorHandler := httptransport.NewServer(
-        queryAuthorEndpoint,
-        decodeQueryAuthorRequest,
-        encodeResponse,
-    )
-    // no authentication like the other services
-    router.Methods("GET").Path("/query/author").Handler(queryAuthorHandler)
+	queryAuthorEndpoint := makeQueryAuthorEndpoint(querySvc)
+	queryAuthorHandler := httptransport.NewServer(
+		queryAuthorEndpoint,
+		decodeQueryAuthorRequest,
+		encodeResponse,
+	)
+	// no authentication like the other services
+	router.Methods("GET").Path("/query/author").Handler(queryAuthorHandler)
 
 	// GET /title
 
-    queryTitleEndpoint := makeQueryTitleEndpoint(querySvc)
-    queryTitleHandler := httptransport.NewServer(
-        queryTitleEndpoint,
-        decodeQueryTitleRequest,
-        encodeResponse,
-    )
-    // no authentication like the other services
-    router.Methods("GET").Path("/query/book").Handler(queryTitleHandler)
+	queryTitleEndpoint := makeQueryTitleEndpoint(querySvc)
+	queryTitleHandler := httptransport.NewServer(
+		queryTitleEndpoint,
+		decodeQueryTitleRequest,
+		encodeResponse,
+	)
+	// no authentication like the other services
+	router.Methods("GET").Path("/query/book").Handler(queryTitleHandler)
 
-    //////////////
+	//////////////
 	// Start server
 	addr := ":8080"
 	logger.Log("msg", "HTTP", "addr", addr)
