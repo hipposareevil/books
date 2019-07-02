@@ -163,8 +163,8 @@ func (theService authorizeService) CreateToken(userName string, password string)
 		fmt.Println("Unable to set group in redis for '" + userName + "'.")
 		return Authorization{}, ErrServerError
 	}
-	// expire data in a week
-	if conn.Cmd("expire", redisKey, 60*60*24*7).Err != nil {
+	// expire data in 3 weeks
+	if conn.Cmd("expire", redisKey, 60*60*24*7 * 3).Err != nil {
 		fmt.Println("Unable to set expiration time for '" + userName + "' in redis.")
 		return Authorization{}, ErrServerError
 	}
