@@ -2,15 +2,14 @@ package main
 
 // Main application
 //
-// This will create the databases, router, static files 
-// and wire everything together 
-
+// This will create the databases, router, static files
+// and wire everything together
 
 import (
 	"fmt"
-    "time"
 	"net/http"
 	"os"
+	"time"
 
 	// mysql
 	"database/sql"
@@ -25,8 +24,8 @@ import (
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
 
-    // bcrypt
-    _ "golang.org/x/crypto/bcrypt"    
+	// bcrypt
+	_ "golang.org/x/crypto/bcrypt"
 )
 
 // Main
@@ -49,8 +48,8 @@ func main() {
 		panic(err.Error())
 	}
 	defer db.Close()
-    db.SetMaxIdleConns(0)
-    db.SetConnMaxLifetime(time.Second * 10)
+	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(time.Second * 10)
 
 	///////////////////
 	// create services and endpoints
@@ -69,43 +68,42 @@ func main() {
 	fs := http.FileServer(http.Dir(htmlDir))
 	router.PathPrefix("/swagger.yaml").Handler(http.StripPrefix("/", fs))
 
-    ///////////////
-    // 'authorization' service
-    var authorizeSvc AuthorizeService
-    authorizeSvc = authorizeService{
-        db,
-        redisPool,
-    }
-    
-    // Set up the endpoints on our service
+	///////////////
+	// 'authorization' service
+	var authorizeSvc AuthorizeService
+	authorizeSvc = authorizeService{
+		db,
+		redisPool,
+	}
 
-    ////////////////
-    // Endpoints
+	// Set up the endpoints on our service
 
-    ////////////
-    // #1
+	////////////////
+	// Endpoints
+
+	////////////
+	// #1
 	// GET /authorize/validate
-    validateEndpoint := makeGetValidationEndpoint(authorizeSvc)
-    baseValidateHandler := httptransport.NewServer(
-        validateEndpoint,
+	validateEndpoint := makeGetValidationEndpoint(authorizeSvc)
+	baseValidateHandler := httptransport.NewServer(
+		validateEndpoint,
 		decodeValidationRequest,
 		encodeResponse,
 	)
-    router.Methods("GET").Path("/authorize/validate").Handler(baseValidateHandler)
+	router.Methods("GET").Path("/authorize/validate").Handler(baseValidateHandler)
 
-
-    ////////////
-    // #2
+	////////////
+	// #2
 	// POST /authorize/token
-    createTokenEndpoint := makeCreateTokenEndpoint(authorizeSvc)
-    baseCreateTokenHandler := httptransport.NewServer(
-        createTokenEndpoint,
+	createTokenEndpoint := makeCreateTokenEndpoint(authorizeSvc)
+	baseCreateTokenHandler := httptransport.NewServer(
+		createTokenEndpoint,
 		decodeCreateTokenRequest,
 		encodeResponse,
 	)
-    router.Methods("POST").Path("/authorize/token").Handler(baseCreateTokenHandler)
+	router.Methods("POST").Path("/authorize/token").Handler(baseCreateTokenHandler)
 
-    //////////////
+	//////////////
 	// Start server
 	addr := ":8080"
 	logger.Log("msg", "HTTP", "addr", addr)

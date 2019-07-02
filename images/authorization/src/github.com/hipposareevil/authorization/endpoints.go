@@ -16,20 +16,18 @@ type dataHolder interface {
 
 // Authorization Response
 type authorizationResponse struct {
-    Err error `json:"err,omitempty"`
+	Err error `json:"err,omitempty"`
 }
 
 func (theResponse authorizationResponse) error() error {
 	return theResponse.Err
 }
 
-
 // Create Token Response
 type createTokenResponse struct {
-    Data Authorization  `json:"all,omitempty"`
-    Err error `json:"err,omitempty"`
+	Data Authorization `json:"all,omitempty"`
+	Err  error         `json:"err,omitempty"`
 }
-
 
 func (theResponse createTokenResponse) getData() interface{} {
 	return theResponse.Data
@@ -38,6 +36,3 @@ func (theResponse createTokenResponse) getData() interface{} {
 func (theResponse createTokenResponse) error() error {
 	return theResponse.Err
 }
-
-
-
